@@ -1,0 +1,102 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Residents</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="navigateToCreate()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Statistics Cards -->
+  <div class="stats-container ion-margin-top" *ngIf="hasStats() || statsLoading">
+    <!-- Loading skeleton -->
+    <div class="stats-skeleton" *ngIf="statsLoading">
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px;"></ion-skeleton-text>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" *ngIf="!statsLoading && residentStats">
+      <!-- Total Residents -->
+      <ion-card class="stat-card primary">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="people"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ residentStats.total }}</div>
+              <div class="stat-label">Total Residents</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Active Residents -->
+      <ion-card class="stat-card success">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="checkmark-circle"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ residentStats.active }}</div>
+              <div class="stat-label">Active</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Owners -->
+      <ion-card class="stat-card warning">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="key"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ residentStats.ownership.owners }}</div>
+              <div class="stat-label">Owners</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Renters -->
+      <ion-card class="stat-card tertiary">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="home"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ residentStats.ownership.renters }}</div>
+              <div class="stat-label">Renters</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div>
+    <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
+      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
+      <div table-actions>
+        <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Add New
+        </ion-button>
+      </div>
+    </app-table>
+  </div>
+</ion-content>

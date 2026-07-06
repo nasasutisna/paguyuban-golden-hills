@@ -55,13 +55,69 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['admin', 'moderator'] },
+    data: { roles: ['ADMIN', 'SUPERADMIN'] },
     children: [
       {
         path: 'dashboard',
         loadComponent: () =>
           import('./features/admin/admin-dashboard/admin-dashboard.page').then(
             (m) => m.AdminDashboardPage
+          )
+      },
+      {
+        path: 'house-blocks',
+        loadComponent: () =>
+          import('./features/admin/house-blocks/house-blocks.page').then(
+            (m) => m.HouseBlocksPage
+          )
+      },
+      {
+        path: 'house-blocks/new',
+        loadComponent: () =>
+          import('./features/admin/house-blocks/house-block-form/house-block-form.page').then(
+            (m) => m.HouseBlockFormPage
+          )
+      },
+      {
+        path: 'house-blocks/:id',
+        loadComponent: () =>
+          import('./features/admin/house-blocks/house-block-detail/house-block-detail.page').then(
+            (m) => m.HouseBlockDetailPage
+          )
+      },
+      {
+        path: 'house-blocks/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/house-blocks/house-block-form/house-block-form.page').then(
+            (m) => m.HouseBlockFormPage
+          )
+      },
+      {
+        path: 'residents',
+        loadComponent: () =>
+          import('./features/admin/residents/residents.page').then(
+            (m) => m.ResidentsPage
+          )
+      },
+      {
+        path: 'residents/new',
+        loadComponent: () =>
+          import('./features/admin/residents/resident-form/resident-form.page').then(
+            (m) => m.ResidentFormPage
+          )
+      },
+      {
+        path: 'residents/:id',
+        loadComponent: () =>
+          import('./features/admin/residents/resident-detail/resident-detail.page').then(
+            (m) => m.ResidentDetailPage
+          )
+      },
+      {
+        path: 'residents/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/residents/resident-form/resident-form.page').then(
+            (m) => m.ResidentFormPage
           )
       }
     ]

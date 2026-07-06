@@ -1,2 +1,24 @@
 // For information on how to create your own theme, please refer to:
 // https://ionicframework.com/docs/theming/
+
+/**
+ * Ionic Color Variables
+ * -----------------------------------------------------
+ * Primary color set to green (#4caf50) to match the app theme
+ * Secondary color set to dark gray (#1F2937)
+ */
+:root {
+  --ion-color-primary: #4caf50;
+  --ion-color-primary-rgb: 76, 175, 80;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #439647;
+  --ion-color-primary-tint: #5fb460;
+
+  --ion-color-secondary: #1F2937;
+  --ion-color-secondary-rgb: 31, 41, 55;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #1b2431;
+  --ion-color-secondary-tint: #353e4f;
+}

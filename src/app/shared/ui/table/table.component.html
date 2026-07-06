@@ -123,16 +123,9 @@
                 <ng-container *ngSwitchCase="'action'">
                   <div class="cell-actions">
                     <!-- Custom template slot -->
-                    <ng-template
-                      [ngIf]="true"
-                      [ngIfElse]="column.key"
-                      [ngIfElseContext]="{ $implicit: item, column: column }"
-                    >
-                      <ng-content
-                        [ngSwitch]="column.key"
-                        select="[cell-template]"
-                      ></ng-content>
-                    </ng-template>
+                    <ng-content
+                      select="[cell-template]"
+                    ></ng-content>
                   </div>
                 </ng-container>
 
@@ -148,8 +141,8 @@
             <!-- Row Actions -->
             <td class="actions-column" *ngIf="actions.length > 0">
               <div class="row-actions">
+                @for(action of actions; track action.icon) { 
                 <ion-button
-                  *ngFor="let action of actions"
                   size="small"
                   fill="clear"
                   [color]="action.color"
@@ -157,13 +150,17 @@
                   (click)="onActionClick(action, item, $event)"
                   [hidden]="!shouldShowAction(action, item)"
                 >
+                @if(action.icon) {
                   <ion-icon
-                    *ngIf="action.icon"
                     slot="icon-only"
                     [name]="action.icon"
                   ></ion-icon>
-                  <ng-container *ngIf="!action.icon">{{ action.label }}</ng-container>
+                } @else {
+                  {{ action.label }}
+                }
                 </ion-button>
+                }
+                
               </div>
             </td>
           </tr>
@@ -176,7 +173,7 @@
   <div class="table-footer" *ngIf="config.pagination && config.showFooter">
     <div class="pagination-info">
       Showing {{ (pagination.page - 1) * pagination.pageSize + 1 }} to
-      {{ Math.min(pagination.page * pagination.pageSize, pagination.total) }} of
+      {{ getPaginationEnd() }} of
       {{ pagination.total }} entries
     </div>
 
@@ -195,14 +192,14 @@
 
       <!-- Pagination Buttons -->
       <div class="pagination-buttons">
-        <ion-button
+        <!-- <ion-button
           size="small"
           fill="clear"
           [disabled]="pagination.page === 1"
           (click)="onPageChange(1)"
         >
-          <ion-icon slot="icon-only" name="chevron-back-double"></ion-icon>
-        </ion-button>
+          First page
+        </ion-button> -->
 
         <ion-button
           size="small"
@@ -232,14 +229,14 @@
           <ion-icon slot="icon-only" name="chevron-forward"></ion-icon>
         </ion-button>
 
-        <ion-button
+        <!-- <ion-button
           size="small"
           fill="clear"
           [disabled]="pagination.page === totalPages"
           (click)="onPageChange(totalPages)"
         >
-          <ion-icon slot="icon-only" name="chevron-forward-double"></ion-icon>
-        </ion-button>
+          Last Page
+        </ion-button> -->
       </div>
     </div>
   </div>

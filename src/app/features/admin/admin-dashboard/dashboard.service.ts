@@ -15,11 +15,12 @@ import {
   QuickMenuItem
 } from './dashboard.model';
 import { ApiResponse } from '@core/api/api.service';
+import { environment } from 'src/environments/environment';
 
 /**
  * Base API URL for dashboard endpoints
  */
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = environment.apiUrl
 
 /**
  * Dashboard Service
@@ -268,6 +269,13 @@ export class DashboardService {
         icon: 'home',
         color: 'secondary',
         route: '/residents'
+      },
+      {
+        id: 'manage-blocks',
+        title: 'Manage House Blocks',
+        icon: 'business',
+        color: 'secondary',
+        route: '/admin/house-blocks'
       }
     ]);
   }

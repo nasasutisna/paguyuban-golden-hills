@@ -1,6 +1,6 @@
 import { Injectable, inject, OnDestroy } from '@angular/core';
 import { Observable, BehaviorSubject, of, EMPTY, interval, Subscription } from 'rxjs';
-import { catchError, map, switchMap, tap, take } from 'rxjs/operators';
+import { catchError, map, switchMap, tap, take, concatMap } from 'rxjs/operators';
 import { ApiService, ApiResponse } from '@core/api/api.service';
 import { StorageService } from '@core/storage/storage.service';
 import { STORAGE_KEYS } from '@core/constants/storage-keys';
@@ -43,8 +43,9 @@ export class AuthService implements OnDestroy {
 
   /**
    * Initialize authentication from stored data
+   * Called by APP_INITIALIZER to ensure auth state is loaded before routing
    */
-  private async initializeAuth(): Promise<void> {
+  async initializeAuth(): Promise<void> {
     try {
       // Read from storage
       const [accessToken, refreshToken, user] = await Promise.all([
@@ -159,11 +160,12 @@ export class AuthService implements OnDestroy {
    */
   login(request: LoginRequest, rememberMe = false): Observable<LoginResponseData> {
     return this.apiService.post<LoginResponseData>('/auth/login', request).pipe(
-      tap(async (response: ApiResponse<LoginResponseData>) => {
+      concatMap(async (response: ApiResponse<LoginResponseData>) => {
         const data = response.data;
+        // Wait for auth data to be saved before proceeding
         await this.saveAuthData(data.user, data, rememberMe, request.username);
+        return response.data;
       }),
-      map((response: ApiResponse<LoginResponseData>) => response.data),
       catchError(error => {
         console.error('Login error:', error);
         throw error;
@@ -177,11 +179,12 @@ export class AuthService implements OnDestroy {
    */
   register(request: RegisterRequest): Observable<LoginResponseData> {
     return this.apiService.post<LoginResponseData>('/auth/register', request).pipe(
-      tap(async (response: ApiResponse<LoginResponseData>) => {
+      concatMap(async (response: ApiResponse<LoginResponseData>) => {
         const data = response.data;
+        // Wait for auth data to be saved before proceeding
         await this.saveAuthData(data.user, data, false, request.username);
+        return response.data;
       }),
-      map((response: ApiResponse<LoginResponseData>) => response.data),
       catchError(error => {
         console.error('Register error:', error);
         throw error;
@@ -298,11 +301,18 @@ export class AuthService implements OnDestroy {
    * Clear all auth data (for logout)
    */
   async clearAuthData(): Promise<void> {
+    // Clear from Capacitor Preferences
     await Promise.all([
       this.storageService.remove(STORAGE_KEYS.ACCESS_TOKEN),
       this.storageService.remove(STORAGE_KEYS.REFRESH_TOKEN),
       this.storageService.remove(STORAGE_KEYS.USER_DATA)
     ]);
+
+    // Also clear from localStorage
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+    localStorage.removeItem(STORAGE_KEYS.REMEMBERED_USERNAME);
 
     this.stopTokenRefresh();
 
@@ -323,6 +333,7 @@ export class AuthService implements OnDestroy {
     rememberMe: boolean,
     username?: string
   ): Promise<void> {
+    // Save to Capacitor Preferences
     await Promise.all([
       this.storageService.set(STORAGE_KEYS.ACCESS_TOKEN, tokenData.accessToken),
       this.storageService.set(STORAGE_KEYS.REFRESH_TOKEN, tokenData.refreshToken),
@@ -330,10 +341,16 @@ export class AuthService implements OnDestroy {
       this.storageService.set(STORAGE_KEYS.REMEMBER_ME, rememberMe)
     ]);
 
+    // Also save to localStorage as backup (for synchronous access)
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokenData.accessToken);
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokenData.refreshToken);
+
     if (rememberMe && username) {
       await this.storageService.set(STORAGE_KEYS.REMEMBERED_USERNAME, username);
+      localStorage.setItem(STORAGE_KEYS.REMEMBERED_USERNAME, username);
     } else if (!rememberMe) {
       await this.storageService.remove(STORAGE_KEYS.REMEMBERED_USERNAME);
+      localStorage.removeItem(STORAGE_KEYS.REMEMBERED_USERNAME);
     }
 
     // Update auth state
@@ -351,10 +368,15 @@ export class AuthService implements OnDestroy {
    * Update tokens in storage
    */
   private async updateTokens(accessToken: string, refreshToken: string): Promise<void> {
+    // Save to Capacitor Preferences
     await Promise.all([
       this.storageService.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken),
       this.storageService.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
     ]);
+
+    // Also save to localStorage as backup
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
 
     // Update auth state
     this.authState$.next({

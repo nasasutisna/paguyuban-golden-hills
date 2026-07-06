@@ -36,3 +36,16 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 /* @import '@ionic/angular/css/palettes/dark.system.css'; */
+
+/**
+ * Global Button Styles
+ * -----------------------------------------------------
+ * Apply consistent border-radius to all buttons
+ */
+ion-button {
+  --border-radius: 8px !important;
+}
+
+ion-content {
+  --background: #f9f9f9;
+}

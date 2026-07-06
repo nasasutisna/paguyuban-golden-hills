@@ -41,6 +41,7 @@ export const roleGuard: CanActivateFn = (
 
   return authService.authState.pipe(
     map((state) => {
+      console.log('role guard',state)
       if (!state.isAuthenticated) {
         // Not authenticated - redirect to login
         return router.createUrlTree(['/auth/login'], {
@@ -53,7 +54,8 @@ export const roleGuard: CanActivateFn = (
       }
 
       // Check if user has any of the required roles
-      const hasRole = requiredRoles.includes(state.user.roleId);
+      // const hasRole = requiredRoles.includes(state.user.roleId);
+      const hasRole = state?.user?.role?.name === 'ADMIN'
 
       if (hasRole) {
         return true;

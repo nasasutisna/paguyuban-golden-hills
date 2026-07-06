@@ -54,6 +54,8 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
     loading: false
   };
 
+  @Input() currentPage?: number; // Allows parent to control current page for server-side pagination
+
   @Input() statusBadges?: StatusBadge[];
   @Input() currencyOptions?: CurrencyFormatOptions;
   @Input() dateOptions?: DateFormatOptions;
@@ -103,6 +105,11 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // Sync pagination.page when currentPage input changes from parent
+    if (changes['currentPage'] && this.currentPage !== undefined) {
+      this.pagination.page = this.currentPage;
+    }
+
     if (changes['dataSource']) {
       this.updateDisplayedData();
       this.updatePagination();
@@ -118,12 +125,11 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
 
   /**
    * Update displayed data based on pagination
+   * For server-side pagination, display all data as received (already paginated by server)
    */
   private updateDisplayedData(): void {
-    const data = this.dataSource.data || [];
-    const startIndex = (this.pagination.page - 1) * this.pagination.pageSize;
-    const endIndex = startIndex + this.pagination.pageSize;
-    this.displayedData = data.slice(startIndex, endIndex);
+    // Data is already paginated from server, display all received data
+    this.displayedData = this.dataSource.data || [];
   }
 
   /**
@@ -132,7 +138,13 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
   private updatePagination(): void {
     const total = this.dataSource.total ?? this.dataSource.data?.length ?? 0;
     this.pagination.total = total;
-    this.pagination.totalPages = Math.ceil(total / this.pagination.pageSize);
+
+    // Use totalPages from server if available (server-side pagination), otherwise calculate
+    if (this.dataSource.totalPages !== undefined) {
+      this.pagination.totalPages = this.dataSource.totalPages;
+    } else {
+      this.pagination.totalPages = Math.ceil(total / this.pagination.pageSize);
+    }
 
     if (this.pagination.page > this.pagination.totalPages && this.pagination.totalPages > 0) {
       this.pagination.page = this.pagination.totalPages;
@@ -174,6 +186,22 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
    */
   get totalPages(): number {
     return this.pagination.totalPages;
+  }
+
+  /**
+   * Get pagination end index for display
+   * For server-side pagination, uses actual data length
+   */
+  getPaginationEnd(): number {
+    const start = (this.pagination.page - 1) * this.pagination.pageSize + 1;
+    const dataLength = this.dataSource.data?.length || 0;
+
+    if (dataLength === 0) {
+      return 0;
+    }
+
+    // For server-side pagination, add the start index to the data length minus 1
+    return start + dataLength - 1;
   }
 
   /**
@@ -363,9 +391,11 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
 
   /**
    * Get nested value from object
+   * Made public for use in template
    */
-  private getNestedValue(obj: any, key: string): any {
-    return key.split('.').reduce((o, k) => (o || {})[k], obj);
+  getNestedValue(obj: any, key: string | number | symbol): any {
+    const keyString = String(key);
+    return keyString.split('.').reduce((o, k) => (o || {})[k], obj);
   }
 
   /**
@@ -405,15 +435,15 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
   /**
    * Get status label
    */
-  private getStatusLabel(value: string): string {
+  private getStatusLabel(value: any): string {
     const badge = this.statusBadges?.find(b => b.value === value);
-    return badge?.label || value;
+    return badge?.label || String(value ?? '-');
   }
 
   /**
    * Get status badge color
    */
-  getStatusColor(value: string): string {
+  getStatusColor(value: any): string {
     const badge = this.statusBadges?.find(b => b.value === value);
     return badge?.color || 'medium';
   }
@@ -421,7 +451,7 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
   /**
    * Get status badge icon
    */
-  getStatusIcon(value: string): string | undefined {
+  getStatusIcon(value: any): string | undefined {
     const badge = this.statusBadges?.find(b => b.value === value);
     return badge?.icon;
   }

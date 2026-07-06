@@ -1,0 +1,194 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/house-blocks"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Block Details</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="navigateToEdit()">
+        <ion-icon slot="icon-only" name="create"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-state">
+      <ion-skeleton-text animated style="width: 60px; height: 60px; border-radius: 16px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 150px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100px;"></ion-skeleton-text>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error && !loading) {
+    <div class="error-state">
+      <ion-icon name="warning-outline"></ion-icon>
+      <h2>{{ error }}</h2>
+      <ion-button (click)="navigateBack()">Go Back</ion-button>
+    </div>
+  }
+
+  <!-- Detail Content -->
+  @if (houseBlock && !loading) {
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="block-avatar">
+        <ion-icon name="business"></ion-icon>
+      </div>
+      <h2>{{ houseBlock.blockName }}</h2>
+      <p class="code">{{ houseBlock.blockCode }}</p>
+      <div class="stats-row">
+        <span class="stat-item">
+          <ion-icon name="home-outline"></ion-icon>
+          {{ houseBlock.totalUnits }} Units
+        </span>
+        @if (houseBlock.totalFloors) {
+          <span class="stat-item">
+            <ion-icon name="layers-outline"></ion-icon>
+            {{ houseBlock.totalFloors }} Floors
+          </span>
+        }
+      </div>
+      <div class="badges">
+        <ion-chip [color]="getStatusColor()">
+          <ion-label>{{ getStatusText() }}</ion-label>
+        </ion-chip>
+        <ion-chip [color]="getBlockTypeColor()">
+          <ion-label>{{ BLOCK_TYPE_LABELS[houseBlock.blockType] }}</ion-label>
+        </ion-chip>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-row">
+      <ion-button size="small" fill="outline" (click)="navigateToEdit()">
+        <ion-icon slot="start" name="create-outline"></ion-icon>
+        Edit
+      </ion-button>
+      <ion-button
+        size="small"
+        fill="outline"
+        [color]="houseBlock.isActive ? 'warning' : 'success'"
+        (click)="toggleActiveStatus()">
+        <ion-icon slot="start" name="swap-horizontal-outline"></ion-icon>
+        {{ houseBlock.isActive ? 'Deactivate' : 'Activate' }}
+      </ion-button>
+      <ion-button size="small" fill="outline" color="danger" (click)="confirmDelete()">
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        Delete
+      </ion-button>
+    </div>
+
+    <!-- Block Details -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Block Details</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="info-list">
+          <ion-item>
+            <ion-label>
+              <h2>Address</h2>
+              <p>{{ houseBlock.address || '-' }}</p>
+            </ion-label>
+          </ion-item>
+          @if (houseBlock.description) {
+            <ion-item>
+              <ion-label>
+                <h2>Description</h2>
+                <p>{{ houseBlock.description }}</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Capacity & Structure -->
+    @if (houseBlock.landArea || houseBlock.buildingArea || houseBlock.constructionYear) {
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Capacity & Structure</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="full" class="info-list">
+            @if (houseBlock.landArea) {
+              <ion-item>
+                <ion-icon name="expand-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>Land Area</h2>
+                  <p>{{ formatArea(houseBlock.landArea) }}</p>
+                </ion-label>
+              </ion-item>
+            }
+            @if (houseBlock.buildingArea) {
+              <ion-item>
+                <ion-icon name="business-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>Building Area</h2>
+                  <p>{{ formatArea(houseBlock.buildingArea) }}</p>
+                </ion-label>
+              </ion-item>
+            }
+            @if (houseBlock.constructionYear) {
+              <ion-item>
+                <ion-icon name="calendar-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>Year Built</h2>
+                  <p>{{ houseBlock.constructionYear }}</p>
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Facilities -->
+    @if (getFacilities().length > 0) {
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Facilities</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="tags-wrapper">
+            @for (facility of getFacilities(); track facility) {
+              <ion-chip color="primary">
+                <ion-icon name="checkmark-circle"></ion-icon>
+                <ion-label>{{ facility }}</ion-label>
+              </ion-chip>
+            }
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Amenities -->
+    @if (getAmenities().length > 0) {
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Amenities</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="tags-wrapper">
+            @for (amenity of getAmenities(); track amenity) {
+              <ion-chip color="secondary">
+                <ion-icon name="star"></ion-icon>
+                <ion-label>{{ amenity }}</ion-label>
+              </ion-chip>
+            }
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Metadata -->
+    <div class="metadata">
+      <p>Created: {{ formatDate(houseBlock.createdAt) }}</p>
+      <p>Last Updated: {{ formatDate(houseBlock.updatedAt) }}</p>
+    </div>
+  }
+</ion-content>

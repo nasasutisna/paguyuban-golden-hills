@@ -47,9 +47,6 @@ export class LoginPage implements OnInit {
   }
 
   ngOnInit(): void {
-    // Get return URL from route params or default to profile
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/profile';
-
     // Load remembered username
     this.loadRememberedUsername();
   }

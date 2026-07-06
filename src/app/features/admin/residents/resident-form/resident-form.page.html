@@ -1,0 +1,291 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/residents"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="residentForm" (ngSubmit)="onSubmit()">
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Basic Information</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Resident Code -->
+        <ion-item class="form-item" [class.error]="f['residentCode'].invalid && f['residentCode'].touched">
+          <ion-label position="stacked" class="required">Resident Code</ion-label>
+          <ion-input
+            type="text"
+            formControlName="residentCode"
+            placeholder="e.g., RES001"
+            maxlength="20"
+          ></ion-input>
+        </ion-item>
+        <ion-text class="error-text" *ngIf="getErrorMessage('residentCode')">
+          {{ getErrorMessage('residentCode') }}
+        </ion-text>
+
+        <!-- First Name -->
+        <ion-item class="form-item" [class.error]="f['firstName'].invalid && f['firstName'].touched">
+          <ion-label position="stacked" class="required">First Name</ion-label>
+          <ion-input
+            type="text"
+            formControlName="firstName"
+            placeholder="e.g., John"
+            maxlength="100"
+          ></ion-input>
+        </ion-item>
+        <ion-text class="error-text" *ngIf="getErrorMessage('firstName')">
+          {{ getErrorMessage('firstName') }}
+        </ion-text>
+
+        <!-- Last Name -->
+        <ion-item class="form-item" [class.error]="f['lastName'].invalid && f['lastName'].touched">
+          <ion-label position="stacked" class="required">Last Name</ion-label>
+          <ion-input
+            type="text"
+            formControlName="lastName"
+            placeholder="e.g., Doe"
+            maxlength="100"
+          ></ion-input>
+        </ion-item>
+        <ion-text class="error-text" *ngIf="getErrorMessage('lastName')">
+          {{ getErrorMessage('lastName') }}
+        </ion-text>
+
+        <!-- Email -->
+        <ion-item class="form-item" [class.error]="f['email'].invalid && f['email'].touched">
+          <ion-label position="stacked">Email</ion-label>
+          <ion-input
+            type="email"
+            formControlName="email"
+            placeholder="e.g., john.doe@example.com"
+          ></ion-input>
+        </ion-item>
+        <ion-text class="error-text" *ngIf="getErrorMessage('email')">
+          {{ getErrorMessage('email') }}
+        </ion-text>
+
+        <!-- Phone Number -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Phone Number</ion-label>
+          <ion-input
+            type="tel"
+            formControlName="phoneNumber"
+            placeholder="e.g., +6281234567890"
+          ></ion-input>
+        </ion-item>
+
+        <!-- Alternate Phone -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Alternate Phone</ion-label>
+          <ion-input
+            type="tel"
+            formControlName="alternatePhone"
+            placeholder="e.g., +6281234567891"
+          ></ion-input>
+        </ion-item>
+
+        <!-- Identity Number -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Identity Number (KTP/Passport)</ion-label>
+          <ion-input
+            type="text"
+            formControlName="identityNumber"
+            placeholder="e.g., 1234567890123456"
+          ></ion-input>
+        </ion-item>
+
+        <!-- Date of Birth -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Date of Birth</ion-label>
+          <ion-datetime
+            formControlName="dateOfBirth"
+            presentation="date"
+            placeholder="Select date"
+          ></ion-datetime>
+        </ion-item>
+
+        <!-- Gender -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Gender</ion-label>
+          <ion-select formControlName="gender" placeholder="Select gender">
+            <ion-select-option *ngFor="let option of genderOptions" [value]="option.value">
+              {{ option.label }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Occupation -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Occupation</ion-label>
+          <ion-input
+            type="text"
+            formControlName="occupation"
+            placeholder="e.g., Engineer"
+            maxlength="100"
+          ></ion-input>
+        </ion-item>
+
+        <!-- Marital Status -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Marital Status</ion-label>
+          <ion-select formControlName="maritalStatus" placeholder="Select marital status">
+            <ion-select-option *ngFor="let option of maritalStatusOptions" [value]="option.value">
+              {{ option.label }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Active Status -->
+        <ion-item class="form-item toggle-item">
+          <ion-label>Active Status</ion-label>
+          <ion-toggle formControlName="isActive"></ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Address & Emergency Contact</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Address -->
+        <ion-item class="form-item textarea-item">
+          <ion-label position="stacked">Address</ion-label>
+          <ion-textarea
+            formControlName="address"
+            placeholder="e.g., Jalan Golden Hills No. 123"
+            rows="3"
+          ></ion-textarea>
+        </ion-item>
+
+        <!-- Emergency Contact -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Emergency Contact Name</ion-label>
+          <ion-input
+            type="text"
+            formControlName="emergencyContact"
+            placeholder="e.g., Jane Doe"
+            maxlength="100"
+          ></ion-input>
+        </ion-item>
+
+        <!-- Emergency Phone -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Emergency Phone Number</ion-label>
+          <ion-input
+            type="tel"
+            formControlName="emergencyPhone"
+            placeholder="e.g., +6281234567892"
+          ></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Property Information</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- House Block -->
+        <ion-item class="form-item" [class.error]="f['houseBlockId'].invalid && f['houseBlockId'].touched">
+          <ion-label position="stacked" class="required">House Block</ion-label>
+          <ion-select formControlName="houseBlockId" placeholder="Select house block">
+            <ion-select-option *ngFor="let block of houseBlocks" [value]="block.id">
+              {{ block.blockName }} ({{ block.blockCode }})
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-text class="error-text" *ngIf="getErrorMessage('houseBlockId')">
+          {{ getErrorMessage('houseBlockId') }}
+        </ion-text>
+
+        <!-- Unit Number -->
+        <ion-item class="form-item" [class.error]="f['unitNumber'].invalid && f['unitNumber'].touched">
+          <ion-label position="stacked" class="required">Unit Number</ion-label>
+          <ion-input
+            type="text"
+            formControlName="unitNumber"
+            placeholder="e.g., A-101"
+            maxlength="20"
+          ></ion-input>
+        </ion-item>
+        <ion-text class="error-text" *ngIf="getErrorMessage('unitNumber')">
+          {{ getErrorMessage('unitNumber') }}
+        </ion-text>
+
+        <!-- Ownership Type -->
+        <ion-item class="form-item" [class.error]="f['ownershipType'].invalid && f['ownershipType'].touched">
+          <ion-label position="stacked" class="required">Ownership Type</ion-label>
+          <ion-select formControlName="ownershipType" placeholder="Select ownership type">
+            <ion-select-option *ngFor="let option of ownershipTypeOptions" [value]="option.value">
+              {{ option.label }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-text class="error-text" *ngIf="getErrorMessage('ownershipType')">
+          {{ getErrorMessage('ownershipType') }}
+        </ion-text>
+
+        <!-- Move In Date -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Move In Date</ion-label>
+          <ion-datetime
+            formControlName="moveInDate"
+            presentation="date"
+            placeholder="Select move in date"
+          ></ion-datetime>
+        </ion-item>
+
+        <!-- Move Out Date -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Move Out Date</ion-label>
+          <ion-datetime
+            formControlName="moveOutDate"
+            presentation="date"
+            placeholder="Select move out date"
+          ></ion-datetime>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Additional Information</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Notes -->
+        <ion-item class="form-item textarea-item">
+          <ion-label position="stacked">Notes</ion-label>
+          <ion-textarea
+            formControlName="notes"
+            placeholder="Additional notes about this resident..."
+            rows="4"
+          ></ion-textarea>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <ion-button expand="block" fill="solid" color="medium" (click)="goBack()">
+        <ion-icon slot="start" name="arrow-back"></ion-icon>
+        Cancel
+      </ion-button>
+      <ion-button
+        expand="block"
+        fill="solid"
+        color="primary"
+        type="submit"
+        [disabled]="!isFormValid()"
+      >
+        <ion-icon slot="start" name="checkmark-circle"></ion-icon>
+        {{ submitButtonText }}
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

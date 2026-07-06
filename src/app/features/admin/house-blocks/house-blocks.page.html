@@ -1,0 +1,72 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>House Blocks</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="navigateToCreate()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Statistics Cards -->
+  <div class="stats-container ion-margin-top" *ngIf="hasStats() || statsLoading">
+    <!-- Loading skeleton -->
+    <div class="stats-skeleton" *ngIf="statsLoading">
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px;"></ion-skeleton-text>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" *ngIf="!statsLoading && occupancyStats">
+      <!-- Total Blocks -->
+      <ion-card class="stat-card primary">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="business"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ occupancyStats.totalBlocks }}</div>
+              <div class="stat-label">Total Blocks</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Total Units -->
+      <ion-card class="stat-card warning">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="home"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ occupancyStats.totalUnits }}</div>
+              <div class="stat-label">Total Units</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div>
+    <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
+      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
+      <div table-actions>
+        <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Add New
+        </ion-button>
+      </div>
+    </app-table>
+  </div>
+</ion-content>

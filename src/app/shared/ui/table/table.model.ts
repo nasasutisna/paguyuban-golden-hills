@@ -70,7 +70,7 @@ export interface TablePagination {
  * Status badge configuration
  */
 export interface StatusBadge {
-  value: string;
+  value: string | boolean;
   label: string;
   color: string;
   icon?: string;
@@ -95,6 +95,9 @@ export interface TableConfig {
   compact?: boolean;
   emptyMessage?: string;
   loadingMessage?: string;
+  rowClickable?: boolean;
+  title?: string;
+  subtitle?: string;
 }
 
 /**
@@ -104,6 +107,7 @@ export interface TableDataSource<T = any> {
   data: T[];
   loading?: boolean;
   total?: number;
+  totalPages?: number; // Total pages from server (for server-side pagination)
 }
 
 /**

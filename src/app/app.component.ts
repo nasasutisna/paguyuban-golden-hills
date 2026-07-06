@@ -11,9 +11,33 @@ import { addIcons } from 'ionicons';
 import {
   leaf, personCircle, personCircleOutline, menu, search, notificationsOutline,
   logOut, grid, cog, barChart, settings, openOutline, chevronForward,
-  home, people, business, document, receipt, wallet, trendingUp, calendar,
-  shield, key, lockClosed, prism, card, fileTray, chatbubbles, informationCircle,
-  helpCircle, documentText, funnel, scan, cloudUpload, cloudDownload, swapHorizontal
+  home, homeOutline, people, business, businessOutline, document, receipt, wallet, trendingUp, calendar, calendarOutline,
+  shield, key, keyOutline, lockClosed, prism, card, fileTray, chatbubbles, informationCircle,
+  helpCircle, documentText, funnel, scan, cloudUpload, cloudDownload, swapHorizontal,
+  create, trashOutline, eyeOutline, addOutline, checkmarkOutline, closeOutline, pencilOutline,
+  searchOutline,
+  add,
+  addCircle,
+  addCircleOutline,
+  personAdd,
+  personOutline,
+  chevronBack,
+  arrowBack,
+  chevronBackCircleOutline,
+  checkmarkCircle,
+  closeCircle,
+  callOutline,
+  mailOutline,
+  layersOutline,
+  resizeOutline,
+  star,
+  warningOutline,
+  buildOutline,
+  expandOutline,
+  medicalOutline,
+  stopCircle,
+  playCircle,
+  swapHorizontalOutline
 } from 'ionicons/icons';
 import { AuthService } from '@core/auth/auth.service';
 import { User } from '@models/auth.model';
@@ -86,11 +110,16 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor() {
     // Register all icons
     addIcons({
-      leaf, personCircle, personCircleOutline, menu, search, notificationsOutline,
+      leaf, personCircle, personCircleOutline, personOutline, menu, search, notificationsOutline,
       logOut, grid, cog, barChart, settings, openOutline, chevronForward,
-      home, people, business, document, receipt, wallet, trendingUp, calendar,
-      shield, key, lockClosed, prism, card, fileTray, chatbubbles, informationCircle,
-      helpCircle, documentText, funnel, scan, cloudUpload, cloudDownload, swapHorizontal
+      home, homeOutline, people, business, businessOutline, document, receipt, wallet, trendingUp, calendar, calendarOutline,
+      shield, key, keyOutline, lockClosed, prism, card, fileTray, chatbubbles, informationCircle,
+      helpCircle, documentText, funnel, scan, cloudUpload, cloudDownload, swapHorizontal,
+      create, trashOutline, eyeOutline, addOutline, checkmarkOutline, closeOutline, pencilOutline,
+      searchOutline, add, addCircle, personAdd, addCircleOutline, chevronBack, arrowBack,
+      chevronBackCircleOutline, checkmarkCircle, closeCircle, callOutline, mailOutline,
+      layersOutline, resizeOutline, star, warningOutline, buildOutline, expandOutline,
+      medicalOutline, stopCircle, playCircle, swapHorizontalOutline
     });
   }
 
@@ -190,11 +219,12 @@ export class AppComponent implements OnInit, OnDestroy {
   onLogout() {
     this.authService.logout().subscribe({
       next: () => {
-        this.router.navigate(['/auth/login']);
+        // Use bypass parameter to prevent guestGuard from redirecting back to dashboard
+        this.router.navigate(['/auth/login'], { queryParams: { bypass: 'true' } });
       },
       error: () => {
-        // Even if API fails, navigate to login
-        this.router.navigate(['/auth/login']);
+        // Even if API fails, navigate to login with bypass
+        this.router.navigate(['/auth/login'], { queryParams: { bypass: 'true' } });
       }
     });
   }

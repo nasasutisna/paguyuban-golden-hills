@@ -4,8 +4,8 @@ import {
   Router,
   UrlTree
 } from '@angular/router';
-import { Observable, from } from 'rxjs';
-import { map, switchMap, take } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map, take } from 'rxjs/operators';
 import { AuthService } from '@core/auth/auth.service';
 
 /**
@@ -17,24 +17,20 @@ export const authGuard: CanActivateFn = (): Observable<boolean | UrlTree> => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // First refresh auth state from storage to ensure we have the latest data
-  // Then check if user is authenticated
-  return from(authService.refreshAuthState()).pipe(
-    switchMap(() => {
-      return authService.authState.pipe(
-        take(1),
-        map((state) => {
-          console.log('Auth Guard - Auth State:', state);
-          if (state.isAuthenticated) {
-            return true;
-          }
+  // Check current auth state without forcing refresh from storage
+  // The authState is already updated by login/register operations
+  return authService.authState.pipe(
+    take(1),
+    map((state) => {
+      console.log('Auth Guard - Auth State:', state);
+      if (state.isAuthenticated) {
+        return true;
+      }
 
-          // Redirect to login with return URL
-          return router.createUrlTree(['/auth/login'], {
-            queryParams: { returnUrl: router.url }
-          });
-        })
-      );
+      // Redirect to login with return URL
+      return router.createUrlTree(['/auth/login'], {
+        queryParams: { returnUrl: router.url }
+      });
     })
   );
 };

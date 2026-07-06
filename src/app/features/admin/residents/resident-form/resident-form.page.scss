@@ -1,0 +1,125 @@
+.resident-form {
+  ion-content {
+    --background: #f8f9fa;
+  }
+}
+
+.form-card {
+  margin: 0 0 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  ion-card-header {
+    padding-bottom: 8px;
+
+    ion-card-subtitle {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.9rem;
+    }
+  }
+
+  ion-card-content {
+    padding: 16px;
+  }
+}
+
+.form-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 8px;
+
+  ion-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    &.required::after {
+      content: '*';
+      color: var(--ion-color-danger);
+      margin-left: 4px;
+    }
+  }
+
+  &.error {
+    --highlight-height: 2px;
+    --highlight-color-focused: var(--ion-color-danger);
+
+    ion-input {
+      --highlight-height: 2px;
+      --highlight-color-focused: var(--ion-color-danger);
+    }
+  }
+
+  &.toggle-item {
+    --padding-start: 0;
+    --min-height: 48px;
+
+    ion-toggle {
+      margin-left: auto;
+    }
+  }
+
+  &.textarea-item {
+    --min-height: 100px;
+
+    ion-textarea {
+      --padding-start: 0;
+      --padding-end: 0;
+    }
+  }
+
+  ion-input,
+  ion-select,
+  ion-textarea {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    margin-top: 4px;
+  }
+
+  ion-input {
+    --highlight-height: 2px;
+  }
+}
+
+.error-text {
+  display: block;
+  color: var(--ion-color-danger);
+  font-size: 0.8rem;
+  margin-top: -4px;
+  margin-bottom: 8px;
+  padding-left: 16px;
+}
+
+.helper-text {
+  display: block;
+  color: var(--ion-color-medium);
+  font-size: 0.75rem;
+  margin-top: -4px;
+  margin-bottom: 12px;
+  padding-left: 16px;
+  font-style: italic;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0;
+
+  ion-button {
+    flex: 1;
+    margin: 0;
+
+    &:first-child {
+      --color: var(--ion-color-medium-shade);
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .form-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+}

@@ -3,16 +3,13 @@
  * Elegant green and brown gradient theme
  */
 
-// Import admin theme colors
-@import '../admin-theme.config';
+ $bg-color: #f9fafb;
 
 .app-table-container {
-  background: #ffffff;
+  border: 1px solid #e1e1e1;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 4px 12px rgba(67, 160, 71, 0.08);
+  box-shadow: none;
   margin: 16px 0;
 
   &.compact {
@@ -27,7 +24,7 @@
   align-items: center;
   padding: 20px 24px;
   border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(180deg, rgba(67, 160, 71, 0.03) 0%, rgba(255, 255, 255, 1) 100%);
+  background: #f5f5f5;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -57,15 +54,17 @@
 
 .table-actions {
   display: flex;
-  align-items: center;
+  align-items: end;
   gap: 12px;
+  justify-content: end;
+  width: 100%;
 }
 
 .search-box {
   position: relative;
   display: flex;
   align-items: center;
-  background: #f9fafb;
+  background:  $bg-color;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 8px 12px;
@@ -167,7 +166,7 @@
   background: #ffffff;
 
   thead {
-    background: linear-gradient(180deg, rgba(27, 94, 32, 0.95) 0%, rgba(46, 125, 50, 0.95) 100%);
+    background: #e8e8e8;
 
     tr {
       th {
@@ -176,8 +175,8 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #ffffff;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: #374151;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         white-space: nowrap;
         user-select: none;
 
@@ -198,7 +197,7 @@
           transition: background 0.2s ease;
 
           &:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.08);
           }
         }
 
@@ -238,7 +237,7 @@
         cursor: pointer;
 
         &:hover {
-          background: linear-gradient(90deg, rgba(76, 175, 80, 0.04) 0%, rgba(141, 110, 99, 0.04) 100%);
+          background: rgba(230, 228, 228, 0.03);
         }
       }
 
@@ -282,7 +281,7 @@
         // Status Chips
         .status-chip {
           --background: transparent;
-          --color: white;
+          --color: #374151;
           margin: 0;
           height: 24px;
           font-size: 11px;
@@ -290,6 +289,27 @@
           letter-spacing: 0.3px;
           text-transform: uppercase;
           border-radius: 4px;
+          padding: 4px 8px;
+
+          &[color="success"] {
+            --color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+          }
+
+          &[color="warning"] {
+            --color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+          }
+
+          &[color="danger"] {
+            --color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+          }
+
+          &[color="medium"] {
+            --color: #6b7280;
+            background: rgba(107, 114, 128, 0.1);
+          }
 
           ion-icon {
             font-size: 12px;
@@ -302,13 +322,106 @@
           display: flex;
           gap: 4px;
           justify-content: flex-end;
+
+          ion-button {
+            --padding-start: 6px;
+            --padding-end: 6px;
+            --min-height: 28px;
+            --min-width: 28px;
+            margin: 0;
+            --background-hover: rgba(0, 0, 0, 0.05);
+            --border-radius: 8px !important;
+            transition: all 0.2s ease;
+
+            // Elegant box-shadow
+            &::part(native) {
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+              transition: all 0.2s ease;
+            }
+
+            &:hover:not([disabled])::part(native) {
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+              transform: translateY(-1px);
+            }
+
+            &:active:not([disabled])::part(native) {
+              box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+              transform: translateY(0);
+            }
+
+            &[color="primary"] {
+              --color: #43A047;
+
+              &::part(native) {
+                box-shadow: 0 2px 4px rgba(67, 160, 71, 0.2);
+              }
+
+              &:hover:not([disabled])::part(native) {
+                box-shadow: 0 4px 8px rgba(67, 160, 71, 0.3);
+              }
+            }
+
+            &[color="danger"] {
+              --color: #eb445a;
+
+              &::part(native) {
+                box-shadow: 0 2px 4px rgba(235, 68, 90, 0.2);
+              }
+
+              &:hover:not([disabled])::part(native) {
+                box-shadow: 0 4px 8px rgba(235, 68, 90, 0.3);
+              }
+            }
+
+            &[color="success"] {
+              --color: #43A047;
+
+              &::part(native) {
+                box-shadow: 0 2px 4px rgba(67, 160, 71, 0.2);
+              }
+
+              &:hover:not([disabled])::part(native) {
+                box-shadow: 0 4px 8px rgba(67, 160, 71, 0.3);
+              }
+            }
+
+            &[color="warning"] {
+              --color: #f59e0b;
+
+              &::part(native) {
+                box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+              }
+
+              &:hover:not([disabled])::part(native) {
+                box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+              }
+            }
+
+            &[disabled] {
+              opacity: 0.5;
+
+              &::part(native) {
+                box-shadow: none;
+              }
+            }
+
+            ion-icon {
+              font-size: 20px;
+              color: var(--color);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+          }
         }
       }
 
       // Actions Column
       .actions-column {
-        width: 80px;
+        width: 90px;
         text-align: center;
+        padding: 8px;
 
         .row-actions {
           justify-content: center;
@@ -320,12 +433,12 @@
 
 // Table Striped
 .table-striped tbody tr:nth-child(even) {
-  background: rgba(243, 244, 246, 0.5);
+  background: $bg-color;
 }
 
 // Table Hoverable
 .table-hoverable tbody tr:hover {
-  background: linear-gradient(90deg, rgba(76, 175, 80, 0.06) 0%, rgba(141, 110, 99, 0.06) 100%);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 // Table Bordered
@@ -358,7 +471,7 @@
   align-items: center;
   padding: 16px 24px;
   border-top: 1px solid #e5e7eb;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(243, 244, 246, 0.5) 100%);
+  background: #f5f5f5;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -368,7 +481,6 @@
 
 .pagination-info {
   font-size: 13px;
-  color: #6b7280;
 
   @media (max-width: 768px) {
     text-align: center;
@@ -397,11 +509,36 @@
       --min-height: 32px;
       font-size: 13px;
       font-weight: 500;
-      border-radius: 6px;
+      --border-radius: 8px !important;
+      transition: all 0.2s ease;
+
+      &::part(native) {
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        transition: all 0.2s ease;
+      }
+
+      &:hover:not([disabled])::part(native) {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+        transform: translateY(-1px);
+      }
+
+      &:active:not([disabled])::part(native) {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        transform: translateY(0);
+      }
 
       &[fill='solid'] {
-        --background: #4caf50;
+        --background: #43A047;
         --color: white;
+
+        &::part(native) {
+          box-shadow: 0 2px 4px rgba(67, 160, 71, 0.2);
+        }
+
+        &:hover:not([disabled])::part(native) {
+          box-shadow: 0 4px 8px rgba(67, 160, 71, 0.3);
+        }
       }
 
       &[fill='clear']:not([disabled]) {
@@ -409,12 +546,16 @@
         --color: #374151;
 
         &:hover {
-          --background: rgba(76, 175, 80, 0.1);
+          --background: rgba(67, 160, 71, 0.1);
         }
       }
 
       &[disabled] {
-        opacity: 0.4;
+        opacity: 0.5;
+
+        &::part(native) {
+          box-shadow: none;
+        }
       }
     }
   }
@@ -446,15 +587,12 @@
 // Dark Mode Support
 @media (prefers-color-scheme: dark) {
   .app-table-container {
-    background: #1f2937;
-    box-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.3),
-      0 4px 12px rgba(0, 0, 0, 0.2);
+    background: transparent;
+    box-shadow: none;
   }
 
   .table-header {
-    background: linear-gradient(180deg, rgba(67, 160, 71, 0.1) 0%, rgba(31, 41, 55, 1) 100%);
-    border-bottom-color: #374151;
+    background: white;
   }
 
   .table-title h2 {
@@ -462,12 +600,7 @@
   }
 
   .search-box {
-    background: #374151;
-    border-color: #4b5563;
-
-    input {
-      color: #f9fafb;
-    }
+    background: #f4f4f4;
 
     &:focus-within {
       border-color: #4caf50;
@@ -476,7 +609,12 @@
 
   .app-table {
     thead {
-      background: linear-gradient(180deg, rgba(27, 94, 32, 0.95) 0%, rgba(46, 125, 50, 0.95) 100%);
+      background: #efefef;
+
+      th {
+        color: #f9fafb;
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+      }
     }
 
     tbody tr {
@@ -484,7 +622,7 @@
       color: #e5e7eb;
 
       &.clickable:hover {
-        background: linear-gradient(90deg, rgba(76, 175, 80, 0.15) 0%, rgba(141, 110, 99, 0.15) 100%);
+        background: $bg-color;
       }
 
       td .cell-currency {
@@ -494,24 +632,43 @@
       .cell-date {
         color: #9ca3af;
       }
+
+      .status-chip {
+        --color: #e5e7eb;
+
+        &[color="success"] {
+          --color: #81c784;
+          background: rgba(129, 199, 132, 0.15);
+        }
+
+        &[color="warning"] {
+          --color: #fbbf24;
+          background: rgba(251, 191, 36, 0.15);
+        }
+
+        &[color="danger"] {
+          --color: #f87171;
+          background: rgba(248, 113, 113, 0.15);
+        }
+
+        &[color="medium"] {
+          --color: #9ca3af;
+          background: rgba(156, 163, 175, 0.15);
+        }
+      }
     }
   }
 
   .table-striped tbody tr:nth-child(even) {
-    background: rgba(55, 65, 81, 0.5);
+    background: $bg-color;
   }
 
   .table-hoverable tbody tr:hover {
-    background: linear-gradient(90deg, rgba(76, 175, 80, 0.2) 0%, rgba(141, 110, 99, 0.2) 100%);
+    background: $bg-color;
   }
 
   .table-footer {
-    background: linear-gradient(180deg, #1f2937 0%, rgba(55, 65, 81, 0.5) 100%);
-    border-top-color: #374151;
-  }
-
-  .pagination-info {
-    color: #9ca3af;
+    background: #efefef;
   }
 }
 

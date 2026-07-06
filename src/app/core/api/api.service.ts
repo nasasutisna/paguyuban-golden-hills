@@ -13,7 +13,15 @@ export interface ApiResponse<T> {
   data: T;
   errors?: string[][];
   timestamp: string;
+  meta?: Paging;
   path: string;
+}
+
+export interface Paging {
+  page: number;
+  limit: number;
+  totalPages: number;
+  total:number
 }
 
 /**

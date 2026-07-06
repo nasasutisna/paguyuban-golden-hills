@@ -2,36 +2,43 @@ import { inject } from '@angular/core';
 import {
   CanActivateFn,
   Router,
-  UrlTree
+  UrlTree,
+  ActivatedRouteSnapshot
 } from '@angular/router';
-import { Observable, from } from 'rxjs';
-import { map, switchMap, take } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, take } from 'rxjs/operators';
 import { AuthService } from '@core/auth/auth.service';
 
 /**
  * Guest Guard
  * Protects routes that should only be accessible to unauthenticated users
  * Redirects authenticated users to dashboard
+ * Can be bypassed with ?bypass=true query param (for logout flow)
  */
-export const guestGuard: CanActivateFn = (): Observable<boolean | UrlTree> => {
+export const guestGuard: CanActivateFn = (
+  route: ActivatedRouteSnapshot
+): Observable<boolean | UrlTree> => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // First refresh auth state from storage to ensure we have the latest data
-  // Then check if user should access guest routes
-  return from(authService.refreshAuthState()).pipe(
-    switchMap(() => {
-      return authService.authState.pipe(
-        take(1),
-        map((state) => {
-          if (!state.isAuthenticated) {
-            return true;
-          }
+  // Check if bypass is requested (for logout flow)
+  const bypass = route.queryParamMap.get('bypass') === 'true';
 
-          // Redirect all authenticated users to dashboard
-          return router.createUrlTree(['/dashboard']);
-        })
-      );
+  if (bypass) {
+    return of(true);
+  }
+
+  // Check current auth state without forcing refresh from storage
+  // The authState is already updated by login/register operations
+  return authService.authState.pipe(
+    take(1),
+    map((state) => {
+      if (!state.isAuthenticated) {
+        return true;
+      }
+
+      // Redirect all authenticated users to dashboard
+      return router.createUrlTree(['/dashboard']);
     })
   );
 };
