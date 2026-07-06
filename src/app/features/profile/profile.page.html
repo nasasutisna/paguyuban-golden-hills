@@ -1,0 +1,131 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Profile</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onLogout()">
+        <ion-icon slot="icon-only" name="log-out"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="profile-container" *ngIf="user">
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="avatar-section">
+        <div class="avatar">
+          <ion-icon name="person"></ion-icon>
+        </div>
+        <div class="user-info">
+          <h2>{{ user.firstName || user.username }}</h2>
+          <ion-chip [color]="getRoleColor(user.roleId)">
+            <ion-label>{{ formatRole(user.roleId) }}</ion-label>
+          </ion-chip>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Form -->
+    <div class="profile-form-section">
+      <form [formGroup]="profileForm">
+        <!-- Username (Read-only) -->
+        <ion-item class="info-item">
+          <ion-label position="stacked" class="field-label">Username</ion-label>
+          <ion-input type="text" formControlName="username" readonly></ion-input>
+        </ion-item>
+
+        <!-- Email (Read-only) -->
+        <ion-item class="info-item">
+          <ion-label position="stacked" class="field-label">Email</ion-label>
+          <ion-input type="email" formControlName="email" readonly></ion-input>
+        </ion-item>
+
+        <!-- Full Name (Editable) -->
+        <ion-item class="info-item" [class.editing]="isEditing">
+          <ion-label position="stacked" class="field-label">Full Name</ion-label>
+          <ion-input
+            type="text"
+            formControlName="firstName"
+            [readonly]="!isEditing"
+            placeholder="Enter your full name"
+          ></ion-input>
+        </ion-item>
+        <div class="error-message" *ngIf="isEditing && getErrorMessage('firstName')">
+          <ion-text color="danger">{{ getErrorMessage('firstName') }}</ion-text>
+        </div>
+
+        <!-- Role (Read-only) -->
+        <ion-item class="info-item">
+          <ion-label position="stacked" class="field-label">Role</ion-label>
+          <ion-input type="text" formControlName="role" readonly></ion-input>
+        </ion-item>
+
+        <!-- Account Info -->
+        <!-- <div class="account-info">
+          <ion-item lines="none" class="info-item">
+            <ion-label>
+              <h3>Member Since</h3>
+              <p>{{ formatDate(user.createdAt) }}</p>
+            </ion-label>
+          </ion-item>
+        </div> -->
+      </form>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <ion-button
+        *ngIf="!isEditing"
+        expand="block"
+        fill="outline"
+        (click)="toggleEditMode()"
+        class="edit-button"
+      >
+        <ion-icon slot="start" name="create"></ion-icon>
+        Edit Profile
+      </ion-button>
+
+      <ng-container *ngIf="isEditing">
+        <ion-button
+          expand="block"
+          fill="solid"
+          (click)="onSave()"
+          [disabled]="!isFormValid()"
+          class="save-button"
+        >
+          <ion-icon slot="start" name="save"></ion-icon>
+          Save Changes
+        </ion-button>
+
+        <ion-button
+          expand="block"
+          fill="outline"
+          (click)="toggleEditMode()"
+          class="cancel-button"
+        >
+          <ion-icon slot="start" name="close"></ion-icon>
+          Cancel
+        </ion-button>
+      </ng-container>
+    </div>
+
+    <!-- Logout Button (Mobile/Secondary) -->
+    <ion-button
+      expand="block"
+      fill="clear"
+      color="danger"
+      (click)="onLogout()"
+      class="logout-button-mobile"
+    >
+      <ion-icon slot="start" name="log-out"></ion-icon>
+      Logout
+    </ion-button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="!user">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading profile...</p>
+  </div>
+</ion-content>

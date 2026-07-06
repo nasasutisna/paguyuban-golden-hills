@@ -1,0 +1,7 @@
+{
+  "name": "paguyuban-golden-hills",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

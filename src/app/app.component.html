@@ -1,0 +1,229 @@
+<ion-app>
+  @if (isAuthenticated) {
+    <!-- Modern Admin Layout (only when authenticated) -->
+    <ion-split-pane contentId="main-content" when="lg" class="admin-split-pane">
+      <!-- Modern Admin Sidebar Menu -->
+      <ion-menu side="start" menuId="admin-menu" contentId="main-content" class="admin-sidebar">
+        <ion-header class="sidebar-header">
+          <div class="brand-container">
+            <div class="brand-logo">
+              <ion-icon name="leaf"></ion-icon>
+            </div>
+            <div class="brand-info">
+              <h1 class="brand-name">Golden Hills</h1>
+              <p class="brand-subtitle">Admin Panel</p>
+            </div>
+          </div>
+        </ion-header>
+
+        <ion-content class="sidebar-content">
+          <!-- User Profile Card -->
+          @if (currentUser) {
+            <div class="user-profile-card">
+              <div class="user-avatar">
+                <ion-icon name="person-circle"></ion-icon>
+              </div>
+              <div class="user-info">
+                <h3 class="user-name">{{ userDisplayName }}</h3>
+                <p class="user-role">{{ userRoleDisplay }}</p>
+              </div>
+            </div>
+          }
+
+          <ion-list class="menu-list">
+            <!-- Main Navigation -->
+            <ion-list-header class="menu-section-header">
+              <div class="section-header-content">
+                <ion-icon name="grid"></ion-icon>
+                <span>Main Menu</span>
+              </div>
+            </ion-list-header>
+
+            @for (item of mainMenuItems; track item.url) {
+              <ion-menu-toggle auto-hide="false">
+                <ion-item
+                  class="menu-item"
+                  routerDirection="root"
+                  [routerLink]="[item.url]"
+                  lines="none"
+                  detail="false"
+                  routerLinkActive="active"
+                  [class.has-badge]="item.badge"
+                >
+                  <div class="menu-item-icon" slot="start">
+                    <ion-icon [name]="item.icon"></ion-icon>
+                  </div>
+                  <ion-label>
+                    <span class="menu-label">{{ item.title }}</span>
+                    @if (item.description) {
+                      <span class="menu-description">{{ item.description }}</span>
+                    }
+                  </ion-label>
+                  @if (item.badge) {
+                    <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
+                  }
+                  @if (item.external) {
+                    <ion-icon slot="end" name="open-outline" class="external-link-icon"></ion-icon>
+                  }
+                </ion-item>
+              </ion-menu-toggle>
+            }
+
+            <!-- Management Section -->
+            <ion-list-header class="menu-section-header">
+              <div class="section-header-content">
+                <ion-icon name="cog"></ion-icon>
+                <span>Management</span>
+              </div>
+            </ion-list-header>
+
+            @for (item of managementMenuItems; track item.url) {
+              <ion-menu-toggle auto-hide="false">
+                <ion-item
+                  class="menu-item"
+                  routerDirection="root"
+                  [routerLink]="[item.url]"
+                  lines="none"
+                  detail="false"
+                  routerLinkActive="active"
+                >
+                  <div class="menu-item-icon" slot="start">
+                    <ion-icon [name]="item.icon"></ion-icon>
+                  </div>
+                  <ion-label>
+                    <span class="menu-label">{{ item.title }}</span>
+                    @if (item.description) {
+                      <span class="menu-description">{{ item.description }}</span>
+                    }
+                  </ion-label>
+                  @if (item.badge) {
+                    <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
+                  }
+                </ion-item>
+              </ion-menu-toggle>
+            }
+
+            <!-- Reports Section -->
+            <ion-list-header class="menu-section-header">
+              <div class="section-header-content">
+                <ion-icon name="bar-chart"></ion-icon>
+                <span>Reports &amp; Analytics</span>
+              </div>
+            </ion-list-header>
+
+            @for (item of reportsMenuItems; track item.url) {
+              <ion-menu-toggle auto-hide="false">
+                <ion-item
+                  class="menu-item"
+                  routerDirection="root"
+                  [routerLink]="[item.url]"
+                  lines="none"
+                  detail="false"
+                  routerLinkActive="active"
+                >
+                  <div class="menu-item-icon" slot="start">
+                    <ion-icon [name]="item.icon"></ion-icon>
+                  </div>
+                  <ion-label>
+                    <span class="menu-label">{{ item.title }}</span>
+                    @if (item.description) {
+                      <span class="menu-description">{{ item.description }}</span>
+                    }
+                  </ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+            }
+
+            <!-- Settings Section -->
+            <ion-list-header class="menu-section-header">
+              <div class="section-header-content">
+                <ion-icon name="settings"></ion-icon>
+                <span>Settings</span>
+              </div>
+            </ion-list-header>
+
+            @for (item of settingsMenuItems; track item.url) {
+              <ion-menu-toggle auto-hide="false">
+                <ion-item
+                  class="menu-item"
+                  routerDirection="root"
+                  [routerLink]="[item.url]"
+                  lines="none"
+                  detail="false"
+                  routerLinkActive="active"
+                >
+                  <div class="menu-item-icon" slot="start">
+                    <ion-icon [name]="item.icon"></ion-icon>
+                  </div>
+                  <ion-label>
+                    <span class="menu-label">{{ item.title }}</span>
+                    @if (item.description) {
+                      <span class="menu-description">{{ item.description }}</span>
+                    }
+                  </ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+            }
+          </ion-list>
+
+          <!-- Logout Button -->
+          <div class="sidebar-footer">
+            <ion-item class="menu-item logout-item" (click)="onLogout()" lines="none" detail="false">
+              <div class="menu-item-icon" slot="start">
+                <ion-icon name="log-out"></ion-icon>
+              </div>
+              <ion-label>
+                <span class="menu-label">Logout</span>
+              </ion-label>
+            </ion-item>
+          </div>
+        </ion-content>
+      </ion-menu>
+
+      <!-- Main Content Area -->
+      <div class="main-content-wrapper" id="main-content">
+        <!-- Top Header -->
+        <ion-header class="admin-header">
+          <ion-toolbar>
+            <div class="header-toolbar-content">
+              <div class="header-left">
+                <ion-menu-button menu="admin-menu" class="menu-toggle-btn">
+                  <ion-icon name="menu"></ion-icon>
+                </ion-menu-button>
+                <div class="header-title">
+                  <ion-icon [name]="currentPageIcon"></ion-icon>
+                  <h2>{{ currentPageTitle }}</h2>
+                </div>
+              </div>
+
+              <div class="header-right">
+                <!-- Search -->
+                <div class="header-search">
+                  <ion-icon name="search"></ion-icon>
+                  <input type="text" placeholder="Search..." />
+                </div>
+
+                <!-- Notifications -->
+                <ion-button class="header-action-btn" fill="clear" id="notifications-trigger">
+                  <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+                  <ion-badge class="notification-badge" color="danger">3</ion-badge>
+                </ion-button>
+
+                <!-- Profile -->
+                <ion-button class="header-action-btn" fill="clear" routerLink="/profile">
+                  <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </ion-toolbar>
+        </ion-header>
+
+        <!-- Router Outlet -->
+        <ion-router-outlet id="main-router-outlet" class="main-router-outlet"></ion-router-outlet>
+      </div>
+    </ion-split-pane>
+  } @else {
+    <!-- Login Page Layout (no sidebar/header) -->
+    <ion-router-outlet id="main-router-outlet" class="main-router-outlet"></ion-router-outlet>
+  }
+</ion-app>

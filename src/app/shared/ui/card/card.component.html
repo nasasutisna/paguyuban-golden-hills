@@ -1,0 +1,69 @@
+<div
+  [class]="getCardClasses()"
+  (click)="onCardClick()"
+>
+  <!-- Loading Overlay -->
+  <div class="card-loading-overlay" *ngIf="loading">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <!-- Card Image (Top) -->
+  <div class="card-image card-image-top" *ngIf="image && imagePosition === 'top'">
+    <img [src]="image" [alt]="title || 'Card image'" />
+  </div>
+
+  <!-- Card Header -->
+  <div class="card-header" *ngIf="title || icon || badge">
+    <div class="header-left">
+      <ion-icon *ngIf="icon" [name]="icon" class="card-icon"></ion-icon>
+      <div class="header-text">
+        <h3 *ngIf="title" class="card-title">{{ title }}</h3>
+        <p *ngIf="subtitle" class="card-subtitle">{{ subtitle }}</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <ion-badge *ngIf="badge" [color]="badge.color || 'primary'">
+        {{ badge.text }}
+      </ion-badge>
+      <ion-button
+        *ngIf="action"
+        size="small"
+        fill="clear"
+        (click)="onAction($event)"
+      >
+        <ion-icon *ngIf="action.icon" slot="icon-only" [name]="action.icon"></ion-icon>
+        <ng-container *ngIf="!action.icon">{{ action.label }}</ng-container>
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Card Body -->
+  <div class="card-body">
+    <ng-content></ng-content>
+
+    <!-- Card Value Display -->
+    <div *ngIf="value !== undefined" class="card-value-section">
+      <p class="card-value">{{ value }}</p>
+
+      <!-- Trend Indicator -->
+      <div *ngIf="trend" class="card-trend" [ngClass]="getTrendColor()">
+        <ion-icon [name]="getTrendIcon()"></ion-icon>
+        <span>{{ trend.value }}{{ trend.label ? ' ' + trend.label : '' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card Footer -->
+  <div class="card-footer" *ngIf="action && !title">
+    <ion-button size="small" expand="block" fill="clear" (click)="onAction($event)">
+      <ion-icon *ngIf="action.icon" slot="start" [name]="action.icon"></ion-icon>
+      {{ action.label || 'View Details' }}
+      <ion-icon slot="end" name="chevron-forward"></ion-icon>
+    </ion-button>
+  </div>
+
+  <!-- Card Image (Bottom) -->
+  <div class="card-image card-image-bottom" *ngIf="image && imagePosition === 'bottom'">
+    <img [src]="image" [alt]="title || 'Card image'" />
+  </div>
+</div>

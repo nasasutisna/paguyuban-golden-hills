@@ -1,0 +1,246 @@
+<div class="app-table-container" [class.compact]="config.compact">
+  <!-- Table Header with Search and Actions -->
+  <div class="table-header" *ngIf="config.showHeader">
+    <div class="table-title" *ngIf="config.title">
+      <h2>{{ config.title }}</h2>
+      <p *ngIf="config.subtitle">{{ config.subtitle }}</p>
+    </div>
+
+    <div class="table-actions">
+      <!-- Search Input -->
+      <div class="search-box" *ngIf="config.filterable">
+        <ion-icon name="search-outline"></ion-icon>
+        <input
+          type="text"
+          placeholder="Search..."
+          [value]="searchValue"
+          (input)="onSearch($any($event.target).value)"
+        />
+      </div>
+
+      <!-- Additional Actions Slot -->
+      <ng-content select="[table-actions]"></ng-content>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="table-loading" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>{{ config.loadingMessage }}</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="table-empty" *ngIf="isEmpty">
+    <ion-icon name="file-tray-outline"></ion-icon>
+    <p>{{ config.emptyMessage }}</p>
+    <ng-content select="[table-empty-actions]"></ng-content>
+  </div>
+
+  <!-- Table Content -->
+  <div [class]="getTableWrapperClass()" *ngIf="!isLoading && !isEmpty">
+    <div class="table-responsive">
+      <table class="app-table">
+        <!-- Table Header -->
+        <thead>
+          <tr>
+            <th
+              *ngFor="let column of columns"
+              [style.width]="column.width"
+              [class]="getAlignClass(column)"
+              [class.sortable]="column.sortable && config.sortable"
+              (click)="onSort(column)"
+            >
+              <div class="th-content">
+                <span class="th-label">{{ column.header }}</span>
+                <ion-icon
+                  *ngIf="column.sortable && config.sortable"
+                  class="sort-icon"
+                  [name]="getSortIcon(column)"
+                ></ion-icon>
+              </div>
+            </th>
+            <th class="actions-column" *ngIf="actions.length > 0"></th>
+          </tr>
+        </thead>
+
+        <!-- Table Body -->
+        <tbody>
+          <tr
+            *ngFor="let item of displayedData; trackBy: trackByFn"
+            (click)="onRowClick(item)"
+            [class.clickable]="config.rowClickable"
+          >
+            <td
+              *ngFor="let column of columns"
+              [class]="getAlignClass(column)"
+              [class]="column.cellClass"
+            >
+              <!-- Text Column -->
+              <ng-container [ngSwitch]="column.type">
+                <!-- Regular Text -->
+                <ng-container *ngSwitchCase="'text'">
+                  <span class="cell-text">
+                    {{ getNestedValue(item, column.key) ?? '-' }}
+                  </span>
+                </ng-container>
+
+                <!-- Number Column -->
+                <ng-container *ngSwitchCase="'number'">
+                  <span class="cell-number">
+                    {{ formatValue(item, column) }}
+                  </span>
+                </ng-container>
+
+                <!-- Currency Column -->
+                <ng-container *ngSwitchCase="'currency'">
+                  <span class="cell-currency">
+                    {{ formatValue(item, column) }}
+                  </span>
+                </ng-container>
+
+                <!-- Date Column -->
+                <ng-container *ngSwitchCase="'date'">
+                  <span class="cell-date">
+                    {{ formatValue(item, column) }}
+                  </span>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container *ngSwitchCase="'status'">
+                  <ion-chip
+                    class="status-chip"
+                    [color]="getStatusColor(getNestedValue(item, column.key))"
+                  >
+                    <ion-icon
+                      *ngIf="getStatusIcon(getNestedValue(item, column.key))"
+                      [name]="getStatusIcon(getNestedValue(item, column.key))"
+                    ></ion-icon>
+                    <span>{{ formatValue(item, column) }}</span>
+                  </ion-chip>
+                </ng-container>
+
+                <!-- Action Column -->
+                <ng-container *ngSwitchCase="'action'">
+                  <div class="cell-actions">
+                    <!-- Custom template slot -->
+                    <ng-template
+                      [ngIf]="true"
+                      [ngIfElse]="column.key"
+                      [ngIfElseContext]="{ $implicit: item, column: column }"
+                    >
+                      <ng-content
+                        [ngSwitch]="column.key"
+                        select="[cell-template]"
+                      ></ng-content>
+                    </ng-template>
+                  </div>
+                </ng-container>
+
+                <!-- Default (text) -->
+                <ng-container *ngSwitchDefault>
+                  <span class="cell-text">
+                    {{ getNestedValue(item, column.key) ?? '-' }}
+                  </span>
+                </ng-container>
+              </ng-container>
+            </td>
+
+            <!-- Row Actions -->
+            <td class="actions-column" *ngIf="actions.length > 0">
+              <div class="row-actions">
+                <ion-button
+                  *ngFor="let action of actions"
+                  size="small"
+                  fill="clear"
+                  [color]="action.color"
+                  [disabled]="isActionDisabled(action, item)"
+                  (click)="onActionClick(action, item, $event)"
+                  [hidden]="!shouldShowAction(action, item)"
+                >
+                  <ion-icon
+                    *ngIf="action.icon"
+                    slot="icon-only"
+                    [name]="action.icon"
+                  ></ion-icon>
+                  <ng-container *ngIf="!action.icon">{{ action.label }}</ng-container>
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Table Footer with Pagination -->
+  <div class="table-footer" *ngIf="config.pagination && config.showFooter">
+    <div class="pagination-info">
+      Showing {{ (pagination.page - 1) * pagination.pageSize + 1 }} to
+      {{ Math.min(pagination.page * pagination.pageSize, pagination.total) }} of
+      {{ pagination.total }} entries
+    </div>
+
+    <div class="pagination-controls">
+      <!-- Page Size Selector -->
+      <ion-select
+        *ngIf="config.pageSizeOptions && config.pageSizeOptions.length > 1"
+        class="page-size-select"
+        [value]="pagination.pageSize"
+        (ionChange)="onPageSizeChange($event)"
+      >
+        <ion-select-option *ngFor="let size of config.pageSizeOptions" [value]="size">
+          {{ size }} / page
+        </ion-select-option>
+      </ion-select>
+
+      <!-- Pagination Buttons -->
+      <div class="pagination-buttons">
+        <ion-button
+          size="small"
+          fill="clear"
+          [disabled]="pagination.page === 1"
+          (click)="onPageChange(1)"
+        >
+          <ion-icon slot="icon-only" name="chevron-back-double"></ion-icon>
+        </ion-button>
+
+        <ion-button
+          size="small"
+          fill="clear"
+          [disabled]="pagination.page === 1"
+          (click)="onPageChange(pagination.page - 1)"
+        >
+          <ion-icon slot="icon-only" name="chevron-back"></ion-icon>
+        </ion-button>
+
+        <!-- Page Numbers -->
+        <ion-button
+          *ngFor="let page of getPageNumbers()"
+          size="small"
+          [fill]="page === pagination.page ? 'solid' : 'clear'"
+          (click)="onPageChange(page)"
+        >
+          {{ page }}
+        </ion-button>
+
+        <ion-button
+          size="small"
+          fill="clear"
+          [disabled]="pagination.page === totalPages"
+          (click)="onPageChange(pagination.page + 1)"
+        >
+          <ion-icon slot="icon-only" name="chevron-forward"></ion-icon>
+        </ion-button>
+
+        <ion-button
+          size="small"
+          fill="clear"
+          [disabled]="pagination.page === totalPages"
+          (click)="onPageChange(totalPages)"
+        >
+          <ion-icon slot="icon-only" name="chevron-forward-double"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</div>

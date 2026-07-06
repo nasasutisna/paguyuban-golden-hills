@@ -1,0 +1,558 @@
+// ============================================
+// Modern Admin Panel Styles
+// Golden Hills Theme - Green & Brown
+// ============================================
+
+// CSS Variables - Green & Brown Theme
+:root {
+  --admin-primary: #43A047;
+  --admin-primary-dark: #2E7D32;
+  --admin-secondary: #8D6E63;
+  --admin-secondary-dark: #5D4037;
+  --admin-bg-light: #F9FAFB;
+  --admin-bg-sidebar: #1F2937;
+  --admin-text-primary: #111827;
+  --admin-text-secondary: #6B7280;
+  --admin-border: #E5E7EB;
+  --admin-success: #10B981;
+  --admin-warning: #F59E0B;
+  --admin-danger: #EF4444;
+  --admin-info: #3B82F6;
+
+  --admin-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --admin-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --admin-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  --admin-radius-sm: 0.375rem;
+  --admin-radius-md: 0.5rem;
+  --admin-radius-lg: 0.75rem;
+  --admin-radius-xl: 1rem;
+}
+
+// ============================================
+// Split Pane Configuration
+// ============================================
+.admin-split-pane {
+  --side-width: 280px;
+  --side-max-width: 280px;
+
+  &::part(nested) {
+    width: 100%;
+  }
+}
+
+// ============================================
+// Main App Wrapper
+// ============================================
+ion-app {
+  background: var(--admin-bg-light);
+}
+
+.main-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+// ============================================
+// Admin Sidebar
+// ============================================
+.admin-sidebar,
+ion-menu.admin-sidebar {
+  --width: 280px;
+  --max-width: 280px;
+  --background: #1F2937;
+  --border: none;
+  background: #1F2937 !important;
+
+  ion-content {
+    --background: transparent;
+    background: linear-gradient(180deg, #1F2937 0%, #111827 100%) !important;
+  }
+
+  ion-list {
+    --background: transparent;
+    background: transparent !important;
+  }
+}
+
+// Sidebar Header
+.sidebar-header {
+  ion-toolbar {
+    --border-width: 0;
+    --padding-top: 1rem;
+    --padding-bottom: 1rem;
+    padding: 0;
+    min-height: auto;
+  }
+}
+
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--admin-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 28px;
+    color: #fff;
+  }
+}
+
+.brand-info {
+  .brand-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+  }
+
+  .brand-subtitle {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.75);
+    margin: 0;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+}
+
+// Sidebar Content
+.sidebar-content {
+  --padding: 0;
+}
+
+// User Profile Card
+.user-profile-card {
+  margin: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--admin-radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .user-avatar {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--admin-primary) 0%, #66BB6A 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    ion-icon {
+      font-size: 30px;
+      color: #fff;
+    }
+  }
+
+  .user-info {
+    flex: 1;
+    overflow: hidden;
+
+    .user-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      margin: 0 0 0.125rem 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-role {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.65);
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+}
+
+// Menu List
+.menu-list {
+  padding: 0.5rem 0;
+  background: transparent !important;
+
+  ion-list {
+    background: transparent !important;
+  }
+
+  ion-list-header {
+    --background: transparent;
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 1rem;
+    --padding-bottom: 0.5rem;
+    --min-height: auto;
+    font-size: 0;
+    margin: 0;
+
+    .section-header-content {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #fff;
+
+      ion-icon {
+        font-size: 18px;
+        color: #fff;
+      }
+    }
+  }
+
+  ion-item {
+    --background: transparent;
+    --background-hover: rgba(255, 255, 255, 0.08);
+    --background-active: rgba(67, 160, 71, 0.2);
+    --color: rgba(255, 255, 255, 0.9);
+    --padding-start: 1.5rem;
+    --padding-end: 1rem;
+    --min-height: 48px;
+    --border-width: 0;
+    margin: 0.125rem 0.75rem;
+    border-radius: var(--admin-radius-md);
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      --background: rgba(255, 255, 255, 0.08);
+    }
+
+    &.active {
+      --background: linear-gradient(90deg, rgba(67, 160, 71, 0.25) 0%, rgba(67, 160, 71, 0.12) 100%);
+      --color: #fff;
+
+      &::part(native) {
+        border-left: 3px solid var(--admin-primary);
+        box-shadow: 0 2px 8px rgba(67, 160, 71, 0.2);
+      }
+
+      .menu-item-icon {
+        background: linear-gradient(135deg, var(--admin-primary) 0%, #66BB6A 100%);
+        box-shadow: 0 2px 8px rgba(67, 160, 71, 0.3);
+
+        ion-icon {
+          color: #fff;
+        }
+      }
+    }
+
+    &.has-badge {
+      --padding-end: 0.75rem;
+    }
+
+    &.logout-item {
+      --color: var(--admin-danger);
+      margin-top: 0.5rem;
+
+      &:hover {
+        --background: rgba(239, 68, 68, 0.15);
+      }
+
+      .menu-item-icon {
+        background: rgba(239, 68, 68, 0.2);
+
+        ion-icon {
+          color: var(--admin-danger);
+        }
+      }
+    }
+  }
+
+  .menu-item-icon {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--admin-radius-sm);
+    margin-right: 0.875rem;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.06);
+
+    ion-icon {
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.75);
+    }
+  }
+
+  ion-label {
+    .menu-label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.925rem;
+      line-height: 1.3;
+    }
+
+    .menu-description {
+      display: block;
+      font-size: 0.725rem;
+      color: rgba(255, 255, 255, 0.55);
+      margin-top: 0.125rem;
+      line-height: 1.2;
+    }
+  }
+
+  ion-badge {
+    --background: var(--admin-danger);
+    --color: #fff;
+    font-size: 0.65rem;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .external-link-icon {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+// Sidebar Footer
+.sidebar-footer {
+  padding: 1rem 0.75rem;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+// ============================================
+// Admin Header (Top Bar)
+// ============================================
+.admin-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  ion-toolbar {
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    --min-height: 64px;
+  }
+}
+
+.header-toolbar-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 64px;
+  padding: 0 1rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.menu-toggle-btn {
+  --color: var(--admin-text-primary);
+  --padding-start: 0.5rem;
+  --padding-end: 0.5rem;
+  --icon-size: 24px;
+  margin-right: 0.25rem;
+
+  ion-icon {
+    font-size: 24px;
+    color: var(--admin-text-primary);
+  }
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  ion-icon {
+    font-size: 26px;
+    color: var(--admin-primary);
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--admin-text-primary);
+    margin: 0;
+  }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.header-search {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: var(--admin-bg-light);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 0.625rem 1rem;
+  width: 260px;
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.1);
+  }
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--admin-text-secondary);
+    flex-shrink: 0;
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 0.875rem;
+    color: var(--admin-text-primary);
+    outline: none;
+
+    &::placeholder {
+      color: var(--admin-text-secondary);
+    }
+  }
+}
+
+.header-action-btn {
+  --color: var(--admin-text-secondary);
+  --ripple-color: transparent;
+  --padding-start: 0.5rem;
+  --padding-end: 0.5rem;
+  position: relative;
+  margin-left: 0.25rem;
+
+  ion-icon {
+    font-size: 26px;
+    color: var(--admin-text-secondary);
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: 8px;
+    right: 6px;
+    --background: var(--admin-danger);
+    --color: #fff;
+    font-size: 0.6rem;
+    font-weight: 600;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    --padding-start: 0;
+    --padding-end: 0;
+    border: 2px solid #fff;
+  }
+}
+
+// ============================================
+// Main Router Outlet
+// ============================================
+.main-router-outlet {
+  flex: 1;
+  overflow: auto;
+  background: var(--admin-bg-light);
+}
+
+// ============================================
+// iOS Specific Styles
+// ============================================
+.ios {
+  .admin-header {
+    ion-toolbar {
+      --padding-top: env(safe-area-inset-top, 0);
+    }
+  }
+
+  .menu-item {
+    --min-height: 52px;
+  }
+}
+
+// ============================================
+// Light Mode Only (Dark Mode Disabled)
+// ============================================
+// Dark mode media query removed - light mode is always the default
+
+// ============================================
+// Responsive Styles
+// ============================================
+@media (max-width: 992px) {
+  .admin-split-pane {
+    --side-width: 0;
+  }
+
+  .admin-sidebar {
+    --width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-search {
+    display: none;
+  }
+
+  .header-title {
+    h2 {
+      font-size: 1.125rem;
+    }
+
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+
+  .brand-container {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .brand-name {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-title ion-icon {
+    display: none;
+  }
+
+  .menu-toggle-btn {
+    --padding-start: 0.25rem;
+    --padding-end: 0.25rem;
+  }
+}

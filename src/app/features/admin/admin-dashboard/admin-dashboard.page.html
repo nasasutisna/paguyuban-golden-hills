@@ -1,0 +1,276 @@
+<ion-header class="admin-header">
+  <ion-toolbar>
+    <div class="header-left">
+      <ion-menu-button menu="admin-menu" class="menu-button"></ion-menu-button>
+      <h1 class="header-title">
+        <ion-icon name="grid"></ion-icon>
+        Dashboard
+      </h1>
+    </div>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="admin-content ion-padding-top">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="dashboard-wrapper" *ngIf="!isLoading; else loadingTemplate">
+    <!-- Welcome Banner with Gradient -->
+    <div class="welcome-banner">
+      <div class="banner-content">
+        <h2>Welcome back, Admin!</h2>
+        <p class="banner-subtitle">Here's what's happening with your community today</p>
+        <div class="banner-stats">
+          <div class="banner-stat">
+            <span class="stat-value">{{ formatCurrency(balance) }}</span>
+            <span class="stat-label">Current Balance</span>
+          </div>
+          <div class="banner-divider"></div>
+          <div class="banner-stat">
+            <span class="stat-value">{{ totalEmployees }}</span>
+            <span class="stat-label">Total Employees</span>
+          </div>
+          <div class="banner-divider"></div>
+          <div class="banner-stat">
+            <span class="stat-value">{{ pendingInvoices }}</span>
+            <span class="stat-label">Pending Invoices</span>
+          </div>
+        </div>
+      </div>
+      <div class="banner-decoration">
+        <ion-icon name="leaf"></ion-icon>
+      </div>
+    </div>
+
+    <!-- Stats Cards Grid -->
+    <div class="stats-grid">
+      <div
+        class="stat-card stat-card-primary"
+        [class.clickable]="card.route"
+        (click)="navigateToCard(card.route)"
+        *ngFor="let card of dashboardCards"
+      >
+        <div class="stat-header">
+          <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
+          <div *ngIf="card.trend" class="stat-trend" [ngClass]="'trend-' + card.trend.direction">
+            <ion-icon [name]="card.trend.direction === 'up' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            <span>{{ card.trend.value }}%</span>
+          </div>
+        </div>
+        <div class="stat-body">
+          <p class="stat-label">{{ card.title }}</p>
+          <h3 class="stat-value">{{ card.value }}</h3>
+        </div>
+        <div class="stat-footer" *ngIf="card.route">
+          <span class="view-link">View Details</span>
+          <ion-icon name="chevron-forward"></ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+      <!-- Chart Section -->
+      <div class="chart-section card-nature">
+        <div class="section-header">
+          <div class="section-title">
+            <ion-icon name="bar-chart"></ion-icon>
+            <h3>Monthly Overview</h3>
+          </div>
+          <ion-button fill="clear" size="small" routerLink="/reports">
+            View All
+            <ion-icon slot="end" name="chevron-forward"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="chart-container" *ngIf="!isLoadingChart && hasChartData(); else noChartTemplate">
+          <div class="bar-chart">
+            <div class="chart-bars">
+              <div class="bar-group" *ngFor="let data of monthlyChartData">
+                <div class="bar-wrapper">
+                  <div class="bar bar-income" [style.height.%]="getBarHeight(data.income)">
+                    <span class="bar-tooltip" *ngIf="data.income > 0">
+                      Income: {{ formatCurrency(data.income) }}
+                    </span>
+                  </div>
+                  <div class="bar bar-expense" [style.height.%]="getBarHeight(data.expense)">
+                    <span class="bar-tooltip" *ngIf="data.expense > 0">
+                      Expense: {{ formatCurrency(data.expense) }}
+                    </span>
+                  </div>
+                </div>
+                <span class="bar-x-label">{{ data.month }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <div class="legend-color income"></div>
+              <span>Income</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color expense"></div>
+              <span>Expenses</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions-section card-gradient">
+        <div class="section-header">
+          <div class="section-title">
+            <ion-icon name="flash"></ion-icon>
+            <h3>Quick Actions</h3>
+          </div>
+        </div>
+
+        <div class="quick-actions-grid">
+          <div
+            class="quick-action-item"
+            *ngFor="let item of quickMenuItems"
+            (click)="navigateToMenuItem(item)"
+          >
+            <div class="quick-action-icon">
+              <ion-icon [name]="item.icon"></ion-icon>
+            </div>
+            <span class="quick-action-label">{{ item.title }}</span>
+            <ion-badge *ngIf="item.badge">{{ item.badge }}</ion-badge>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions Section -->
+    <div class="transactions-section">
+      <div class="section-header-with-subtitle">
+        <div class="section-title-large">
+          <ion-icon name="receipt"></ion-icon>
+          <div>
+            <h3>Recent Transactions</h3>
+            <p>Latest financial activities</p>
+          </div>
+        </div>
+        <ion-button fill="outline" size="small" routerLink="/transactions">
+          View All
+          <ion-icon slot="end" name="chevron-forward"></ion-icon>
+        </ion-button>
+      </div>
+
+      <div class="transactions-list-wrapper" *ngIf="!isLoadingTransactions && hasTransactions(); else noTransactionsTemplate">
+        <div class="transaction-item" *ngFor="let transaction of recentTransactions" (click)="navigateToTransaction(transaction.id)">
+          <div class="transaction-icon" [class.income]="transaction.type === 'INCOME'">
+            <ion-icon [name]="getTransactionIcon(transaction.type)"></ion-icon>
+          </div>
+          <div class="transaction-details">
+            <h4 class="transaction-title">{{ transaction.description }}</h4>
+            <p class="transaction-meta">
+              <span>{{ transaction.category }}</span>
+              <span class="separator">•</span>
+              <span>{{ formatDate(transaction.createdAt) }}</span>
+            </p>
+          </div>
+          <div class="transaction-amount">
+            <p class="amount" [ngClass]="'amount-' + transaction.type.toLowerCase()">
+              {{ transaction.type === 'INCOME' ? '+' : '-' }} {{ formatCurrency(transaction.amount) }}
+            </p>
+            <ion-chip [color]="getTransactionStatusColor(transaction.status)" size="small">
+              {{ transaction.status }}
+            </ion-chip>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Template -->
+  <ng-template #loadingTemplate>
+    <div class="loading-wrapper">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading dashboard...</p>
+    </div>
+  </ng-template>
+
+  <!-- No Chart Template -->
+  <ng-template #noChartTemplate>
+    <div class="empty-state-card" *ngIf="!isLoadingChart">
+      <ion-icon name="bar-chart"></ion-icon>
+      <p>No data available for this period</p>
+    </div>
+  </ng-template>
+
+  <!-- No Transactions Template -->
+  <ng-template #noTransactionsTemplate>
+    <div class="empty-state-card" *ngIf="!isLoadingTransactions">
+      <ion-icon name="receipt"></ion-icon>
+      <p>No recent transactions</p>
+      <ion-button fill="outline" size="small" routerLink="/transactions/new">
+        <ion-icon slot="start" name="add"></ion-icon>
+        Add Transaction
+      </ion-button>
+    </div>
+  </ng-template>
+</ion-content>
+
+<!-- Side Menu -->
+<ion-menu side="start" menuId="admin-menu" contentId="main-content">
+  <ion-header class="menu-header">
+    <ion-toolbar>
+      <div class="menu-brand">
+        <ion-icon name="leaf"></ion-icon>
+        <h2>Golden Hills</h2>
+        <p>Admin Panel</p>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="menu-content">
+    <ion-list class="menu-list">
+      <ion-list-header class="menu-section-header">Main</ion-list-header>
+      <ion-menu-button auto-close="true" routerLink="/dashboard">
+        <ion-icon slot="start" name="grid"></ion-icon>
+        <ion-label>Dashboard</ion-label>
+      </ion-menu-button>
+      <ion-menu-button auto-close="true" routerLink="/transactions">
+        <ion-icon slot="start" name="swap-horizontal"></ion-icon>
+        <ion-label>Transactions</ion-label>
+      </ion-menu-button>
+      <ion-menu-button auto-close="true" routerLink="/invoices">
+        <ion-icon slot="start" name="document"></ion-icon>
+        <ion-label>Invoices</ion-label>
+      </ion-menu-button>
+
+      <ion-list-header class="menu-section-header">Management</ion-list-header>
+      <ion-menu-button auto-close="true" routerLink="/residents">
+        <ion-icon slot="start" name="home"></ion-icon>
+        <ion-label>Residents</ion-label>
+      </ion-menu-button>
+      <ion-menu-button auto-close="true" routerLink="/employees">
+        <ion-icon slot="start" name="people"></ion-icon>
+        <ion-label>Employees</ion-label>
+      </ion-menu-button>
+      <ion-menu-button auto-close="true" routerLink="/house-blocks">
+        <ion-icon slot="start" name="business"></ion-icon>
+        <ion-label>House Blocks</ion-label>
+      </ion-menu-button>
+
+      <ion-list-header class="menu-section-header">Reports</ion-list-header>
+      <ion-menu-button auto-close="true" routerLink="/reports">
+        <ion-icon slot="start" name="bar-chart"></ion-icon>
+        <ion-label>Reports</ion-label>
+      </ion-menu-button>
+      <ion-menu-button auto-close="true" routerLink="/settings">
+        <ion-icon slot="start" name="settings"></ion-icon>
+        <ion-label>Settings</ion-label>
+      </ion-menu-button>
+    </ion-list>
+
+    <div class="menu-footer">
+      <ion-menu-button auto-close="true">
+        <ion-icon slot="start" name="log-out"></ion-icon>
+        <ion-label>Logout</ion-label>
+      </ion-menu-button>
+    </div>
+  </ion-content>
+</ion-menu>

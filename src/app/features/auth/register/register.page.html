@@ -1,0 +1,271 @@
+<!-- Modern Register Page -->
+<ion-content class="register-page">
+  <div class="register-wrapper">
+    <!-- Left Side - Brand/Design -->
+    <div class="register-brand-side">
+      <div class="brand-content">
+        <!-- Logo -->
+        <div class="brand-logo-large">
+          <ion-icon name="leaf"></ion-icon>
+        </div>
+
+        <!-- Brand Text -->
+        <h1 class="brand-title">Golden Hills</h1>
+        <p class="brand-subtitle">Join Our Community</p>
+
+        <!-- Feature List -->
+        <div class="feature-list">
+          <div class="feature-item">
+            <ion-icon name="shield-checkmark"></ion-icon>
+            <span>Secure & Private</span>
+          </div>
+          <div class="feature-item">
+            <ion-icon name="people"></ion-icon>
+            <span>Connect with Members</span>
+          </div>
+          <div class="feature-item">
+            <ion-icon name="calendar"></ion-icon>
+            <span>Event Management</span>
+          </div>
+        </div>
+
+        <!-- Decorative Elements -->
+        <div class="decoration-circle decoration-1"></div>
+        <div class="decoration-circle decoration-2"></div>
+        <div class="decoration-circle decoration-3"></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="brand-footer">
+        <p>&copy; 2024 Golden Hills. All rights reserved.</p>
+      </div>
+    </div>
+
+    <!-- Right Side - Register Form -->
+    <div class="register-form-side">
+      <div class="form-container">
+        <!-- Mobile Logo (only visible on small screens) -->
+        <div class="mobile-brand">
+          <ion-icon name="leaf"></ion-icon>
+          <span>Golden Hills</span>
+        </div>
+
+        <!-- Form Header -->
+        <div class="form-header">
+          <h2>Create Account</h2>
+          <p>Join us today and get started</p>
+        </div>
+
+        <!-- Register Form -->
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+          <!-- Username Field -->
+          <div class="form-group">
+            <label class="form-label">
+              Username
+            </label>
+            <div class="input-wrapper" [class.focused]="usernameFocused" [class.error]="f['username'].invalid && f['username'].touched">
+              <ion-input
+                type="text"
+                formControlName="username"
+                autocomplete="username"
+                placeholder="Choose a username"
+                (ionFocus)="usernameFocused = true"
+                (ionBlur)="usernameFocused = false"
+              ></ion-input>
+              @if (f['username'].valid && f['username'].touched) {
+                <ion-icon name="checkmark-circle" class="input-icon success"></ion-icon>
+              } @if (f['username'].invalid && f['username'].touched) {
+                <ion-icon name="alert-circle" class="input-icon error"></ion-icon>
+              }
+            </div>
+            @if (getErrorMessage('username')) {
+              <span class="error-text">{{ getErrorMessage('username') }}</span>
+            }
+          </div>
+
+          <!-- Email Field -->
+          <div class="form-group">
+            <label class="form-label">
+              Email
+            </label>
+            <div class="input-wrapper" [class.focused]="emailFocused" [class.error]="f['email'].invalid && f['email'].touched">
+              <ion-input
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+                placeholder="Enter your email"
+                (ionFocus)="emailFocused = true"
+                (ionBlur)="emailFocused = false"
+              ></ion-input>
+              @if (f['email'].valid && f['email'].touched) {
+                <ion-icon name="checkmark-circle" class="input-icon success"></ion-icon>
+              } @if (f['email'].invalid && f['email'].touched) {
+                <ion-icon name="alert-circle" class="input-icon error"></ion-icon>
+              }
+            </div>
+            @if (getErrorMessage('email')) {
+              <span class="error-text">{{ getErrorMessage('email') }}</span>
+            }
+          </div>
+
+          <!-- First Name & Last Name Row -->
+          <div class="form-row">
+            <!-- First Name Field -->
+            <div class="form-group">
+              <label class="form-label">
+                First Name
+              </label>
+              <div class="input-wrapper" [class.focused]="firstNameFocused" [class.error]="f['firstName'].invalid && f['firstName'].touched">
+                <ion-input
+                  type="text"
+                  formControlName="firstName"
+                  autocomplete="given-name"
+                  placeholder="First name"
+                  (ionFocus)="firstNameFocused = true"
+                  (ionBlur)="firstNameFocused = false"
+                ></ion-input>
+                @if (f['firstName'].valid && f['firstName'].touched) {
+                  <ion-icon name="checkmark-circle" class="input-icon success"></ion-icon>
+                } @if (f['firstName'].invalid && f['firstName'].touched) {
+                  <ion-icon name="alert-circle" class="input-icon error"></ion-icon>
+                }
+              </div>
+              @if (getErrorMessage('firstName')) {
+                <span class="error-text">{{ getErrorMessage('firstName') }}</span>
+              }
+            </div>
+
+            <!-- Last Name Field -->
+            <div class="form-group">
+              <label class="form-label">
+                Last Name
+              </label>
+              <div class="input-wrapper" [class.focused]="lastNameFocused" [class.error]="f['lastName'].invalid && f['lastName'].touched">
+                <ion-input
+                  type="text"
+                  formControlName="lastName"
+                  autocomplete="family-name"
+                  placeholder="Last name"
+                  (ionFocus)="lastNameFocused = true"
+                  (ionBlur)="lastNameFocused = false"
+                ></ion-input>
+                @if (f['lastName'].valid && f['lastName'].touched) {
+                  <ion-icon name="checkmark-circle" class="input-icon success"></ion-icon>
+                } @if (f['lastName'].invalid && f['lastName'].touched) {
+                  <ion-icon name="alert-circle" class="input-icon error"></ion-icon>
+                }
+              </div>
+              @if (getErrorMessage('lastName')) {
+                <span class="error-text">{{ getErrorMessage('lastName') }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Phone Number Field (Optional) -->
+          <div class="form-group">
+            <label class="form-label">
+              Phone Number
+              <span class="optional-badge">(Optional)</span>
+            </label>
+            <div class="input-wrapper" [class.focused]="phoneNumberFocused" [class.error]="f['phoneNumber'].invalid && f['phoneNumber'].touched">
+              <ion-input
+                type="tel"
+                formControlName="phoneNumber"
+                autocomplete="tel"
+                placeholder="+6281234567890"
+                (ionFocus)="phoneNumberFocused = true"
+                (ionBlur)="phoneNumberFocused = false"
+              ></ion-input>
+            </div>
+            @if (getErrorMessage('phoneNumber')) {
+              <span class="error-text">{{ getErrorMessage('phoneNumber') }}</span>
+            }
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label class="form-label">
+              Password
+            </label>
+            <div class="input-wrapper" [class.focused]="passwordFocused" [class.error]="f['password'].invalid && f['password'].touched">
+              <ion-input
+                [type]="showPassword ? 'text' : 'password'"
+                formControlName="password"
+                autocomplete="new-password"
+                placeholder="Create a password"
+                (ionFocus)="passwordFocused = true"
+                (ionBlur)="passwordFocused = false"
+              ></ion-input>
+              <ion-icon
+                [name]="showPassword ? 'eye-off' : 'eye'"
+                class="input-icon toggle"
+                (click)="togglePasswordVisibility()"
+              ></ion-icon>
+            </div>
+            @if (getErrorMessage('password')) {
+              <span class="error-text">{{ getErrorMessage('password') }}</span>
+            }
+            <div class="password-hint">
+              <ion-icon name="information-circle"></ion-icon>
+              <span>Must contain uppercase, lowercase, number & special character</span>
+            </div>
+          </div>
+
+          <!-- Confirm Password Field -->
+          <div class="form-group">
+            <label class="form-label">
+              <ion-icon name="lock-closed"></ion-icon>
+              Confirm Password
+            </label>
+            <div class="input-wrapper" [class.focused]="confirmPasswordFocused" [class.error]="showConfirmPasswordError">
+              <ion-input
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                formControlName="confirmPassword"
+                autocomplete="new-password"
+                placeholder="Confirm your password"
+                (ionFocus)="confirmPasswordFocused = true"
+                (ionBlur)="confirmPasswordFocused = false"
+              ></ion-input>
+              <ion-icon
+                [name]="showConfirmPassword ? 'eye-off' : 'eye'"
+                class="input-icon toggle"
+                (click)="toggleConfirmPasswordVisibility()"
+              ></ion-icon>
+            </div>
+            @if (showConfirmPasswordError) {
+              <span class="error-text">{{ getErrorMessage('confirmPassword') }}</span>
+            }
+          </div>
+
+          <!-- Terms Checkbox -->
+          <div class="terms-section">
+            <label class="checkbox-label">
+              <ion-checkbox id="agree-terms"></ion-checkbox>
+              <span>I agree to the <a href="#" class="link">Terms of Service</a> and <a href="#" class="link">Privacy Policy</a></span>
+            </label>
+          </div>
+
+          <!-- Submit Button -->
+          <ion-button
+            type="submit"
+            expand="block"
+            size="large"
+            [disabled]="!isFormValid()"
+            class="submit-button"
+          >
+            <span>Create Account</span>
+            <ion-icon slot="end" name="arrow-forward"></ion-icon>
+          </ion-button>
+        </form>
+
+        <!-- Login Link -->
+        <div class="login-section">
+          <p>Already have an account?</p>
+          <ion-button fill="clear" size="small" class="login-link" (click)="goToLogin()">
+            Sign In
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

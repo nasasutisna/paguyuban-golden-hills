@@ -1,0 +1,132 @@
+<!-- Modern Login Page -->
+<ion-content class="login-page">
+  <div class="login-wrapper">
+    <!-- Left Side - Brand/Design -->
+    <div class="login-brand-side">
+      <div class="brand-content">
+        <!-- Logo -->
+        <div class="brand-logo-large">
+          <ion-icon name="leaf"></ion-icon>
+        </div>
+
+        <!-- Brand Text -->
+        <h1 class="brand-title">Golden Hills</h1>
+        <p class="brand-subtitle">Paguyuban Admin Panel</p>
+
+        <!-- Decorative Elements -->
+        <div class="decoration-circle decoration-1"></div>
+        <div class="decoration-circle decoration-2"></div>
+        <div class="decoration-circle decoration-3"></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="brand-footer">
+        <p>&copy; 2024 Golden Hills. All rights reserved.</p>
+      </div>
+    </div>
+
+    <!-- Right Side - Login Form -->
+    <div class="login-form-side">
+      <div class="form-container">
+        <!-- Mobile Logo (only visible on small screens) -->
+        <div class="mobile-brand">
+          <ion-icon name="leaf"></ion-icon>
+          <span>Golden Hills</span>
+        </div>
+
+        <!-- Form Header -->
+        <div class="form-header">
+          <h2>Welcome Back</h2>
+          <p>Sign in to your account to continue</p>
+        </div>
+
+        <!-- Login Form -->
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <!-- Username Field -->
+          <div class="form-group">
+            <label class="form-label">
+              <ion-icon name="person"></ion-icon>
+              Username
+            </label>
+            <div class="input-wrapper" [class.focused]="usernameFocused" [class.error]="f['username'].invalid && f['username'].touched">
+              <ion-input
+                type="text"
+                formControlName="username"
+                autocomplete="username"
+                placeholder="Enter your username"
+                (ionFocus)="usernameFocused = true"
+                (ionBlur)="usernameFocused = false"
+              ></ion-input>
+              @if (f['username'].valid && f['username'].touched) {
+                <ion-icon name="checkmark-circle" class="input-icon success"></ion-icon>
+              } @if (f['username'].invalid && f['username'].touched) {
+                <ion-icon name="alert-circle" class="input-icon error"></ion-icon>
+              }
+            </div>
+            @if (getErrorMessage('username')) {
+              <span class="error-text">{{ getErrorMessage('username') }}</span>
+            }
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label class="form-label">
+              <ion-icon name="lock-closed"></ion-icon>
+              Password
+            </label>
+            <div class="input-wrapper" [class.focused]="passwordFocused" [class.error]="f['password'].invalid && f['password'].touched">
+              <ion-input
+                [type]="showPassword ? 'text' : 'password'"
+                formControlName="password"
+                autocomplete="current-password"
+                placeholder="Enter your password"
+                (ionFocus)="passwordFocused = true"
+                (ionBlur)="passwordFocused = false"
+              ></ion-input>
+              <ion-icon
+                [name]="showPassword ? 'eye-off' : 'eye'"
+                class="input-icon toggle"
+                (click)="togglePasswordVisibility()"
+              ></ion-icon>
+            </div>
+            @if (getErrorMessage('password')) {
+              <span class="error-text">{{ getErrorMessage('password') }}</span>
+            }
+          </div>
+
+          <!-- Remember Me & Forgot Password -->
+          <div class="form-actions">
+            <label class="checkbox-label">
+              <ion-checkbox id="remember-me" formControlName="rememberMe"></ion-checkbox>
+              <span>Remember me</span>
+            </label>
+
+            <ion-button fill="clear" size="small" class="forgot-link" (click)="goToForgotPassword()">
+              Forgot Password?
+            </ion-button>
+          </div>
+
+          <!-- Submit Button -->
+          <ion-button
+            type="submit"
+            expand="block"
+            size="large"
+            [disabled]="!isFormValid()"
+            class="submit-button"
+          >
+            <span>Sign In</span>
+            <ion-icon slot="end" name="arrow-forward"></ion-icon>
+          </ion-button>
+        </form>
+
+        <!-- Register Link -->
+        <div class="register-section">
+          <p>Don't have an account?</p>
+          <ion-button fill="clear" size="small" class="register-link" (click)="goToRegister()">
+            Sign Up
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
