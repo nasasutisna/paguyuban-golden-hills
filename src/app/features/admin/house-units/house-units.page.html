@@ -1,0 +1,117 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/house-blocks"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Unit Rumah</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="navigateToCreate()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Statistics Cards -->
+  <div class="stats-container ion-margin-top" *ngIf="hasStats() || statsLoading">
+    <!-- Loading skeleton -->
+    <div class="stats-skeleton" *ngIf="statsLoading">
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px;"></ion-skeleton-text>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" *ngIf="!statsLoading && occupancyStats">
+      <!-- Total Units -->
+      <ion-card class="stat-card primary">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="home"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ occupancyStats.totalUnits }}</div>
+              <div class="stat-label">Total Unit</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Fully Occupied -->
+      <ion-card class="stat-card success">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="people"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ occupancyStats.fullyOccupied }}</div>
+              <div class="stat-label">Ditinggali Penuh</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Occasionally Occupied -->
+      <ion-card class="stat-card warning">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="time"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ occupancyStats.occasionally }}</div>
+              <div class="stat-label">Jarang Ditinggali</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Vacant -->
+      <ion-card class="stat-card danger">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="home-outline"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ occupancyStats.vacant }}</div>
+              <div class="stat-label">Kosong</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Bank Buyback -->
+      <ion-card class="stat-card dark" *ngIf="occupancyStats.bankBuyback > 0">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="business"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ occupancyStats.bankBuyback }}</div>
+              <div class="stat-label">Bank Buyback</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div>
+    <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
+      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
+      <div table-actions>
+        <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Tambah Unit
+        </ion-button>
+      </div>
+    </app-table>
+  </div>
+</ion-content>

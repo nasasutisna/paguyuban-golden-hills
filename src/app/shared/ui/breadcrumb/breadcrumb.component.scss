@@ -1,0 +1,70 @@
+// Breadcrumb Navigation Styles
+.breadcrumb-wrapper {
+  background: #fff;
+  border-bottom: 1px solid #E5E7EB;
+  padding: 0.75rem 1rem;
+}
+
+.breadcrumb-nav {
+  max-width: 100%;
+}
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0.5rem;
+
+  .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #6B7280;
+
+    &:not(.last) {
+      &::after {
+        content: '/';
+        margin-left: 0.5rem;
+        color: #6B7280;
+        opacity: 0.5;
+      }
+    }
+
+    &.last {
+      color: #111827;
+      font-weight: 500;
+    }
+  }
+
+  .breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: #6B7280;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      color: #43A047;
+    }
+
+    .breadcrumb-icon {
+      font-size: 16px;
+    }
+  }
+
+  .breadcrumb-current {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+
+    .breadcrumb-icon {
+      font-size: 16px;
+      color: #43A047;
+    }
+  }
+}

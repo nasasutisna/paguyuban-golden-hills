@@ -9,215 +9,182 @@
 
 <ion-content class="ion-padding">
   <form [formGroup]="houseBlockForm" (ngSubmit)="onSubmit()">
+    <!-- Basic Information -->
     <ion-card class="form-card">
       <ion-card-header>
         <ion-card-subtitle>Basic Information</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <!-- Block Code -->
-        <ion-item class="form-item" [class.error]="f['blockCode'].invalid && f['blockCode'].touched">
-          <ion-label position="stacked" class="required">Block Code</ion-label>
-          <ion-input
-            type="text"
-            formControlName="blockCode"
-            placeholder="e.g., BLK-A"
-            maxlength="20"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('blockCode')">
-          {{ getErrorMessage('blockCode') }}
-        </ion-text>
+        <app-form-input
+          label="Block Code"
+          formControlName="blockCode"
+          placeholder="e.g., BLK-A"
+          [maxlength]="20"
+          [required]="true"
+          [showError]="isFieldInvalid('blockCode')"
+          [errorMessage]="getErrorMessage('blockCode')"
+        ></app-form-input>
 
-        <!-- Block Name -->
-        <ion-item class="form-item" [class.error]="f['blockName'].invalid && f['blockName'].touched">
-          <ion-label position="stacked" class="required">Block Name</ion-label>
-          <ion-input
-            type="text"
-            formControlName="blockName"
-            placeholder="e.g., Block A - Residential"
-            maxlength="100"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('blockName')">
-          {{ getErrorMessage('blockName') }}
-        </ion-text>
+        <app-form-input
+          label="Block Name"
+          formControlName="blockName"
+          placeholder="e.g., Block A - Residential"
+          [maxlength]="100"
+          [required]="true"
+          [showError]="isFieldInvalid('blockName')"
+          [errorMessage]="getErrorMessage('blockName')"
+        ></app-form-input>
 
-        <!-- Block Type -->
-        <ion-item class="form-item" [class.error]="f['blockType'].invalid && f['blockType'].touched">
-          <ion-label position="stacked" class="required">Block Type</ion-label>
-          <ion-select formControlName="blockType" placeholder="Select block type">
-            <ion-select-option *ngFor="let option of blockTypeOptions" [value]="option.value">
-              {{ option.label }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('blockType')">
-          {{ getErrorMessage('blockType') }}
-        </ion-text>
+        <app-form-select
+          label="Block Type"
+          formControlName="blockType"
+          placeholder="Select block type"
+          [options]="blockTypeOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('blockType')"
+          [errorMessage]="getErrorMessage('blockType')"
+        ></app-form-select>
 
-        <!-- Address -->
-        <ion-item class="form-item" [class.error]="f['address'].invalid && f['address'].touched">
-          <ion-label position="stacked">Address</ion-label>
-          <ion-input
-            type="text"
-            formControlName="address"
-            placeholder="e.g., Jalan Golden Hills Block A"
-            maxlength="255"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('address')">
-          {{ getErrorMessage('address') }}
-        </ion-text>
+        <app-form-input
+          label="Address"
+          formControlName="address"
+          placeholder="e.g., Jalan Golden Hills Block A"
+          [maxlength]="255"
+          [showError]="isFieldInvalid('address')"
+          [errorMessage]="getErrorMessage('address')"
+        ></app-form-input>
 
-        <!-- Active Status -->
-        <ion-item class="form-item toggle-item">
+        <ion-item class="toggle-item">
           <ion-label>Active Status</ion-label>
           <ion-toggle formControlName="isActive"></ion-toggle>
         </ion-item>
       </ion-card-content>
     </ion-card>
 
+    <!-- Property Details -->
     <ion-card class="form-card">
       <ion-card-header>
         <ion-card-subtitle>Property Details</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <!-- Total Units -->
-        <ion-item class="form-item" [class.error]="f['totalUnits'].invalid && f['totalUnits'].touched">
-          <ion-label position="stacked" class="required">Total Units</ion-label>
-          <ion-input
-            type="number"
-            formControlName="totalUnits"
-            placeholder="e.g., 24"
-            min="0"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('totalUnits')">
-          {{ getErrorMessage('totalUnits') }}
-        </ion-text>
+        <app-form-input
+          label="Total Units"
+          type="number"
+          formControlName="totalUnits"
+          placeholder="e.g., 24"
+          [min]="0"
+          [required]="true"
+          [showError]="isFieldInvalid('totalUnits')"
+          [errorMessage]="getErrorMessage('totalUnits')"
+        ></app-form-input>
 
-        <!-- Total Floors -->
-        <ion-item class="form-item" [class.error]="f['totalFloors'].invalid && f['totalFloors'].touched">
-          <ion-label position="stacked">Total Floors</ion-label>
-          <ion-input
-            type="number"
-            formControlName="totalFloors"
-            placeholder="e.g., 4"
-            min="1"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('totalFloors')">
-          {{ getErrorMessage('totalFloors') }}
-        </ion-text>
+        <app-form-input
+          label="Total Floors"
+          type="number"
+          formControlName="totalFloors"
+          placeholder="e.g., 4"
+          [min]="1"
+          [showError]="isFieldInvalid('totalFloors')"
+          [errorMessage]="getErrorMessage('totalFloors')"
+        ></app-form-input>
 
-        <!-- Construction Year -->
-        <ion-item class="form-item" [class.error]="f['constructionYear'].invalid && f['constructionYear'].touched">
-          <ion-label position="stacked">Construction Year</ion-label>
-          <ion-input
-            type="number"
-            formControlName="constructionYear"
-            placeholder="e.g., 2020"
-            min="1900"
-            [max]="currentYear + 1"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('constructionYear')">
-          {{ getErrorMessage('constructionYear') }}
-        </ion-text>
+        <app-form-input
+          label="Construction Year"
+          type="number"
+          formControlName="constructionYear"
+          placeholder="e.g., 2020"
+          [min]="1900"
+          [max]="currentYear + 1"
+          [showError]="isFieldInvalid('constructionYear')"
+          [errorMessage]="getErrorMessage('constructionYear')"
+        ></app-form-input>
       </ion-card-content>
     </ion-card>
 
+    <!-- Area Information -->
     <ion-card class="form-card">
       <ion-card-header>
         <ion-card-subtitle>Area Information</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <!-- Land Area -->
-        <ion-item class="form-item" [class.error]="f['landArea'].invalid && f['landArea'].touched">
-          <ion-label position="stacked">Land Area (m²)</ion-label>
-          <ion-input
-            type="number"
-            formControlName="landArea"
-            placeholder="e.g., 2000"
-            min="0"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('landArea')">
-          {{ getErrorMessage('landArea') }}
-        </ion-text>
+        <app-form-input
+          label="Land Area (m²)"
+          type="number"
+          formControlName="landArea"
+          placeholder="e.g., 2000"
+          [min]="0"
+          [showError]="isFieldInvalid('landArea')"
+          [errorMessage]="getErrorMessage('landArea')"
+        ></app-form-input>
 
-        <!-- Building Area -->
-        <ion-item class="form-item" [class.error]="f['buildingArea'].invalid && f['buildingArea'].touched">
-          <ion-label position="stacked">Building Area (m²)</ion-label>
-          <ion-input
-            type="number"
-            formControlName="buildingArea"
-            placeholder="e.g., 1500"
-            min="0"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('buildingArea')">
-          {{ getErrorMessage('buildingArea') }}
-        </ion-text>
+        <app-form-input
+          label="Building Area (m²)"
+          type="number"
+          formControlName="buildingArea"
+          placeholder="e.g., 1500"
+          [min]="0"
+          [showError]="isFieldInvalid('buildingArea')"
+          [errorMessage]="getErrorMessage('buildingArea')"
+        ></app-form-input>
       </ion-card-content>
     </ion-card>
 
+    <!-- Additional Information -->
     <ion-card class="form-card">
       <ion-card-header>
         <ion-card-subtitle>Additional Information</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <!-- Facilities -->
-        <ion-item class="form-item textarea-item">
-          <ion-label position="stacked">Facilities (JSON)</ion-label>
-          <ion-textarea
-            formControlName="facilities"
-            placeholder='e.g., {"parking": true, "gym": true, "pool": true}'
-            rows="3"
-          ></ion-textarea>
-        </ion-item>
-        <ion-note class="helper-text">
-          Enter as JSON object with boolean values for available facilities
-        </ion-note>
+        <app-form-textarea
+          label="Facilities (JSON)"
+          formControlName="facilities"
+          placeholder='e.g., {"parking": true, "gym": true, "pool": true}'
+          [rows]="3"
+          [showError]="isFieldInvalid('facilities')"
+          [errorMessage]="getErrorMessage('facilities')"
+          helperText="Enter as JSON object with boolean values for available facilities"
+        ></app-form-textarea>
 
-        <!-- Amenities -->
-        <ion-item class="form-item textarea-item">
-          <ion-label position="stacked">Amenities</ion-label>
-          <ion-textarea
-            formControlName="amenities"
-            placeholder="e.g., 24-hour security, children's playground, jogging track"
-            rows="3"
-          ></ion-textarea>
-        </ion-item>
+        <app-form-textarea
+          label="Amenities"
+          formControlName="amenities"
+          placeholder="e.g., 24-hour security, children's playground, jogging track"
+          [rows]="3"
+          [showError]="isFieldInvalid('amenities')"
+          [errorMessage]="getErrorMessage('amenities')"
+        ></app-form-textarea>
 
-        <!-- Description -->
-        <ion-item class="form-item textarea-item">
-          <ion-label position="stacked">Description</ion-label>
-          <ion-textarea
-            formControlName="description"
-            placeholder="Additional details about this block..."
-            rows="4"
-          ></ion-textarea>
-        </ion-item>
+        <app-form-textarea
+          label="Description"
+          formControlName="description"
+          placeholder="Additional details about this block..."
+          [rows]="4"
+          [showError]="isFieldInvalid('description')"
+          [errorMessage]="getErrorMessage('description')"
+        ></app-form-textarea>
       </ion-card-content>
     </ion-card>
 
     <!-- Form Actions -->
     <div class="form-actions">
-      <ion-button expand="block" fill="solid" color="medium" (click)="goBack()">
-        <ion-icon slot="start" name="arrow-back"></ion-icon>
-        Cancel
-      </ion-button>
-      <ion-button
+      <app-form-button
+        text="Cancel"
+        variant="outline"
+        color="medium"
         expand="block"
-        fill="solid"
+        (click)="goBack()"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="checkmark-circle"
+        iconSlot="start"
+        variant="solid"
         color="primary"
         type="submit"
+        expand="block"
         [disabled]="!isFormValid()"
-      >
-        <ion-icon slot="start" name="checkmark-circle"></ion-icon>
-        {{ submitButtonText }}
-      </ion-button>
+        [loading]="isSubmitting"
+      ></app-form-button>
     </div>
   </form>
 </ion-content>

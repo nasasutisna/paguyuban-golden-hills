@@ -1,41 +1,42 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
-import { AlertController, IonicModule, RefresherCustomEvent } from '@ionic/angular';
-import { LoadingService } from '@services/loading.service';
-import { ToastService } from '@services/toast.service';
-import { TableComponent } from '@shared/ui/table/table.component';
-import { TableAction, TableConfig, TableDataSource } from '@shared/ui/table/table.model';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { IonicModule, RefresherCustomEvent } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { BLOCK_TYPE_COLORS, BlockType, HouseBlock, OccupancyStats } from './house-blocks.model';
-import { HouseBlocksService } from './house-blocks.service';
+import { HouseUnitsService } from './house-units.service';
+import { LoadingService } from '@services/loading.service';
+import { ToastService } from '@services/toast.service';
+import { AlertController } from '@ionic/angular';
+import { HouseUnit, HouseUnitOccupancyStats, OccupancyStatus, OCCUPANCY_STATUS_COLORS } from './house-units.model';
+import { TableConfig, TableAction, TableDataSource } from '@shared/ui/table/table.model';
+import { TableComponent } from '@shared/ui/table/table.component';
 
 /**
- * House Blocks List Page
- * Displays statistics cards and table of house blocks with CRUD operations
+ * House Units List Page
+ * Displays statistics cards and table of house units with CRUD operations
  */
 @Component({
-  selector: 'app-house-blocks',
+  selector: 'app-house-units',
   standalone: true,
   imports: [CommonModule, IonicModule, TableComponent],
-  templateUrl: './house-blocks.page.html',
-  styleUrls: ['./house-blocks.page.scss']
+  templateUrl: './house-units.page.html',
+  styleUrls: ['./house-units.page.scss']
 })
-export class HouseBlocksPage implements OnInit, OnDestroy {
+export class HouseUnitsPage implements OnInit, OnDestroy {
   private router = inject(Router);
-  private houseBlocksService = inject(HouseBlocksService);
+  private houseUnitsService = inject(HouseUnitsService);
   private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
   private alertController = inject(AlertController);
 
   // Data
-  houseBlocks: HouseBlock[] = [];
-  occupancyStats: OccupancyStats | null = null;
+  houseUnits: HouseUnit[] = [];
+  occupancyStats: HouseUnitOccupancyStats | null = null;
 
   // Pagination
   currentPage = 1;
-  pageSize = 2;
+  pageSize = 10;
   totalItems = 0;
 
   // Loading states
@@ -45,19 +46,21 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
   // Table configuration
   tableConfig: TableConfig = {
     columns: [
-      { key: 'blockCode', header: 'Code', type: 'text', sortable: true },
-      { key: 'blockName', header: 'Name', type: 'text', sortable: true },
-      { key: 'blockType', header: 'Type', type: 'status', sortable: true },
-      { key: 'totalUnits', header: 'Units', type: 'number', sortable: true, align: 'right' },
-      { key: 'totalFloors', header: 'Floors', type: 'number', sortable: true, align: 'right' },
-      { key: 'address', header: 'Address', type: 'text' },
-      { key: 'isActive', header: 'Status', type: 'status', sortable: true },
-      { key: 'createdAt', header: 'Created', type: 'date', sortable: true }
+      { key: 'unitCode', header: 'Kode Unit', type: 'text', sortable: true },
+      { key: 'unitNumber', header: 'Nomor', type: 'text', sortable: true },
+      { key: 'houseBlock.blockName', header: 'Blok', type: 'text', sortable: false },
+      { key: 'unitType', header: 'Tipe', type: 'text', sortable: true },
+      { key: 'landArea', header: 'LT (m²)', type: 'number', sortable: true, align: 'right' },
+      { key: 'buildingArea', header: 'LB (m²)', type: 'number', sortable: true, align: 'right' },
+      { key: 'occupancyStatus', header: 'Status Huni', type: 'status', sortable: true },
+      { key: 'iplPercentage', header: 'IPL %', type: 'number', sortable: true, align: 'right' },
+      { key: 'isBankBuyback', header: 'Bank Buyback', type: 'status', sortable: true },
+      { key: 'isActive', header: 'Status', type: 'status', sortable: true }
     ],
     actions: [
       {
         id: 'view',
-        label: 'View',
+        label: 'Lihat',
         icon: 'eye-outline',
         color: 'medium',
         handler: (item) => this.navigateToView(item)
@@ -71,19 +74,19 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
       },
       {
         id: 'delete',
-        label: 'Delete',
+        label: 'Hapus',
         icon: 'trash-outline',
         color: 'danger',
         handler: (item) => this.confirmDelete(item),
         confirm: {
-          title: 'Delete House Block',
-          message: 'Are you sure you want to delete this house block? This action cannot be undone.',
-          confirmText: 'Delete',
-          cancelText: 'Cancel'
+          title: 'Hapus Unit',
+          message: 'Apakah Anda yakin ingin menghapus unit ini? Tindakan ini tidak dapat dibatalkan.',
+          confirmText: 'Hapus',
+          cancelText: 'Batal'
         }
       }
     ],
-    sortable: false,
+    sortable: true,
     filterable: true,
     pagination: true,
     pageSize: this.pageSize,
@@ -92,23 +95,24 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
     showFooter: true,
     striped: true,
     hoverable: true,
-    emptyMessage: 'No house blocks found',
-    loadingMessage: 'Loading house blocks...'
+    emptyMessage: 'Tidak ada unit ditemukan',
+    loadingMessage: 'Memuat unit...'
   };
 
   // Table data source
-  dataSource: TableDataSource<HouseBlock> = {
+  dataSource: TableDataSource<HouseUnit> = {
     data: [],
     loading: false
   };
 
   // Status badges for table
   statusBadges = [
-    { value: true, label: 'Active', color: 'success', icon: 'checkmark-circle' },
-    { value: false, label: 'Inactive', color: 'medium', icon: 'close-circle' },
-    { value: BlockType.RESIDENTIAL, label: 'Residential', color: 'success' },
-    { value: BlockType.COMMERCIAL, label: 'Commercial', color: 'warning' },
-    { value: BlockType.MIXED, label: 'Mixed', color: 'tertiary' }
+    { value: true, label: 'Aktif', color: 'success', icon: 'checkmark-circle' },
+    { value: false, label: 'Tidak Aktif', color: 'medium', icon: 'close-circle' },
+    { value: OccupancyStatus.FULLY_OCCUPIED, label: 'Penuh', color: 'success' },
+    { value: OccupancyStatus.OCCASIONALLY, label: 'Jarang', color: 'warning' },
+    { value: OccupancyStatus.VACANT, label: 'Kosong', color: 'danger' },
+    { value: OccupancyStatus.RENTED, label: 'Sewa', color: 'tertiary' }
   ];
 
   private subscriptions: Subscription[] = [];
@@ -123,8 +127,8 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
       this.router.events.pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd)
       ).subscribe((event: NavigationEnd) => {
-        // Reload data when navigating to the house-blocks page
-        if (event.url === '/admin/house-blocks' || event.urlAfterRedirects === '/admin/house-blocks') {
+        // Reload data when navigating to the house-units page
+        if (event.url === '/admin/house-units' || event.urlAfterRedirects === '/admin/house-units') {
           this.loadAllData();
         }
       })
@@ -141,7 +145,7 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
   private loadAllData(): void {
     this.loading = true;
     this.loadOccupancyStats();
-    this.loadHouseBlocks();
+    this.loadHouseUnits();
   }
 
   /**
@@ -151,7 +155,7 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
     this.statsLoading = true;
 
     this.subscriptions.push(
-      this.houseBlocksService.getOccupancyStats().subscribe({
+      this.houseUnitsService.getOccupancyStats().subscribe({
         next: (stats) => {
           this.occupancyStats = stats;
           this.statsLoading = false;
@@ -165,23 +169,22 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Load house blocks list
+   * Load house units list
    */
-  loadHouseBlocks(): void {
+  loadHouseUnits(): void {
     this.dataSource.loading = true;
 
     const params = {
       page: this.currentPage,
       limit: this.pageSize,
-      sortBy: 'createdAt',
-      sortOrder: 'desc' as const
+      sortBy: 'unitCode',
+      sortOrder: 'asc' as const
     };
 
     this.subscriptions.push(
-      this.houseBlocksService.getAll(params).subscribe({
+      this.houseUnitsService.getAll(params).subscribe({
         next: (response) => {
-          console.log('resoonse',response)
-          this.houseBlocks = response.data;
+          this.houseUnits = response.data;
           this.dataSource = {
             data: response.data,
             loading: false,
@@ -192,8 +195,8 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (error) => {
-          console.error('Error loading house blocks:', error);
-          this.toastService.error('Failed to load house blocks');
+          console.error('Error loading house units:', error);
+          this.toastService.error('Gagal memuat unit');
           this.dataSource = {
             data: [],
             loading: false,
@@ -220,38 +223,38 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
    * Navigate to create page
    */
   navigateToCreate(): void {
-    this.router.navigate(['/admin/house-blocks/new']);
+    this.router.navigate(['/admin/house-units/new']);
   }
 
   /**
    * Navigate to detail page
    */
-  navigateToView(item: HouseBlock): void {
-    this.router.navigate(['/admin/house-blocks', item.id]);
+  navigateToView(item: HouseUnit): void {
+    this.router.navigate(['/admin/house-units', item.id]);
   }
 
   /**
    * Navigate to edit page
    */
-  navigateToEdit(item: HouseBlock): void {
-    this.router.navigate(['/admin/house-blocks', item.id, 'edit']);
+  navigateToEdit(item: HouseUnit): void {
+    this.router.navigate(['/admin/house-units', item.id, 'edit']);
   }
 
   /**
    * Show delete confirmation
    */
-  async confirmDelete(item: HouseBlock): Promise<void> {
+  async confirmDelete(item: HouseUnit): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Delete House Block',
-      message: `Are you sure you want to delete "${item.blockName}"? This action cannot be undone.`,
+      header: 'Hapus Unit',
+      message: `Apakah Anda yakin ingin menghapus "${item.unitCode}"? Tindakan ini tidak dapat dibatalkan.`,
       buttons: [
         {
-          text: 'Cancel',
+          text: 'Batal',
           role: 'cancel',
           cssClass: 'secondary'
         },
         {
-          text: 'Delete',
+          text: 'Hapus',
           role: 'destructive',
           handler: () => {
             this.handleDelete(item.id);
@@ -267,20 +270,20 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
    * Handle delete
    */
   private handleDelete(id: string): void {
-    this.loadingService.show({ message: 'Deleting house block...' });
+    this.loadingService.show({ message: 'Menghapus unit...' });
 
     this.subscriptions.push(
-      this.houseBlocksService.delete(id).subscribe({
+      this.houseUnitsService.delete(id).subscribe({
         next: () => {
           this.loadingService.dismiss();
-          this.toastService.success('House block deleted successfully');
-          this.loadHouseBlocks(); // Reload list
+          this.toastService.success('Unit berhasil dihapus');
+          this.loadHouseUnits(); // Reload list
           this.loadOccupancyStats(); // Reload stats
         },
         error: (error) => {
           this.loadingService.dismiss();
-          this.toastService.error('Failed to delete house block');
-          console.error('Delete house block error:', error);
+          this.toastService.error('Gagal menghapus unit');
+          console.error('Delete house unit error:', error);
         }
       })
     );
@@ -289,7 +292,7 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
   /**
    * Handle table action click
    */
-  onAction(event: { action: TableAction; item: HouseBlock }): void {
+  onAction(event: { action: TableAction; item: HouseUnit }): void {
     if (event.action.handler) {
       event.action.handler(event.item);
     }
@@ -310,7 +313,7 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
    */
   private handleSearch(query: string): void {
     if (!query || query.trim() === '') {
-      this.loadHouseBlocks();
+      this.loadHouseUnits();
       return;
     }
 
@@ -323,9 +326,9 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
     };
 
     this.subscriptions.push(
-      this.houseBlocksService.getAll(params).subscribe({
+      this.houseUnitsService.getAll(params).subscribe({
         next: (response) => {
-          this.houseBlocks = response.data;
+          this.houseUnits = response.data;
           this.dataSource = {
             data: response.data,
             loading: false,
@@ -336,7 +339,7 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
           this.currentPage = 1;
         },
         error: (error) => {
-          console.error('Error searching house blocks:', error);
+          console.error('Error searching house units:', error);
           this.dataSource = {
             data: [],
             loading: false,
@@ -352,16 +355,28 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
    * Handle pagination change
    */
   onPageChange(page: number): void {
-    console.log('on page change',page );
     this.currentPage = page;
-    this.loadHouseBlocks();
+    this.loadHouseUnits();
   }
 
   /**
-   * Get block type color for badges
+   * Get occupancy status color for badges
    */
-  getBlockTypeColor(type: BlockType): string {
-    return BLOCK_TYPE_COLORS[type] || 'medium';
+  getOccupancyStatusColor(status: OccupancyStatus): string {
+    return OCCUPANCY_STATUS_COLORS[status] || 'medium';
+  }
+
+  /**
+   * Get occupancy status label in Indonesian
+   */
+  getOccupancyStatusLabel(status: OccupancyStatus): string {
+    const labels: Record<OccupancyStatus, string> = {
+      [OccupancyStatus.FULLY_OCCUPIED]: 'Ditinggali',
+      [OccupancyStatus.OCCASIONALLY]: 'Jarang',
+      [OccupancyStatus.VACANT]: 'Kosong',
+      [OccupancyStatus.RENTED]: 'Disewa'
+    };
+    return labels[status] || status;
   }
 
   /**
@@ -369,14 +384,14 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
    */
   formatArea(area?: number): string {
     if (!area) return '-';
-    return `${area.toLocaleString()} m²`;
+    return `${area.toLocaleString('id-ID')} m²`;
   }
 
   /**
-   * Format percentage for occupancy rate
+   * Format IPL percentage
    */
-  formatPercentage(value: number): string {
-    return `${value.toFixed(1)}%`;
+  formatIplPercentage(value: number): string {
+    return `${value}%`;
   }
 
   /**
@@ -387,10 +402,17 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Check if there are any house blocks
+   * Check if there are any house units
    */
-  hasBlocks(): boolean {
-    return this.houseBlocks.length > 0;
+  hasUnits(): boolean {
+    return this.houseUnits.length > 0;
+  }
+
+  /**
+   * Navigate to house blocks
+   */
+  navigateToHouseBlocks(): void {
+    this.router.navigate(['/admin/house-blocks']);
   }
 
   /**

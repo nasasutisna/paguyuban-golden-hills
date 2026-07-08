@@ -42,8 +42,6 @@ export interface HouseBlock {
   totalUnits: number;
   totalFloors?: number;
   constructionYear?: number;
-  landArea?: number;
-  buildingArea?: number;
   facilities?: string; // JSON string
   amenities?: string;
   isActive?: boolean;
@@ -51,6 +49,22 @@ export interface HouseBlock {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
+  // Nested relations
+  units?: HouseUnit[];
+}
+
+/**
+ * House Unit (nested)
+ */
+export interface HouseUnit {
+  id: string;
+  unitCode: string;
+  unitNumber: string;
+  landArea: number;
+  buildingArea: number;
+  unitType?: string;
+  occupancyStatus?: string;
+  isActive: boolean;
 }
 
 /**
@@ -64,8 +78,6 @@ export interface CreateHouseBlockDto {
   totalUnits: number;
   totalFloors?: number;
   constructionYear?: number;
-  landArea?: number;
-  buildingArea?: number;
   facilities?: string;
   amenities?: string;
   isActive?: boolean;
@@ -83,8 +95,6 @@ export interface UpdateHouseBlockDto {
   totalUnits?: number;
   totalFloors?: number;
   constructionYear?: number;
-  landArea?: number;
-  buildingArea?: number;
   facilities?: string;
   amenities?: string;
   isActive?: boolean;

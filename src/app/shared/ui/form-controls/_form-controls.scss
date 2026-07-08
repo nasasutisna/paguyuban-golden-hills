@@ -1,0 +1,218 @@
+/**
+ * Form Controls Shared Styles
+ * Common styles for all form control components
+ */
+
+// Form container
+.form-container {
+  max-width: 100%;
+  padding: 16px;
+  margin: 0 auto;
+
+  @media (min-width: 768px) {
+    max-width: 600px;
+  }
+
+  @media (min-width: 1024px) {
+    max-width: 700px;
+    padding: 24px;
+  }
+}
+
+// Form section/card
+.form-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #3880ff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f4f5f8;
+  }
+}
+
+// Form actions toolbar
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  @media (min-width: 768px) {
+    position: sticky;
+    bottom: 16px;
+    z-index: 10;
+  }
+
+  .form-button {
+    flex: 1;
+
+    &:first-child {
+      --color: #6b6b6b;
+    }
+  }
+}
+
+// Inline form (for compact layouts)
+.form-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+
+  .form-control-wrapper {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 0;
+  }
+
+  .form-button {
+    flex: 0 0 auto;
+  }
+}
+
+// Grid form (for multi-column layouts)
+.form-grid {
+  display: grid;
+  gap: 16px;
+
+  &.grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  &.grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  &.grid-4 {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
+
+// Form loading overlay
+.form-loading {
+  position: relative;
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(2px);
+  }
+
+  ion-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 101;
+  }
+}
+
+// Required field indicator
+.required-indicator {
+  color: #eb445a;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+// Common error styling
+.error-wrapper {
+  ion-text {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #eb445a;
+    font-size: 0.8rem;
+    margin-top: 4px;
+
+    ion-icon {
+      font-size: 1rem;
+    }
+  }
+}
+
+// Common helper text styling
+.helper-wrapper {
+  ion-note {
+    display: block;
+    color: #92949e;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    font-style: italic;
+  }
+}
+
+// Animation classes
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+// Focus visible styles for accessibility
+.form-control-wrapper {
+  ion-input:focus-visible,
+  ion-select:focus-visible,
+  ion-textarea:focus-visible {
+    outline: 2px solid #3880ff;
+    outline-offset: 2px;
+  }
+}

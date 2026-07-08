@@ -1,0 +1,166 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ getPageTitle() }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="houseUnitForm" (ngSubmit)="onSubmit()">
+    <!-- Basic Information -->
+    <div class="form-section">
+      <div class="section-title">Informasi Dasar</div>
+
+      <app-form-input
+        formControlName="unitCode"
+        label="Kode Unit"
+        placeholder="Contoh: A-101"
+        [required]="true"
+        [maxlength]="20"
+        [showError]="hasError('unitCode')"
+        [errorMessage]="getErrorMessage('unitCode')"
+      ></app-form-input>
+
+      <app-form-input
+        formControlName="unitNumber"
+        label="Nomor Unit"
+        placeholder="Contoh: 101"
+        [required]="true"
+        [maxlength]="20"
+        [showError]="hasError('unitNumber')"
+        [errorMessage]="getErrorMessage('unitNumber')"
+      ></app-form-input>
+
+      <app-form-input
+        formControlName="houseBlockId"
+        label="ID Blok"
+        placeholder="Pilih blok rumah"
+        [required]="true"
+        [showError]="hasError('houseBlockId')"
+        [errorMessage]="getErrorMessage('houseBlockId')"
+      ></app-form-input>
+
+      <app-form-input
+        formControlName="floorNumber"
+        label="Lantai"
+        type="number"
+        placeholder="Contoh: 1"
+        [min]="1"
+        helperText="Biarkan kosong jika ground floor"
+        [showError]="hasError('floorNumber')"
+        [errorMessage]="getErrorMessage('floorNumber')"
+      ></app-form-input>
+
+      <app-form-select
+        formControlName="unitType"
+        label="Tipe Unit"
+        placeholder="Pilih tipe unit"
+        [options]="unitTypeOptions"
+        helperText="Opsional: pilih tipe unit jika tersedia"
+      ></app-form-select>
+    </div>
+
+    <!-- Physical Dimensions -->
+    <div class="form-section">
+      <div class="section-title">Dimensi Fisik</div>
+
+      <app-form-input
+        formControlName="landArea"
+        label="Luas Tanah (m²)"
+        type="number"
+        placeholder="Contoh: 72"
+        [required]="true"
+        [min]="0"
+        suffix="m²"
+        [showError]="hasError('landArea')"
+        [errorMessage]="getErrorMessage('landArea')"
+      ></app-form-input>
+
+      <app-form-input
+        formControlName="buildingArea"
+        label="Luas Bangunan (m²)"
+        type="number"
+        placeholder="Contoh: 45"
+        [required]="true"
+        [min]="0"
+        suffix="m²"
+        [showError]="hasError('buildingArea')"
+        [errorMessage]="getErrorMessage('buildingArea')"
+      ></app-form-input>
+    </div>
+
+    <!-- Occupancy & IPL -->
+    <div class="form-section">
+      <div class="section-title">Status Hunian & IPL</div>
+
+      <app-form-select
+        formControlName="occupancyStatus"
+        label="Status Hunian"
+        placeholder="Pilih status hunian"
+        [options]="occupancyStatusOptions"
+        (change)="onOccupancyStatusChange($event)"
+        helperText="IPL akan disesuaikan otomatis berdasarkan status"
+      ></app-form-select>
+
+      <app-form-textarea
+        formControlName="occupancyNotes"
+        label="Catatan Hunian"
+        placeholder="Contoh: Ditinggali seminggu sekali"
+        [rows]="3"
+        [maxlength]="500"
+        [showCharCount]="true"
+        helperText="Opsional: tambahkan catatan tentang status hunian"
+      ></app-form-textarea>
+
+      <app-form-input
+        formControlName="iplPercentage"
+        label="Persentase IPL (%)"
+        type="number"
+        placeholder="100"
+        [min]="0"
+        [max]="100"
+        suffix="%"
+        helperText="Persentase IPL yang harus dibayar"
+        [showError]="hasError('iplPercentage')"
+        [errorMessage]="getErrorMessage('iplPercentage')"
+      ></app-form-input>
+
+      <!-- Bank Buyback Toggle -->
+      <ion-item class="toggle-item" lines="none">
+        <ion-label>Bank Buyback</ion-label>
+        <ion-toggle
+          formControlName="isBankBuyback"
+          (ionChange)="onBankBuybackChange($event.detail.checked)"
+        ></ion-toggle>
+      </ion-item>
+
+      <!-- Active Status Toggle -->
+      <ion-item class="toggle-item" lines="none">
+        <ion-label>Aktif</ion-label>
+        <ion-toggle formControlName="isActive"></ion-toggle>
+      </ion-item>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        (click)="cancel()"
+        [disabled]="isSubmitting"
+      ></app-form-button>
+
+      <app-form-button
+        [text]="getSubmitButtonText()"
+        type="submit"
+        icon="save-outline"
+        iconSlot="start"
+        [loading]="isSubmitting"
+        [disabled]="houseUnitForm.invalid"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>

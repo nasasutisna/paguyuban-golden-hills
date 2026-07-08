@@ -43,11 +43,10 @@
               <ion-menu-toggle auto-hide="false">
                 <ion-item
                   class="menu-item"
-                  routerDirection="root"
-                  [routerLink]="[item.url]"
+                  (click)="navigateWithSetRoot(item.url)"
                   lines="none"
                   detail="false"
-                  routerLinkActive="active"
+                  [class.active]="isActiveMenu(item.url)"
                   [class.has-badge]="item.badge"
                 >
                   <div class="menu-item-icon" slot="start">
@@ -81,11 +80,10 @@
               <ion-menu-toggle auto-hide="false">
                 <ion-item
                   class="menu-item"
-                  routerDirection="root"
-                  [routerLink]="[item.url]"
+                  (click)="navigateWithSetRoot(item.url)"
                   lines="none"
                   detail="false"
-                  routerLinkActive="active"
+                  [class.active]="isActiveMenu(item.url)"
                 >
                   <div class="menu-item-icon" slot="start">
                     <ion-icon [name]="item.icon"></ion-icon>
@@ -115,11 +113,10 @@
               <ion-menu-toggle auto-hide="false">
                 <ion-item
                   class="menu-item"
-                  routerDirection="root"
-                  [routerLink]="[item.url]"
+                  (click)="navigateWithSetRoot(item.url)"
                   lines="none"
                   detail="false"
-                  routerLinkActive="active"
+                  [class.active]="isActiveMenu(item.url)"
                 >
                   <div class="menu-item-icon" slot="start">
                     <ion-icon [name]="item.icon"></ion-icon>
@@ -146,11 +143,10 @@
               <ion-menu-toggle auto-hide="false">
                 <ion-item
                   class="menu-item"
-                  routerDirection="root"
-                  [routerLink]="[item.url]"
+                  (click)="navigateWithSetRoot(item.url)"
                   lines="none"
                   detail="false"
-                  routerLinkActive="active"
+                  [class.active]="isActiveMenu(item.url)"
                 >
                   <div class="menu-item-icon" slot="start">
                     <ion-icon [name]="item.icon"></ion-icon>
@@ -210,13 +206,17 @@
                 </ion-button>
 
                 <!-- Profile -->
-                <ion-button class="header-action-btn" fill="clear" routerLink="/profile">
+                <ion-button class="header-action-btn" fill="clear" (click)="navigateWithSetRoot('/profile')">
                   <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
                 </ion-button>
               </div>
             </div>
           </ion-toolbar>
         </ion-header>
+
+        <!-- Breadcrumb Navigation -->
+        <app-breadcrumb></app-breadcrumb>
+
 
         <!-- Router Outlet -->
         <ion-router-outlet id="main-router-outlet" class="main-router-outlet"></ion-router-outlet>

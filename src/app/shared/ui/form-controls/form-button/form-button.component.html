@@ -1,0 +1,98 @@
+<ng-container [ngSwitch]="true">
+  <!-- Loading state with spinner -->
+  <ion-button
+    *ngSwitchCase="loading"
+    [type]="type"
+    [color]="color"
+    [disabled]="true"
+    [class]="getVariantClass()"
+    [class]="getSizeClass()"
+    [class]="getExpandClass()"
+    [fill]="variant === 'solid' ? 'solid' : variant === 'outline' ? 'outline' : 'clear'"
+    [expand]="shouldExpand() ? (expand === 'full' ? 'full' : 'block') : undefined"
+    class="form-button"
+    [style.border-radius]="borderRadius"
+    [style.padding]="padding"
+  >
+    <ion-spinner name="crescent" class="button-spinner"></ion-spinner>
+    <span class="button-text">Please wait...</span>
+  </ion-button>
+
+  <!-- Icon only button -->
+  <ion-button
+    *ngSwitchCase="isIconOnly"
+    [type]="type"
+    [color]="color"
+    [disabled]="disabled"
+    [class]="getVariantClass()"
+    [class]="getSizeClass()"
+    [class]="getExpandClass()"
+    [fill]="variant === 'solid' ? 'solid' : variant === 'outline' ? 'outline' : 'clear'"
+    [expand]="shouldExpand() ? (expand === 'full' ? 'full' : 'block') : undefined"
+    (click)="onClick($event)"
+    class="form-button"
+    [style.border-radius]="borderRadius"
+    [style.padding]="padding"
+  >
+    <ion-icon [name]="icon" slot="icon-only" class="button-icon"></ion-icon>
+  </ion-button>
+
+  <!-- Button with icon at start -->
+  <ion-button
+    *ngSwitchCase="icon && iconSlot === 'start'"
+    [type]="type"
+    [color]="color"
+    [disabled]="disabled"
+    [class]="getVariantClass()"
+    [class]="getSizeClass()"
+    [class]="getExpandClass()"
+    [fill]="variant === 'solid' ? 'solid' : variant === 'outline' ? 'outline' : 'clear'"
+    [expand]="shouldExpand() ? (expand === 'full' ? 'full' : 'block') : undefined"
+    (click)="onClick($event)"
+    class="form-button"
+    [style.border-radius]="borderRadius"
+    [style.padding]="padding"
+  >
+    <ion-icon [name]="icon" slot="start" class="button-icon"></ion-icon>
+    <span class="button-text">{{ text }}</span>
+  </ion-button>
+
+  <!-- Button with icon at end -->
+  <ion-button
+    *ngSwitchCase="icon && iconSlot === 'end'"
+    [type]="type"
+    [color]="color"
+    [disabled]="disabled"
+    [class]="getVariantClass()"
+    [class]="getSizeClass()"
+    [class]="getExpandClass()"
+    [fill]="variant === 'solid' ? 'solid' : variant === 'outline' ? 'outline' : 'clear'"
+    [expand]="shouldExpand() ? (expand === 'full' ? 'full' : 'block') : undefined"
+    (click)="onClick($event)"
+    class="form-button"
+    [style.border-radius]="borderRadius"
+    [style.padding]="padding"
+  >
+    <span class="button-text">{{ text }}</span>
+    <ion-icon [name]="icon" slot="end" class="button-icon"></ion-icon>
+  </ion-button>
+
+  <!-- Default button with text only -->
+  <ion-button
+    *ngSwitchDefault
+    [type]="type"
+    [color]="color"
+    [disabled]="disabled"
+    [class]="getVariantClass()"
+    [class]="getSizeClass()"
+    [class]="getExpandClass()"
+    [fill]="variant === 'solid' ? 'solid' : variant === 'outline' ? 'outline' : 'clear'"
+    [expand]="shouldExpand() ? (expand === 'full' ? 'full' : 'block') : undefined"
+    (click)="onClick($event)"
+    class="form-button"
+    [style.border-radius]="borderRadius"
+    [style.padding]="padding"
+  >
+    <span class="button-text">{{ text }}</span>
+  </ion-button>
+</ng-container>

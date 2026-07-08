@@ -278,6 +278,18 @@
           font-size: 13px;
         }
 
+        // Loading and Empty Cells
+        &.loading-cell,
+        &.empty-cell {
+          padding: 0;
+          vertical-align: middle;
+
+          .table-loading,
+          .table-empty {
+            padding: 48px 24px;
+          }
+        }
+
         // Status Chips
         .status-chip {
           --background: transparent;

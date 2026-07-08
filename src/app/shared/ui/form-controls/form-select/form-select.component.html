@@ -1,0 +1,55 @@
+<div class="form-control-wrapper" [class.has-error]="showError">
+  <!-- Label -->
+  <ion-label
+    *ngIf="label"
+    [color]="labelColor"
+    [position]="labelPosition"
+    [class.required]="required"
+  >
+    {{ label }}
+  </ion-label>
+
+  <!-- Select with custom styling -->
+  <div class="form-select-item" [class.error]="showError" [class.with-border]="border">
+    <ion-select
+      [value]="value"
+      [placeholder]="placeholder"
+      [multiple]="multiple"
+      [compareWith]="compareWith"
+      [disabled]="isDisabled"
+      [interface]="multiple ? 'popover' : 'alert'"
+      (ionBlur)="onBlur()"
+      (ionChange)="onSelectionChange($event)"
+      class="custom-styled-select"
+      cancelText="Cancel"
+      okText="Select"
+    >
+      <ion-select-option
+        *ngFor="let option of options"
+        [value]="option.value"
+        [disabled]="option.disabled"
+      >
+        {{ option.label }}
+      </ion-select-option>
+    </ion-select>
+  </div>
+
+  <!-- Selected values display for multiple select -->
+  <div class="selected-values" *ngIf="multiple && value && value.length > 0">
+    <ion-chip *ngFor="let val of value" class="selected-chip">
+      <ion-label>{{ getDisplayLabelForValue(val) }}</ion-label>
+      <ion-icon name="close-circle" (click)="removeValue(val)"></ion-icon>
+    </ion-chip>
+  </div>
+
+  <!-- Validation Error Message -->
+  <ion-text class="error-message" *ngIf="showError && errorMessage">
+    <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+    {{ errorMessage }}
+  </ion-text>
+
+  <!-- Helper Text -->
+  <ion-note class="helper-text" *ngIf="helperText && !showError">
+    {{ helperText }}
+  </ion-note>
+</div>

@@ -55,7 +55,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['ADMIN', 'SUPERADMIN'] },
+    data: { roles: ['ADMIN', 'SUPERADMIN'], breadcrumb: { skip: true }  },
     children: [
       {
         path: 'dashboard',
@@ -90,6 +90,34 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/house-blocks/house-block-form/house-block-form.page').then(
             (m) => m.HouseBlockFormPage
+          )
+      },
+      {
+        path: 'house-units',
+        loadComponent: () =>
+          import('./features/admin/house-units/house-units.page').then(
+            (m) => m.HouseUnitsPage
+          )
+      },
+      {
+        path: 'house-units/new',
+        loadComponent: () =>
+          import('./features/admin/house-units/house-unit-form/house-unit-form.page').then(
+            (m) => m.HouseUnitFormPage
+          )
+      },
+      {
+        path: 'house-units/:id',
+        loadComponent: () =>
+          import('./features/admin/house-units/house-unit-detail/house-unit-detail.page').then(
+            (m) => m.HouseUnitDetailPage
+          )
+      },
+      {
+        path: 'house-units/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/house-units/house-unit-form/house-unit-form.page').then(
+            (m) => m.HouseUnitFormPage
           )
       },
       {

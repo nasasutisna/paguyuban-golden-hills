@@ -1,0 +1,50 @@
+<div class="form-control-wrapper" [class.has-error]="showError" [class.layout-horizontal]="layout === 'horizontal'">
+  <!-- Label -->
+  <ion-label
+    *ngIf="label"
+    [color]="labelColor"
+    [position]="labelPosition"
+    [class.required]="required"
+  >
+    {{ label }}
+  </ion-label>
+
+  <!-- Radio Group -->
+  <ion-radio-group
+    [value]="value"
+    (ionChange)="onSelectionChange($event)"
+    (ionBlur)="onBlur()"
+    class="radio-group"
+    [class.group-disabled]="isDisabled"
+  >
+    <div class="radio-options" [class.options-horizontal]="layout === 'horizontal'">
+      <ion-item
+        *ngFor="let option of options"
+        class="radio-option-item"
+        [class.selected]="isSelected(option.value)"
+        [class.option-disabled]="isOptionDisabled(option)"
+        lines="none"
+      >
+        <ion-radio
+          [value]="option.value"
+          [disabled]="isOptionDisabled(option)"
+          [color]="checkedColor"
+        ></ion-radio>
+        <ion-label class="radio-label">
+          {{ option.label }}
+        </ion-label>
+      </ion-item>
+    </div>
+  </ion-radio-group>
+
+  <!-- Validation Error Message -->
+  <ion-text class="error-message" *ngIf="showError && errorMessage">
+    <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+    {{ errorMessage }}
+  </ion-text>
+
+  <!-- Helper Text -->
+  <ion-note class="helper-text" *ngIf="helperText && !showError">
+    {{ helperText }}
+  </ion-note>
+</div>

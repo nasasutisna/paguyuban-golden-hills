@@ -1,0 +1,45 @@
+<div class="form-control-wrapper" [class.has-error]="showError">
+  <!-- Label -->
+  <ion-label
+    *ngIf="label"
+    [color]="labelColor"
+    [position]="labelPosition"
+    [class.required]="required"
+  >
+    {{ label }}
+  </ion-label>
+
+  <!-- Textarea with custom styling -->
+  <div class="form-textarea-item" [class.error]="showError" [class.with-border]="border">
+    <ion-textarea
+      [value]="value"
+      [placeholder]="placeholder"
+      [rows]="rows"
+      [cols]="cols"
+      [autoGrow]="autoGrow"
+      [maxlength]="maxlength"
+      [minlength]="minlength"
+      [readonly]="readonly"
+      [disabled]="isDisabled"
+      (ionBlur)="onBlur()"
+      (ionInput)="onInputChange($event)"
+      class="custom-styled-textarea"
+    ></ion-textarea>
+  </div>
+
+  <!-- Character Count -->
+  <div class="char-count" *ngIf="showCharCount && maxlength !== null" [class.low]="isCharCountLow">
+    {{ remainingChars }} characters remaining
+  </div>
+
+  <!-- Validation Error Message -->
+  <ion-text class="error-message" *ngIf="showError && errorMessage">
+    <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+    {{ errorMessage }}
+  </ion-text>
+
+  <!-- Helper Text -->
+  <ion-note class="helper-text" *ngIf="helperText && !showError">
+    {{ helperText }}
+  </ion-note>
+</div>

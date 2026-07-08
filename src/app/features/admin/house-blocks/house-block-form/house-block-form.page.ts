@@ -5,7 +5,8 @@ import {
   FormBuilder,
   FormGroup,
   Validators,
-  AbstractControl
+  AbstractControl,
+  FormControl
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
@@ -16,6 +17,15 @@ import { LoadingService } from '@services/loading.service';
 import { getErrorMessage } from '@validators/validators';
 import { HouseBlock, CreateHouseBlockDto, UpdateHouseBlockDto, BlockType } from '../house-blocks.model';
 
+// Form control components
+import {
+  FormInputComponent,
+  FormSelectComponent,
+  FormTextareaComponent,
+  FormButtonComponent,
+  SelectOption
+} from '@shared/ui/form-controls';
+
 /**
  * House Block Form Page
  * Handles both create and edit modes based on route parameter presence
@@ -23,7 +33,15 @@ import { HouseBlock, CreateHouseBlockDto, UpdateHouseBlockDto, BlockType } from 
 @Component({
   selector: 'app-house-block-form',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    IonicModule,
+    ReactiveFormsModule,
+    FormInputComponent,
+    FormSelectComponent,
+    FormTextareaComponent,
+    FormButtonComponent
+  ],
   templateUrl: './house-block-form.page.html',
   styleUrls: ['./house-block-form.page.scss']
 })
@@ -162,8 +180,6 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
       totalUnits: houseBlock.totalUnits,
       totalFloors: houseBlock.totalFloors || '',
       constructionYear: houseBlock.constructionYear || '',
-      landArea: houseBlock.landArea || '',
-      buildingArea: houseBlock.buildingArea || '',
       facilities: houseBlock.facilities || '',
       amenities: houseBlock.amenities || '',
       isActive: houseBlock.isActive ?? true,
@@ -195,14 +211,23 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
       totalUnits: 'Total units',
       totalFloors: 'Total floors',
       constructionYear: 'Construction year',
-      landArea: 'Land area',
-      buildingArea: 'Building area',
       facilities: 'Facilities',
       amenities: 'Amenities',
-      description: 'Description'
+      description: 'Description',
+      landArea: 'Land area',
+      buildingArea: 'Building area'
     };
 
     return getErrorMessage(control.errors, fieldLabels[fieldName] || fieldName);
+  }
+
+  /**
+   * Check if a field is invalid and touched
+   * Used to show validation errors in form-control components
+   */
+  isFieldInvalid(fieldName: string): boolean {
+    const control = this.houseBlockForm.get(fieldName);
+    return control ? control.invalid && control.touched : false;
   }
 
   /**

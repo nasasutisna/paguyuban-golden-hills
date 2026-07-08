@@ -1,0 +1,185 @@
+.form-button {
+  transition: all 0.2s ease;
+  font-weight: 500;
+  cursor: pointer;
+
+  // Size variants
+  &.btn-small {
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    font-size: 0.85rem;
+    height: 36px;
+  }
+
+  &.btn-default {
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    font-size: 1rem;
+    height: 48px;
+  }
+
+  &.btn-large {
+    --padding-top: 16px;
+    --padding-bottom: 16px;
+    --padding-start: 20px;
+    --padding-end: 20px;
+    font-size: 1.1rem;
+    height: 56px;
+  }
+
+  // Button spinner
+  .button-spinner {
+    width: 18px;
+    height: 18px;
+  }
+
+  // Button icon
+  .button-icon {
+    font-size: 1.2rem;
+  }
+
+  // Button text - force visibility
+  ::ng-deep .button-text,
+  .button-text {
+    display: inline !important;
+    color: inherit !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  // Ensure span content is visible
+  ::ng-deep span,
+  span {
+    display: inline !important;
+  }
+
+  // Solid variant - text putih
+  &.btn-solid {
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --color-contrast: #ffffff !important;
+
+    ::ng-deep .button-text,
+    .button-text,
+    span {
+      color: #ffffff !important;
+    }
+
+    ::ng-deep ion-icon,
+    .button-icon,
+    ion-icon {
+      color: #ffffff !important;
+    }
+
+    &:hover:not(.button-disabled) {
+      --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(.button-disabled) {
+      transform: translateY(0);
+    }
+  }
+
+  // Outline variant
+  &.btn-outline {
+    --box-shadow: none;
+    --border-width: 1.5px;
+    --border-style: solid;
+    --border-color: #92949e;
+
+    ::ng-deep .button-text,
+    .button-text,
+    span {
+      color: #222428 !important;
+    }
+
+    ::ng-deep ion-icon,
+    .button-icon,
+    ion-icon {
+      color: #222428 !important;
+    }
+
+    &:hover:not(.button-disabled) {
+      --background: #f4f5f8;
+    }
+  }
+
+  // Clear variant
+  &.btn-clear {
+    --box-shadow: none;
+
+    ::ng-deep .button-text,
+    .button-text,
+    span {
+      color: #222428 !important;
+    }
+
+    ::ng-deep ion-icon,
+    .button-icon,
+    ion-icon {
+      color: #222428 !important;
+    }
+
+    &:hover:not(.button-disabled) {
+      --background: #f4f5f8;
+    }
+  }
+
+  // Ghost variant
+  &.btn-ghost {
+    --box-shadow: none;
+    --background: transparent;
+
+    ::ng-deep .button-text,
+    .button-text,
+    span {
+      color: #222428 !important;
+    }
+
+    ::ng-deep ion-icon,
+    .button-icon,
+    ion-icon {
+      color: #222428 !important;
+    }
+
+    &:hover:not(.button-disabled) {
+      --background: rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  // Disabled state
+  &.button-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  // Loading state
+  &[disabled] {
+    ion-spinner {
+      display: inline-block;
+    }
+  }
+}
+
+// Icon-only button adjustments
+.form-button.button-solid.icon-only {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  min-width: 48px;
+}
+
+// Button with icon and text spacing
+.form-button {
+  &.button-solid {
+    ion-icon[slot='start'],
+    ion-icon[slot='end'] {
+      margin-right: 6px;
+      margin-left: 6px;
+    }
+  }
+}

@@ -1,0 +1,146 @@
+.form-control-wrapper {
+  width: 100%;
+  margin-bottom: 16px;
+
+  // Label styling
+  ion-label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #222428 !important;
+
+    &.required::after {
+      content: '*';
+      color: #eb445a;
+      margin-left: 4px;
+    }
+  }
+
+  // Radio group
+  .radio-group {
+    width: 100%;
+
+    &.group-disabled {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+  }
+
+  // Radio options container
+  .radio-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &.options-horizontal {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
+
+  // Radio option item
+  .radio-option-item {
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+    --min-height: 40px;
+    --background: transparent;
+    margin-bottom: 0;
+    border-radius: 8px;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    border: 1px solid #d7d8da;
+    background: #ffffff;
+
+    &:hover:not(.option-disabled) {
+      background-color: #f4f5f8;
+      border-color: #3880ff;
+    }
+
+    &.selected {
+      border-color: #3880ff;
+      background-color: rgba(56, 128, 255, 0.05);
+    }
+
+    &.option-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    ion-radio {
+      margin-right: 8px;
+    }
+
+    .radio-label {
+      font-size: 0.95rem;
+      color: #222428;
+      margin-left: 4px;
+    }
+  }
+
+  // Error message styling
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #eb445a;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    padding-left: 16px;
+
+    .error-icon {
+      font-size: 1rem;
+    }
+  }
+
+  // Helper text styling
+  .helper-text {
+    display: block;
+    color: #92949e;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    padding-left: 16px;
+    font-style: italic;
+  }
+
+  // Error state
+  &.has-error {
+    ion-label {
+      color: #eb445a !important;
+    }
+
+    .radio-option-item {
+      &.selected {
+        border-color: #eb445a;
+        background-color: rgba(235, 68, 90, 0.05);
+      }
+
+      &:hover:not(.option-disabled) {
+        border-color: #eb445a;
+      }
+    }
+  }
+}
+
+// Horizontal layout
+.form-control-wrapper.layout-horizontal {
+  .radio-options.options-horizontal {
+    .radio-option-item {
+      flex: 0 0 auto;
+      min-width: 120px;
+    }
+  }
+}
+
+// Disabled state
+.form-control-wrapper {
+  .radio-option-item {
+    &.option-disabled {
+      .radio-label {
+        color: #92949e;
+      }
+    }
+  }
+}

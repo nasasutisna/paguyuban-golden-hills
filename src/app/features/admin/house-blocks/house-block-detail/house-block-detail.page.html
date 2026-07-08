@@ -107,48 +107,8 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Capacity & Structure -->
-    @if (houseBlock.landArea || houseBlock.buildingArea || houseBlock.constructionYear) {
-      <ion-card class="info-card">
-        <ion-card-header>
-          <ion-card-title>Capacity & Structure</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list lines="full" class="info-list">
-            @if (houseBlock.landArea) {
-              <ion-item>
-                <ion-icon name="expand-outline" slot="start"></ion-icon>
-                <ion-label>
-                  <h2>Land Area</h2>
-                  <p>{{ formatArea(houseBlock.landArea) }}</p>
-                </ion-label>
-              </ion-item>
-            }
-            @if (houseBlock.buildingArea) {
-              <ion-item>
-                <ion-icon name="business-outline" slot="start"></ion-icon>
-                <ion-label>
-                  <h2>Building Area</h2>
-                  <p>{{ formatArea(houseBlock.buildingArea) }}</p>
-                </ion-label>
-              </ion-item>
-            }
-            @if (houseBlock.constructionYear) {
-              <ion-item>
-                <ion-icon name="calendar-outline" slot="start"></ion-icon>
-                <ion-label>
-                  <h2>Year Built</h2>
-                  <p>{{ houseBlock.constructionYear }}</p>
-                </ion-label>
-              </ion-item>
-            }
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-    }
-
-    <!-- Facilities -->
-    @if (getFacilities().length > 0) {
+    <!-- Amenities -->
+    @if (getAmenities().length > 0) {
       <ion-card class="info-card">
         <ion-card-header>
           <ion-card-title>Facilities</ion-card-title>

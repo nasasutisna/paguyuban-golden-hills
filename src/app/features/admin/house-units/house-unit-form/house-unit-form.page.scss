@@ -1,0 +1,31 @@
+/**
+ * House Unit Form specific styles
+ */
+.house-unit-form {
+  ion-content {
+    --background: #f8f9fa;
+  }
+}
+
+/**
+ * Toggle items (for Bank Buyback and Active status)
+ */
+.toggle-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  --min-height: 48px;
+  margin-bottom: 16px;
+  background: transparent;
+  border: none;
+
+  ion-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #222428;
+  }
+
+  ion-toggle {
+    margin-left: auto;
+  }
+}

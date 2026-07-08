@@ -1,0 +1,50 @@
+<div class="form-control-wrapper" [class.has-error]="showError">
+  <!-- Label -->
+  <ion-label
+    *ngIf="label"
+    [color]="labelColor"
+    [position]="labelPosition"
+    [class.required]="required"
+  >
+    {{ label }}
+  </ion-label>
+
+  <!-- Input with custom styling -->
+  <div class="form-input-item" [class.error]="showError" [class.with-border]="border">
+    <ng-container *ngIf="prefix">
+      <span class="input-prefix">{{ prefix }}</span>
+    </ng-container>
+
+    <ion-input
+      [value]="value"
+      [type]="type"
+      [placeholder]="placeholder"
+      [maxlength]="maxlength"
+      [minlength]="minlength"
+      [min]="min"
+      [max]="max"
+      [step]="step"
+      [autocomplete]="autocomplete"
+      [readonly]="readonly"
+      [disabled]="isDisabled"
+      (ionBlur)="onBlur()"
+      (ionInput)="onInputChange($event)"
+      class="custom-styled-input"
+    ></ion-input>
+
+    <ng-container *ngIf="suffix">
+      <span class="input-suffix">{{ suffix }}</span>
+    </ng-container>
+  </div>
+
+  <!-- Validation Error Message -->
+  <ion-text class="error-message" *ngIf="showError && errorMessage">
+    <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+    {{ errorMessage }}
+  </ion-text>
+
+  <!-- Helper Text -->
+  <ion-note class="helper-text" *ngIf="helperText && !showError">
+    {{ helperText }}
+  </ion-note>
+</div>

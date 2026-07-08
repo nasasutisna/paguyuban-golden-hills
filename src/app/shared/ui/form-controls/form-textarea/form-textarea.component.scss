@@ -1,0 +1,135 @@
+.form-control-wrapper {
+  width: 100%;
+  margin-bottom: 16px;
+
+  // Label styling
+  ion-label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #222428 !important;
+
+    &.required::after {
+      content: '*';
+      color: #eb445a;
+      margin-left: 4px;
+    }
+  }
+
+  // Textarea item wrapper
+  .form-textarea-item {
+    position: relative;
+    background: #ffffff;
+    margin-bottom: 4px;
+
+    &.with-border {
+      border: 1px solid #92949e;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+
+      &:focus-within {
+        border-color: #3880ff;
+        box-shadow: 0 0 0 3px rgba(56, 128, 255, 0.1);
+      }
+
+      &.error {
+        border-color: #eb445a;
+
+        &:focus-within {
+          box-shadow: 0 0 0 3px rgba(235, 68, 90, 0.1);
+        }
+      }
+    }
+
+    ion-textarea {
+      --padding-start: 16px;
+      --padding-end: 16px;
+      --padding-top: 12px;
+      --padding-bottom: 12px;
+      font-size: 1rem;
+      line-height: 1.5;
+      min-height: 100px;
+      --color: #222428;
+
+      &.custom-styled-textarea {
+        border: none;
+        background: transparent;
+      }
+
+      &::placeholder {
+        --color: #92949e;
+      }
+
+      // Native textarea styling
+      ::ng-deep textarea {
+        resize: vertical;
+        font-family: inherit;
+        color: #222428;
+      }
+    }
+  }
+
+  // Character count
+  .char-count {
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: #92949e;
+    margin-top: 4px;
+    padding-left: 16px;
+
+    &.low {
+      color: #ffc409;
+      font-weight: 500;
+    }
+  }
+
+  // Error message styling
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #eb445a;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    padding-left: 16px;
+
+    .error-icon {
+      font-size: 1rem;
+    }
+  }
+
+  // Helper text styling
+  .helper-text {
+    display: block;
+    color: #92949e;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    padding-left: 16px;
+    font-style: italic;
+  }
+
+  // Error state
+  &.has-error {
+    ion-label {
+      color: #eb445a !important;
+    }
+  }
+}
+
+// Disabled state
+.form-control-wrapper {
+  .form-textarea-item {
+    ion-textarea {
+      &.textarea-disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+
+        ::ng-deep textarea {
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}

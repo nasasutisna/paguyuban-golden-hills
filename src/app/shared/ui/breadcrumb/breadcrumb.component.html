@@ -1,0 +1,27 @@
+@if (breadcrumbs.length > 0) {
+  <div class="breadcrumb-wrapper">
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+      <ol class="breadcrumb-list">
+        @for (item of breadcrumbs; track item.label; let isLast = $last) {
+          <li class="breadcrumb-item" [class.last]="isLast">
+            @if (item.url && !isLast) {
+              <a class="breadcrumb-link" (click)="navigate(item.url!)">
+                @if (item.icon) {
+                  <ion-icon [name]="item.icon" class="breadcrumb-icon"></ion-icon>
+                }
+                <span>{{ item.label }}</span>
+              </a>
+            } @else {
+              <span class="breadcrumb-current">
+                @if (item.icon && !isLast) {
+                  <ion-icon [name]="item.icon" class="breadcrumb-icon"></ion-icon>
+                }
+                <span>{{ item.label }}</span>
+              </span>
+            }
+          </li>
+        }
+      </ol>
+    </nav>
+  </div>
+}

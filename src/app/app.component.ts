@@ -1,11 +1,11 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { Router, NavigationEnd, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, NavigationEnd, RouterLink } from '@angular/router';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import {
   IonApp, IonMenu, IonHeader, IonToolbar, IonContent, IonList,
   IonListHeader, IonMenuToggle, IonItem, IonIcon, IonLabel,
-  IonRouterOutlet, IonButton, IonBadge, IonMenuButton, IonSplitPane
+  IonRouterOutlet, IonButton, IonBadge, IonMenuButton, IonSplitPane, NavController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -37,10 +37,13 @@ import {
   medicalOutline,
   stopCircle,
   playCircle,
-  swapHorizontalOutline
+  swapHorizontalOutline,
+  alertCircle,
+  saveOutline
 } from 'ionicons/icons';
 import { AuthService } from '@core/auth/auth.service';
 import { User } from '@models/auth.model';
+import { BreadcrumbComponent } from '@shared/ui/breadcrumb/breadcrumb.component';
 
 interface MenuItem {
   title: string;
@@ -57,15 +60,15 @@ interface MenuItem {
   styleUrls: ['app.component.scss'],
   imports: [
     CommonModule,
-    RouterLink,
-    RouterLinkActive,
     IonApp, IonMenu, IonHeader, IonToolbar, IonContent, IonList,
     IonListHeader, IonMenuToggle, IonItem, IonIcon, IonLabel,
-    IonRouterOutlet, IonButton, IonBadge, IonMenuButton, IonSplitPane
+    IonRouterOutlet, IonButton, IonBadge, IonMenuButton, IonSplitPane,
+    BreadcrumbComponent
   ],
 })
 export class AppComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  private navController = inject(NavController);
   private authService = inject(AuthService);
   private destroy$ = new Subject<void>();
 
@@ -76,6 +79,7 @@ export class AppComponent implements OnInit, OnDestroy {
   // Current page info
   currentPageTitle = 'Dashboard';
   currentPageIcon = 'grid';
+  currentUrl = '/dashboard';
 
   // Main Menu Items
   mainMenuItems: MenuItem[] = [
@@ -87,6 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
   managementMenuItems: MenuItem[] = [
     { title: 'Residents', url: '/admin/residents', icon: 'home', description: 'Manage Residents' },
     { title: 'Employees', url: '/admin/employees', icon: 'people', description: 'Staff Management' },
+    { title: 'House Units', url: '/admin/house-units', icon: 'business-outline', description: 'House Unit Management' },
     { title: 'House Blocks', url: '/admin/house-blocks', icon: 'business', description: 'Building Management' },
     { title: 'Transactions', url: '/admin/transactions', icon: 'swap-horizontal', description: 'Financial Records' },
     { title: 'Invoices', url: '/admin/invoices', icon: 'document', description: 'Billing & Invoices' },
@@ -119,7 +124,7 @@ export class AppComponent implements OnInit, OnDestroy {
       searchOutline, add, addCircle, personAdd, addCircleOutline, chevronBack, arrowBack,
       chevronBackCircleOutline, checkmarkCircle, closeCircle, callOutline, mailOutline,
       layersOutline, resizeOutline, star, warningOutline, buildOutline, expandOutline,
-      medicalOutline, stopCircle, playCircle, swapHorizontalOutline
+      medicalOutline, stopCircle, playCircle, swapHorizontalOutline, alertCircle, saveOutline
     });
   }
 
@@ -135,6 +140,9 @@ export class AppComponent implements OnInit, OnDestroy {
       //   this.router.navigate(['/auth/login']);
       // }
     });
+
+    // Initialize page info from current URL
+    this.updatePageInfo(this.router.url);
 
     // Listen for route changes to update page info
     this.router.events.pipe(
@@ -189,11 +197,14 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private updatePageInfo(url: string) {
+    this.currentUrl = url;
+
     const pageMap: { [key: string]: { title: string; icon: string } } = {
       '/dashboard': { title: 'Dashboard', icon: 'grid' },
       '/profile': { title: 'Profile', icon: 'person-circle' },
       '/admin/residents': { title: 'Residents', icon: 'home' },
       '/admin/employees': { title: 'Employees', icon: 'people' },
+      '/admin/house-units': { title: 'House Units', icon: 'business-outline' },
       '/admin/house-blocks': { title: 'House Blocks', icon: 'business' },
       '/admin/transactions': { title: 'Transactions', icon: 'receipt' },
       '/admin/invoices': { title: 'Invoices', icon: 'document' },
@@ -204,13 +215,29 @@ export class AppComponent implements OnInit, OnDestroy {
       if (url.startsWith(path)) {
         this.currentPageTitle = info.title;
         this.currentPageIcon = info.icon;
-        return;
+        break;
       }
     }
 
     // Default
-    this.currentPageTitle = 'Golden Hills Admin';
-    this.currentPageIcon = 'leaf';
+    if (!this.currentPageTitle || this.currentPageTitle === 'Golden Hills Admin') {
+      this.currentPageTitle = 'Golden Hills Admin';
+      this.currentPageIcon = 'leaf';
+    }
+  }
+
+  /**
+   * Navigate using setRoot (clears navigation history)
+   */
+  navigateWithSetRoot(url: string) {
+    this.navController.navigateRoot(url);
+  }
+
+  /**
+   * Check if menu item is currently active
+   */
+  isActiveMenu(url: string): boolean {
+    return this.currentUrl.startsWith(url);
   }
 
   /**
