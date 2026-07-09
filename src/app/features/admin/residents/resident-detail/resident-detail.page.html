@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/admin/residents"></ion-back-button>
     </ion-buttons>
-    <ion-title>Resident Details</ion-title>
+    <ion-title>Detail Warga</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="navigateToEdit()">
         <ion-icon slot="icon-only" name="create"></ion-icon>
@@ -27,7 +27,7 @@
     <div class="error-state">
       <ion-icon name="warning-outline"></ion-icon>
       <h2>{{ error }}</h2>
-      <ion-button (click)="navigateBack()">Go Back</ion-button>
+      <ion-button (click)="navigateBack()">Kembali</ion-button>
     </div>
   }
 
@@ -62,24 +62,24 @@
         [color]="resident.isActive ? 'warning' : 'success'"
         (click)="toggleActiveStatus()">
         <ion-icon slot="start" name="swap-horizontal-outline"></ion-icon>
-        {{ resident.isActive ? 'Deactivate' : 'Activate' }}
+        {{ resident.isActive ? 'Nonaktifkan' : 'Aktifkan' }}
       </ion-button>
       <ion-button size="small" fill="outline" color="danger" (click)="confirmDelete()">
         <ion-icon slot="start" name="trash-outline"></ion-icon>
-        Delete
+        Hapus
       </ion-button>
     </div>
 
     <!-- Personal Info -->
     <ion-card class="info-card">
       <ion-card-header>
-        <ion-card-title>Personal Information</ion-card-title>
+        <ion-card-title>Informasi Pribadi</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-list lines="full" class="info-list">
           <ion-item>
             <ion-label>
-              <h2>Gender</h2>
+              <h2>Jenis Kelamin</h2>
               <p>@if (resident.gender) {
                 <ion-chip [color]="getGenderColor()">
                   <ion-label>{{ GENDER_LABELS[resident.gender] }}</ion-label>
@@ -91,13 +91,13 @@
           </ion-item>
           <ion-item>
             <ion-label>
-              <h2>Date of Birth</h2>
+              <h2>Tanggal Lahir</h2>
               <p>{{ formatDate(resident.dateOfBirth) }}</p>
             </ion-label>
           </ion-item>
           <ion-item>
             <ion-label>
-              <h2>Marital Status</h2>
+              <h2>Status Perkawinan</h2>
               <p>@if (resident.maritalStatus) {
                 <ion-chip [color]="getMaritalStatusColor()">
                   <ion-label>{{ MARITAL_STATUS_LABELS[resident.maritalStatus] }}</ion-label>
@@ -109,13 +109,13 @@
           </ion-item>
           <ion-item>
             <ion-label>
-              <h2>Occupation</h2>
+              <h2>Pekerjaan</h2>
               <p>{{ resident.occupation || '-' }}</p>
             </ion-label>
           </ion-item>
           <ion-item>
             <ion-label>
-              <h2>Identity Number</h2>
+              <h2>Nomor Identitas</h2>
               <p>{{ resident.identityNumber || '-' }}</p>
             </ion-label>
           </ion-item>
@@ -126,7 +126,7 @@
     <!-- Contact Info -->
     <ion-card class="info-card">
       <ion-card-header>
-        <ion-card-title>Contact Information</ion-card-title>
+        <ion-card-title>Informasi Kontak</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-list lines="full" class="info-list">
@@ -143,7 +143,7 @@
             <ion-item>
               <ion-icon name="call-outline" slot="start"></ion-icon>
               <ion-label>
-                <h2>Phone</h2>
+                <h2>Telepon</h2>
                 <p>{{ resident.phoneNumber }}</p>
               </ion-label>
             </ion-item>
@@ -152,7 +152,7 @@
             <ion-item>
               <ion-icon name="call-outline" slot="start"></ion-icon>
               <ion-label>
-                <h2>Alternate Phone</h2>
+                <h2>Telepon Alternatif</h2>
                 <p>{{ resident.alternatePhone }}</p>
               </ion-label>
             </ion-item>
@@ -161,7 +161,7 @@
             <ion-item>
               <ion-icon name="location-outline" slot="start"></ion-icon>
               <ion-label>
-                <h2>Address</h2>
+                <h2>Alamat</h2>
                 <p>{{ resident.address }}</p>
               </ion-label>
             </ion-item>
@@ -174,7 +174,7 @@
     @if (resident.emergencyContact || resident.emergencyPhone) {
       <ion-card class="info-card">
         <ion-card-header>
-          <ion-card-title>Emergency Contact</ion-card-title>
+          <ion-card-title>Kontak Darurat</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <ion-list lines="full" class="info-list">
@@ -182,7 +182,7 @@
               <ion-item>
                 <ion-icon name="person-outline" slot="start"></ion-icon>
                 <ion-label>
-                  <h2>Contact Name</h2>
+                  <h2>Nama Kontak</h2>
                   <p>{{ resident.emergencyContact }}</p>
                 </ion-label>
               </ion-item>
@@ -191,7 +191,7 @@
               <ion-item>
                 <ion-icon name="call-outline" slot="start"></ion-icon>
                 <ion-label>
-                  <h2>Contact Phone</h2>
+                  <h2>Telepon Kontak</h2>
                   <p>{{ resident.emergencyPhone }}</p>
                 </ion-label>
               </ion-item>
@@ -204,14 +204,14 @@
     <!-- Housing Info -->
     <ion-card class="info-card">
       <ion-card-header>
-        <ion-card-title>Housing Information</ion-card-title>
+        <ion-card-title>Informasi Perumahan</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-list lines="full" class="info-list">
           <ion-item>
             <ion-icon name="business-outline" slot="start"></ion-icon>
             <ion-label>
-              <h2>Block</h2>
+              <h2>Blok</h2>
               <p>@if (resident.houseBlock) {
                 {{ resident.houseBlock.blockName }} ({{ resident.houseBlock.blockCode }})
               } @else {
@@ -222,14 +222,14 @@
           <ion-item>
             <ion-icon name="home-outline" slot="start"></ion-icon>
             <ion-label>
-              <h2>Unit Number</h2>
+              <h2>Nomor Unit</h2>
               <p>{{ resident.unitNumber }}</p>
             </ion-label>
           </ion-item>
           <ion-item>
             <ion-icon name="key-outline" slot="start"></ion-icon>
             <ion-label>
-              <h2>Ownership Type</h2>
+              <h2>Tipe Kepemilikan</h2>
               <p>
                 <ion-chip [color]="getOwnershipColor()">
                   <ion-label>{{ OWNERSHIP_TYPE_LABELS[resident.ownershipType] }}</ion-label>
@@ -240,7 +240,7 @@
           <ion-item>
             <ion-icon name="calendar-outline" slot="start"></ion-icon>
             <ion-label>
-              <h2>Move In Date</h2>
+              <h2>Tanggal Masuk</h2>
               <p>{{ formatDate(resident.moveInDate) }}</p>
             </ion-label>
           </ion-item>
@@ -248,7 +248,7 @@
             <ion-item>
               <ion-icon name="calendar-outline" slot="start"></ion-icon>
               <ion-label>
-                <h2>Move Out Date</h2>
+                <h2>Tanggal Keluar</h2>
                 <p>{{ formatDate(resident.moveOutDate) }}</p>
               </ion-label>
             </ion-item>
@@ -261,7 +261,7 @@
     @if (resident.notes) {
       <ion-card class="info-card">
         <ion-card-header>
-          <ion-card-title>Notes</ion-card-title>
+          <ion-card-title>Catatan</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <p class="notes-text">{{ resident.notes }}</p>
@@ -271,8 +271,8 @@
 
     <!-- Metadata -->
     <div class="metadata">
-      <p>Created: {{ formatDate(resident.createdAt) }}</p>
-      <p>Last Updated: {{ formatDate(resident.updatedAt) }}</p>
+      <p>Dibuat: {{ formatDate(resident.createdAt) }}</p>
+      <p>Terakhir Diperbarui: {{ formatDate(resident.updatedAt) }}</p>
     </div>
   }
 </ion-content>

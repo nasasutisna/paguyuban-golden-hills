@@ -1,0 +1,178 @@
+.form-control-wrapper {
+  width: 100%;
+  margin-bottom: 16px;
+
+  // Label styling
+  ion-label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #222428 !important;
+
+    &.required::after {
+      content: '*';
+      color: #eb445a;
+      margin-left: 4px;
+    }
+  }
+
+  // Date picker item wrapper
+  .form-date-picker-item {
+    display: flex;
+    align-items: center;
+    position: relative;
+    background: #ffffff;
+    margin-bottom: 4px;
+
+    &.with-border {
+      border: 1px solid #92949e;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+
+      &.error {
+        border-color: #eb445a;
+      }
+
+      &:focus-within {
+        border-color: #3880ff;
+        box-shadow: 0 0 0 3px rgba(56, 128, 255, 0.1);
+      }
+    }
+
+    // Style the datetime input
+    ion-input.datetime-input {
+      flex: 1;
+      --padding-start: 16px;
+      --padding-end: 48px;
+      --padding-top: 12px;
+      --padding-bottom: 12px;
+      height: 48px;
+      font-size: 1rem;
+      --color: #222428;
+      cursor: pointer;
+
+      // Remove Ionic's default valid/invalid highlight
+      --highlight-color-valid: transparent !important;
+      --highlight-color-invalid: transparent !important;
+      --highlight-background: transparent !important;
+
+      &::placeholder {
+        --color: #92949e;
+      }
+
+      // Force hide the highlight bar element
+      ::ng-deep .input-bottom {
+        display: none !important;
+      }
+
+      // Disabled state
+      &.input-disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    // Calendar icon
+    .date-picker-icon {
+      position: absolute;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      color: #92949e;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #3880ff;
+      }
+
+      ion-icon {
+        font-size: 1.25rem;
+      }
+    }
+
+    // Clear button
+    .date-picker-clear {
+      position: absolute;
+      right: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      color: #92949e;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #eb445a;
+      }
+
+      ion-icon {
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  // Error message styling
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #eb445a;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    padding-left: 16px;
+
+    .error-icon {
+      font-size: 1rem;
+    }
+  }
+
+  // Helper text styling
+  .helper-text {
+    display: block;
+    color: #92949e;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    padding-left: 16px;
+    font-style: italic;
+  }
+
+  // Error state
+  &.has-error {
+    ion-label {
+      color: #eb445a !important;
+    }
+
+    .form-date-picker-item {
+      .date-picker-icon {
+        color: #eb445a;
+      }
+    }
+  }
+}
+
+// Modal styling for datetime picker
+ion-modal {
+  --background: rgba(0, 0, 0, 0.5);
+  --backdrop-opacity: 0.5;
+
+  &::part(content) {
+    max-width: 350px;
+    height: 400px;
+  }
+
+  ion-datetime {
+    max-width: 100%;
+    --background: #ffffff;
+    --border-radius: 16px;
+    --wheel-fade-background-rgb: 255, 255, 255;
+  }
+}

@@ -34,27 +34,27 @@ export enum OwnershipType {
  * Gender display labels
  */
 export const GENDER_LABELS: Record<Gender, string> = {
-  [Gender.MALE]: 'Male',
-  [Gender.FEMALE]: 'Female',
-  [Gender.OTHER]: 'Other'
+  [Gender.MALE]: 'Laki-laki',
+  [Gender.FEMALE]: 'Perempuan',
+  [Gender.OTHER]: 'Lainnya'
 };
 
 /**
  * Marital Status display labels
  */
 export const MARITAL_STATUS_LABELS: Record<MaritalStatus, string> = {
-  [MaritalStatus.SINGLE]: 'Single',
-  [MaritalStatus.MARRIED]: 'Married',
-  [MaritalStatus.DIVORCED]: 'Divorced',
-  [MaritalStatus.WIDOWED]: 'Widowed'
+  [MaritalStatus.SINGLE]: 'Belum Menikah',
+  [MaritalStatus.MARRIED]: 'Menikah',
+  [MaritalStatus.DIVORCED]: 'Cerai',
+  [MaritalStatus.WIDOWED]: 'Janda/Duda'
 };
 
 /**
  * Ownership Type display labels
  */
 export const OWNERSHIP_TYPE_LABELS: Record<OwnershipType, string> = {
-  [OwnershipType.OWNER]: 'Owner',
-  [OwnershipType.RENTER]: 'Renter'
+  [OwnershipType.OWNER]: 'Pemilik',
+  [OwnershipType.RENTER]: 'Penyewa'
 };
 
 /**

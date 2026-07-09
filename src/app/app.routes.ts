@@ -147,6 +147,79 @@ export const routes: Routes = [
           import('./features/admin/residents/resident-form/resident-form.page').then(
             (m) => m.ResidentFormPage
           )
+      },
+      // Fee Types Routes
+      {
+        path: 'fee-types',
+        loadComponent: () =>
+          import('./features/admin/fee-types/fee-types.page').then(
+            (m) => m.FeeTypesPage
+          )
+      },
+      {
+        path: 'fee-types/new',
+        loadComponent: () =>
+          import('./features/admin/fee-type-form/fee-type-form.page').then(
+            (m) => m.FeeTypeFormPage
+          )
+      },
+      {
+        path: 'fee-types/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/fee-type-form/fee-type-form.page').then(
+            (m) => m.FeeTypeFormPage
+          )
+      },
+      // Resident Invoices Routes
+      {
+        path: 'resident-invoices',
+        loadComponent: () =>
+          import('./features/admin/resident-invoices/resident-invoices.page').then(
+            (m) => m.ResidentInvoicesPage
+          )
+      },
+      {
+        path: 'resident-invoices/new',
+        loadComponent: () =>
+          import('./features/admin/resident-invoice-form/resident-invoice-form.page').then(
+            (m) => m.ResidentInvoiceFormPage
+          )
+      },
+      {
+        path: 'resident-invoices/:id',
+        loadComponent: () =>
+          import('./features/admin/resident-invoice-detail/resident-invoice-detail.page').then(
+            (m) => m.ResidentInvoiceDetailPage
+          )
+      },
+      {
+        path: 'resident-invoices/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/resident-invoice-form/resident-invoice-form.page').then(
+            (m) => m.ResidentInvoiceFormPage
+          )
+      },
+      // Resident Payments Routes
+      {
+        path: 'resident-payments',
+        loadComponent: () =>
+          import('./features/admin/resident-payments/resident-payments.page').then(
+            (m) => m.ResidentPaymentsPage
+          )
+      },
+      {
+        path: 'resident-payments/new',
+        loadComponent: () =>
+          import('./features/admin/resident-payment-form/resident-payment-form.page').then(
+            (m) => m.ResidentPaymentFormPage
+          )
+      },
+      {
+        path: 'resident-payments/:id',
+        loadComponent: () =>
+          import('./features/admin/resident-payments/resident-payments.page').then(
+            (m) => m.ResidentPaymentsPage
+          )
       }
     ]
   },

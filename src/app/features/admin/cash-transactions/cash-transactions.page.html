@@ -1,0 +1,88 @@
+<ion-content class="ion-padding">
+  <!-- Statistics Cards -->
+  <div class="stats-container ion-margin-top" *ngIf="hasStats() || statsLoading">
+    <!-- Loading skeleton -->
+    <div class="stats-skeleton" *ngIf="statsLoading">
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px;"></ion-skeleton-text>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" *ngIf="!statsLoading && summary">
+      <!-- Total Income -->
+      <ion-card class="stat-card success">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="trending-up"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ formatCurrency(summary.totalIncome) }}</div>
+              <div class="stat-label">Total Pemasukan</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Total Expense -->
+      <ion-card class="stat-card danger">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="trending-down"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ formatCurrency(summary.totalExpense) }}</div>
+              <div class="stat-label">Total Pengeluaran</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Balance -->
+      <ion-card class="stat-card primary">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="wallet"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ formatCurrency(summary.balance) }}</div>
+              <div class="stat-label">Saldo</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Pending Approval -->
+      <ion-card class="stat-card warning" *ngIf="summary.pendingApproval > 0">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="time"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ summary.pendingApproval }}</div>
+              <div class="stat-label">Menunggu Persetujuan</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div>
+    <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
+      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
+      <div table-actions>
+        <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Tambah Transaksi
+        </ion-button>
+      </div>
+    </app-table>
+  </div>
+</ion-content>

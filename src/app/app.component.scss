@@ -3,6 +3,24 @@
 // Golden Hills Theme - Green & Brown
 // ============================================
 
+// ============================================
+// Remove Ionic Input Highlight (Green Bottom Border)
+// ============================================
+// This needs to be in a component style for ::ng-deep to work
+ion-input,
+ion-select,
+ion-textarea {
+  --highlight-color-valid: transparent !important;
+  --highlight-color-invalid: transparent !important;
+  --highlight-background: transparent !important;
+}
+
+::ng-deep ion-input .input-bottom,
+::ng-deep ion-select .select-bottom,
+::ng-deep ion-textarea .textarea-bottom {
+  display: none !important;
+}
+
 // CSS Variables - Green & Brown Theme
 :root {
   --admin-primary: #43A047;
@@ -494,6 +512,11 @@ ion-router-outlet.main-router-outlet {
   background: var(--admin-bg-light);
   max-height: calc(100vh - 64px);
   margin-top: 105px;
+}
+
+.main-router-outlet-login {
+  max-height: 100% !important;
+  margin-top: 0px !important;
 }
 
 // ============================================

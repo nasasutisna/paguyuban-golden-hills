@@ -25,6 +25,15 @@ import {
 } from '../residents.model';
 import { HouseBlock } from '@features/admin/house-blocks/house-blocks.model';
 
+// Form control components
+import {
+  FormInputComponent,
+  FormSelectComponent,
+  FormTextareaComponent,
+  FormButtonComponent,
+  SelectOption
+} from '@shared/ui/form-controls';
+
 /**
  * Resident Form Page
  * Handles both create and edit modes based on route parameter presence
@@ -32,7 +41,15 @@ import { HouseBlock } from '@features/admin/house-blocks/house-blocks.model';
 @Component({
   selector: 'app-resident-form',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    IonicModule,
+    ReactiveFormsModule,
+    FormInputComponent,
+    FormSelectComponent,
+    FormTextareaComponent,
+    FormButtonComponent
+  ],
   templateUrl: './resident-form.page.html',
   styleUrls: ['./resident-form.page.scss']
 })
@@ -54,23 +71,26 @@ export class ResidentFormPage implements OnInit, OnDestroy {
   // Available house blocks
   houseBlocks: HouseBlock[] = [];
 
+  // House block options for select dropdown
+  houseBlockOptions: SelectOption[] = [];
+
   // Enum options
-  genderOptions = [
-    { value: Gender.MALE, label: 'Male' },
-    { value: Gender.FEMALE, label: 'Female' },
-    { value: Gender.OTHER, label: 'Other' }
+  genderOptions: SelectOption[] = [
+    { value: Gender.MALE, label: 'Laki-laki' },
+    { value: Gender.FEMALE, label: 'Perempuan' },
+    { value: Gender.OTHER, label: 'Lainnya' }
   ];
 
-  maritalStatusOptions = [
-    { value: MaritalStatus.SINGLE, label: 'Single' },
-    { value: MaritalStatus.MARRIED, label: 'Married' },
-    { value: MaritalStatus.DIVORCED, label: 'Divorced' },
-    { value: MaritalStatus.WIDOWED, label: 'Widowed' }
+  maritalStatusOptions: SelectOption[] = [
+    { value: MaritalStatus.SINGLE, label: 'Belum Menikah' },
+    { value: MaritalStatus.MARRIED, label: 'Menikah' },
+    { value: MaritalStatus.DIVORCED, label: 'Cerai' },
+    { value: MaritalStatus.WIDOWED, label: 'Janda/Duda' }
   ];
 
-  ownershipTypeOptions = [
-    { value: OwnershipType.OWNER, label: 'Owner' },
-    { value: OwnershipType.RENTER, label: 'Renter' }
+  ownershipTypeOptions: SelectOption[] = [
+    { value: OwnershipType.OWNER, label: 'Pemilik' },
+    { value: OwnershipType.RENTER, label: 'Penyewa' }
   ];
 
   private subscriptions: Subscription[] = [];
@@ -166,10 +186,15 @@ export class ResidentFormPage implements OnInit, OnDestroy {
       this.houseBlocksService.getAll({ limit: 100 }).subscribe({
         next: (response) => {
           this.houseBlocks = response.data || [];
+          // Convert to SelectOption format
+          this.houseBlockOptions = this.houseBlocks.map(block => ({
+            value: block.id,
+            label: `${block.blockName} (${block.blockCode})`
+          }));
         },
         error: (error) => {
           console.error('Error loading house blocks:', error);
-          this.toastService.error('Failed to load house blocks');
+          this.toastService.error('Gagal memuat blok rumah');
         }
       })
     );
@@ -179,7 +204,7 @@ export class ResidentFormPage implements OnInit, OnDestroy {
    * Load existing resident for edit
    */
   private loadResident(id: string): void {
-    this.loadingService.show({ message: 'Loading resident...' });
+    this.loadingService.show({ message: 'Memuat warga...' });
 
     this.subscriptions.push(
       this.residentsService.getById(id).subscribe({
@@ -188,13 +213,13 @@ export class ResidentFormPage implements OnInit, OnDestroy {
           if (resident) {
             this.populateForm(resident);
           } else {
-            this.toastService.error('Resident not found');
+            this.toastService.error('Warga tidak ditemukan');
             this.goBack();
           }
         },
         error: (error) => {
           this.loadingService.dismiss();
-          this.toastService.error('Failed to load resident');
+          this.toastService.error('Gagal memuat warga');
           console.error('Load resident error:', error);
           this.goBack();
         }
@@ -248,28 +273,37 @@ export class ResidentFormPage implements OnInit, OnDestroy {
     }
 
     const fieldLabels: { [key: string]: string } = {
-      residentCode: 'Resident code',
-      firstName: 'First name',
-      lastName: 'Last name',
+      residentCode: 'Kode warga',
+      firstName: 'Nama depan',
+      lastName: 'Nama belakang',
       email: 'Email',
-      phoneNumber: 'Phone number',
-      identityNumber: 'Identity number',
-      dateOfBirth: 'Date of birth',
-      gender: 'Gender',
-      occupation: 'Occupation',
-      maritalStatus: 'Marital status',
-      address: 'Address',
-      emergencyContact: 'Emergency contact',
-      emergencyPhone: 'Emergency phone',
-      houseBlockId: 'House block',
-      unitNumber: 'Unit number',
-      moveInDate: 'Move in date',
-      moveOutDate: 'Move out date',
-      ownershipType: 'Ownership type',
-      notes: 'Notes'
+      phoneNumber: 'Nomor telepon',
+      identityNumber: 'Nomor identitas',
+      dateOfBirth: 'Tanggal lahir',
+      gender: 'Jenis kelamin',
+      occupation: 'Pekerjaan',
+      maritalStatus: 'Status perkawinan',
+      address: 'Alamat',
+      emergencyContact: 'Kontak darurat',
+      emergencyPhone: 'Telepon darurat',
+      houseBlockId: 'Blok rumah',
+      unitNumber: 'Nomor unit',
+      moveInDate: 'Tanggal masuk',
+      moveOutDate: 'Tanggal keluar',
+      ownershipType: 'Tipe kepemilikan',
+      notes: 'Catatan'
     };
 
     return getErrorMessage(control.errors, fieldLabels[fieldName] || fieldName);
+  }
+
+  /**
+   * Check if a field is invalid and touched
+   * Used to show validation errors in form-control components
+   */
+  isFieldInvalid(fieldName: string): boolean {
+    const control = this.residentForm.get(fieldName);
+    return control ? control.invalid && control.touched : false;
   }
 
   /**
@@ -299,7 +333,7 @@ export class ResidentFormPage implements OnInit, OnDestroy {
 
     try {
       await this.loadingService.show({
-        message: this.isEditMode ? 'Updating resident...' : 'Creating resident...'
+        message: this.isEditMode ? 'Menyimpan warga...' : 'Membuat warga...'
       });
 
       if (this.isEditMode && this.residentId) {
@@ -308,13 +342,13 @@ export class ResidentFormPage implements OnInit, OnDestroy {
           this.residentsService.update(this.residentId, dto).subscribe({
             next: () => {
               this.loadingService.dismiss();
-              this.toastService.success('Resident updated successfully!');
+              this.toastService.success('Warga berhasil disimpan!');
               this.goBack();
             },
             error: (error) => {
               this.loadingService.dismiss();
               this.isSubmitting = false;
-              this.toastService.error('Failed to update resident');
+              this.toastService.error('Gagal menyimpan warga');
               console.error('Update resident error:', error);
             }
           })
@@ -325,13 +359,13 @@ export class ResidentFormPage implements OnInit, OnDestroy {
           this.residentsService.create(dto as CreateResidentDto).subscribe({
             next: () => {
               this.loadingService.dismiss();
-              this.toastService.success('Resident created successfully!');
+              this.toastService.success('Warga berhasil dibuat!');
               this.goBack();
             },
             error: (error) => {
               this.loadingService.dismiss();
               this.isSubmitting = false;
-              this.toastService.error('Failed to create resident');
+              this.toastService.error('Gagal membuat warga');
               console.error('Create resident error:', error);
             }
           })
@@ -340,7 +374,7 @@ export class ResidentFormPage implements OnInit, OnDestroy {
     } catch (error) {
       this.loadingService.dismiss();
       this.isSubmitting = false;
-      this.toastService.error('An error occurred');
+      this.toastService.error('Terjadi kesalahan');
       console.error('Submit error:', error);
     }
   }
@@ -429,14 +463,14 @@ export class ResidentFormPage implements OnInit, OnDestroy {
    * Get page title
    */
   get pageTitle(): string {
-    return this.isEditMode ? 'Edit Resident' : 'Create Resident';
+    return this.isEditMode ? 'Edit Warga' : 'Buat Warga';
   }
 
   /**
    * Get submit button text
    */
   get submitButtonText(): string {
-    return this.isEditMode ? 'Update' : 'Create';
+    return this.isEditMode ? 'Simpan' : 'Buat';
   }
 
   /**

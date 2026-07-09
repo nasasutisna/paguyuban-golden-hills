@@ -1,0 +1,345 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/resident-invoices"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detail Tagihan</ion-title>
+    <ion-buttons slot="end" *ngIf="invoice">
+      <ion-button (click)="navigateToEdit()">
+        <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="confirmDelete()" color="danger">
+        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="ion-padding ion-text-center">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p class="ion-margin-top">Memuat data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="ion-padding ion-text-center">
+    <ion-icon name="alert-circle-outline" size="large" color="danger"></ion-icon>
+    <p class="ion-margin-top">{{ error }}</p>
+    <ion-button fill="outline" (click)="loadData()">
+      <ion-icon name="refresh-outline" slot="start"></ion-icon>
+      Coba Lagi
+    </ion-button>
+  </div>
+
+  <!-- Invoice Detail -->
+  <ng-container *ngIf="!loading && !error && invoice">
+    <!-- Status Card -->
+    <ion-card class="status-card" [class.overdue]="isOverdue()">
+      <ion-card-header>
+        <div class="card-header-top">
+          <ion-card-title>{{ invoice.invoiceNumber }}</ion-card-title>
+          <ion-chip [color]="getStatusColor()">
+            {{ INVOICE_STATUS_LABELS[invoice.status] }}
+          </ion-chip>
+        </div>
+        <ion-card-subtitle>
+          {{ getFeeTypeName() }} • {{ getResidentName() }}
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Progress Bar -->
+        <div class="progress-section">
+          <div class="progress-labels">
+            <span>Pembayaran: {{ getProgressPercentage() | number:'1.0-0' }}%</span>
+            <span>{{ formatCurrency(invoice.paidAmount) }} / {{ formatCurrency(invoice.totalAmount) }}</span>
+          </div>
+          <ion-progress-bar
+            [value]="getProgressPercentage() / 100"
+            color="success">
+          </ion-progress-bar>
+          <div class="remaining-amount" *ngIf="invoice.remainingAmount > 0">
+            Sisa: {{ formatCurrency(invoice.remainingAmount) }}
+          </div>
+          <div class="paid-in-full" *ngIf="invoice.remainingAmount === 0">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            Lunas
+          </div>
+        </div>
+
+        <!-- Pay Button -->
+        <ion-button
+          *ngIf="canMakePayment()"
+          expand="block"
+          class="ion-margin-top"
+          (click)="navigateToPayment()">
+          <ion-icon name="card-outline" slot="start"></ion-icon>
+          Bayar Sekarang
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Resident Info Card -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Informasi Warga</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-icon name="person-outline" slot="start" color="medium"></ion-icon>
+          <ion-label>
+            <h2>{{ getResidentName() }}</h2>
+            <p>{{ getResidentAddress() }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item lines="none" *ngIf="invoice.resident?.phoneNumber">
+          <ion-icon name="call-outline" slot="start" color="medium"></ion-icon>
+          <ion-label>
+            <p>{{ invoice.resident?.phoneNumber }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Invoice Details Card -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Detail Tagihan</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label>
+              <p>Tanggal Tagihan</p>
+              <h2>{{ formatDate(invoice.invoiceDate) }}</h2>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <p>Jatuh Tempo</p>
+              <h2 [class.overdue]="isOverdue()">{{ formatDate(invoice.dueDate) }}</h2>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <p>Periode</p>
+              <h2>{{ formatDate(invoice.periodStartDate) }} - {{ formatDate(invoice.periodEndDate) }}</h2>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+        <ion-list lines="none" class="amount-list">
+          <ion-item-divider>
+            <ion-label>Rincian Biaya</ion-label>
+          </ion-item-divider>
+          <ion-item>
+            <ion-label>
+              <p>Subtotal</p>
+            </ion-label>
+            <ion-label slot="end">
+              <h2>{{ formatCurrency(invoice.subtotal) }}</h2>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="invoice.taxAmount > 0">
+            <ion-label>
+              <p>Pajak</p>
+            </ion-label>
+            <ion-label slot="end">
+              <h2>{{ formatCurrency(invoice.taxAmount) }}</h2>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="invoice.discountAmount > 0">
+            <ion-label>
+              <p>Diskon</p>
+            </ion-label>
+            <ion-label slot="end">
+              <h2 class="discount">-{{ formatCurrency(invoice.discountAmount) }}</h2>
+            </ion-label>
+          </ion-item>
+          <ion-item class="total-item">
+            <ion-label>
+              <p class="total-label">Total Tagihan</p>
+            </ion-label>
+            <ion-label slot="end">
+              <h2 class="total-amount">{{ formatCurrency(invoice.totalAmount) }}</h2>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+        <ion-note *ngIf="invoice.notes" class="ion-margin-top">
+          <strong>Catatan:</strong> {{ invoice.notes }}
+        </ion-note>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Payment History Card -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Riwayat Pembayaran</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div *ngIf="payments.length === 0" class="ion-text-center ion-padding">
+          <ion-icon name="receipt-outline" size="large" color="medium"></ion-icon>
+          <p class="ion-margin-top">Belum ada pembayaran</p>
+        </div>
+
+        <ion-list lines="full" *ngIf="payments.length > 0">
+          <ion-item *ngFor="let payment of payments" class="payment-item" (click)="viewPayment(payment.id)">
+            <ion-thumbnail slot="start" class="payment-thumbnail">
+              <div class="payment-icon">
+                <ion-icon name="card-outline"></ion-icon>
+              </div>
+            </ion-thumbnail>
+            <ion-label>
+              <h2>{{ payment.paymentNumber }}</h2>
+              <p>{{ formatDate(payment.paymentDate) }}</p>
+            </ion-label>
+            <ion-label slot="end" class="ion-text-right">
+              <h2>{{ formatCurrency(payment.amount) }}</h2>
+              <p>{{ payment.paymentMethod }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+</ion-content>
+
+<style>
+.status-card {
+  margin: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-card.overdue {
+  border-left: 4px solid var(--ion-color-danger);
+}
+
+.card-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header-top ion-card-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.progress-section {
+  margin: 16px 0;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.progress-labels span:first-child {
+  font-weight: 500;
+  color: var(--ion-color-dark);
+}
+
+.progress-labels span:last-child {
+  font-weight: 600;
+  color: var(--ion-color-success);
+}
+
+.remaining-amount {
+  text-align: right;
+  font-size: 14px;
+  color: var(--ion-color-warning);
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.paid-in-full {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--ion-color-success);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.paid-in-full ion-icon {
+  font-size: 24px;
+}
+
+.amount-list {
+  margin-top: 16px;
+}
+
+.amount-list ion-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+}
+
+.amount-list p {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+.amount-list h2 {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ion-color-dark);
+}
+
+.amount-list .discount {
+  color: var(--ion-color-success);
+}
+
+.total-item {
+  --background: var(--ion-color-light);
+  margin-top: 8px;
+  border-radius: 8px;
+}
+
+.total-label,
+.total-amount {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+}
+
+.payment-item {
+  cursor: pointer;
+}
+
+.payment-item:hover {
+  --background: var(--ion-color-light);
+}
+
+.payment-thumbnail {
+  --size: 48px;
+  --border-radius: 12px;
+  margin-right: 12px;
+}
+
+.payment-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+}
+
+.payment-icon ion-icon {
+  font-size: 24px;
+  color: var(--ion-color-primary);
+}
+
+h2.overdue {
+  color: var(--ion-color-danger);
+  font-weight: 600;
+}
+</style>

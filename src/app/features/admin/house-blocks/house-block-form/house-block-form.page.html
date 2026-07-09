@@ -12,13 +12,13 @@
     <!-- Basic Information -->
     <ion-card class="form-card">
       <ion-card-header>
-        <ion-card-subtitle>Basic Information</ion-card-subtitle>
+        <ion-card-subtitle>Informasi Dasar</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
         <app-form-input
-          label="Block Code"
+          label="Kode Blok"
           formControlName="blockCode"
-          placeholder="e.g., BLK-A"
+          placeholder="contoh: BLK-A"
           [maxlength]="20"
           [required]="true"
           [showError]="isFieldInvalid('blockCode')"
@@ -26,9 +26,9 @@
         ></app-form-input>
 
         <app-form-input
-          label="Block Name"
+          label="Nama Blok"
           formControlName="blockName"
-          placeholder="e.g., Block A - Residential"
+          placeholder="contoh: Blok A - Perumahan"
           [maxlength]="100"
           [required]="true"
           [showError]="isFieldInvalid('blockName')"
@@ -36,9 +36,9 @@
         ></app-form-input>
 
         <app-form-select
-          label="Block Type"
+          label="Tipe Blok"
           formControlName="blockType"
-          placeholder="Select block type"
+          placeholder="Pilih tipe blok"
           [options]="blockTypeOptions"
           [required]="true"
           [showError]="isFieldInvalid('blockType')"
@@ -46,16 +46,16 @@
         ></app-form-select>
 
         <app-form-input
-          label="Address"
+          label="Alamat"
           formControlName="address"
-          placeholder="e.g., Jalan Golden Hills Block A"
+          placeholder="contoh: Jalan Golden Hills Blok A"
           [maxlength]="255"
           [showError]="isFieldInvalid('address')"
           [errorMessage]="getErrorMessage('address')"
         ></app-form-input>
 
         <ion-item class="toggle-item">
-          <ion-label>Active Status</ion-label>
+          <ion-label>Status Aktif</ion-label>
           <ion-toggle formControlName="isActive"></ion-toggle>
         </ion-item>
       </ion-card-content>
@@ -64,14 +64,14 @@
     <!-- Property Details -->
     <ion-card class="form-card">
       <ion-card-header>
-        <ion-card-subtitle>Property Details</ion-card-subtitle>
+        <ion-card-subtitle>Detail Properti</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
         <app-form-input
-          label="Total Units"
+          label="Total Unit"
           type="number"
           formControlName="totalUnits"
-          placeholder="e.g., 24"
+          placeholder="contoh: 24"
           [min]="0"
           [required]="true"
           [showError]="isFieldInvalid('totalUnits')"
@@ -79,20 +79,20 @@
         ></app-form-input>
 
         <app-form-input
-          label="Total Floors"
+          label="Total Lantai"
           type="number"
           formControlName="totalFloors"
-          placeholder="e.g., 4"
+          placeholder="contoh: 4"
           [min]="1"
           [showError]="isFieldInvalid('totalFloors')"
           [errorMessage]="getErrorMessage('totalFloors')"
         ></app-form-input>
 
         <app-form-input
-          label="Construction Year"
+          label="Tahun Pembangunan"
           type="number"
           formControlName="constructionYear"
-          placeholder="e.g., 2020"
+          placeholder="contoh: 2020"
           [min]="1900"
           [max]="currentYear + 1"
           [showError]="isFieldInvalid('constructionYear')"
@@ -104,24 +104,24 @@
     <!-- Area Information -->
     <ion-card class="form-card">
       <ion-card-header>
-        <ion-card-subtitle>Area Information</ion-card-subtitle>
+        <ion-card-subtitle>Informasi Luas</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
         <app-form-input
-          label="Land Area (m²)"
+          label="Luas Tanah (m²)"
           type="number"
           formControlName="landArea"
-          placeholder="e.g., 2000"
+          placeholder="contoh: 2000"
           [min]="0"
           [showError]="isFieldInvalid('landArea')"
           [errorMessage]="getErrorMessage('landArea')"
         ></app-form-input>
 
         <app-form-input
-          label="Building Area (m²)"
+          label="Luas Bangunan (m²)"
           type="number"
           formControlName="buildingArea"
-          placeholder="e.g., 1500"
+          placeholder="contoh: 1500"
           [min]="0"
           [showError]="isFieldInvalid('buildingArea')"
           [errorMessage]="getErrorMessage('buildingArea')"
@@ -132,32 +132,41 @@
     <!-- Additional Information -->
     <ion-card class="form-card">
       <ion-card-header>
-        <ion-card-subtitle>Additional Information</ion-card-subtitle>
+        <ion-card-subtitle>Informasi Tambahan</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
         <app-form-textarea
-          label="Facilities (JSON)"
+          label="Fasilitas (JSON)"
           formControlName="facilities"
-          placeholder='e.g., {"parking": true, "gym": true, "pool": true}'
+          placeholder='contoh: {"parking": true, "gym": true, "pool": true}'
           [rows]="3"
           [showError]="isFieldInvalid('facilities')"
           [errorMessage]="getErrorMessage('facilities')"
-          helperText="Enter as JSON object with boolean values for available facilities"
+          helperText="Masukkan dalam format JSON objek dengan nilai boolean untuk fasilitas yang tersedia"
         ></app-form-textarea>
 
         <app-form-textarea
-          label="Amenities"
+          label="Fasilitas Tambahan"
           formControlName="amenities"
-          placeholder="e.g., 24-hour security, children's playground, jogging track"
+          placeholder="contoh: Keamanan 24 jam, taman bermain anak, jalur lari"
           [rows]="3"
           [showError]="isFieldInvalid('amenities')"
           [errorMessage]="getErrorMessage('amenities')"
         ></app-form-textarea>
 
+        <app-form-select
+          label="Koordinator Blok"
+          formControlName="coordinatorId"
+          placeholder="Pilih koordinator blok"
+          [options]="coordinatorOptions"
+          [showError]="isFieldInvalid('coordinatorId')"
+          [errorMessage]="getErrorMessage('coordinatorId')"
+        ></app-form-select>
+
         <app-form-textarea
-          label="Description"
+          label="Deskripsi"
           formControlName="description"
-          placeholder="Additional details about this block..."
+          placeholder="Detail tambahan tentang blok ini..."
           [rows]="4"
           [showError]="isFieldInvalid('description')"
           [errorMessage]="getErrorMessage('description')"
@@ -168,7 +177,7 @@
     <!-- Form Actions -->
     <div class="form-actions">
       <app-form-button
-        text="Cancel"
+        text="Batal"
         variant="outline"
         color="medium"
         expand="block"
@@ -176,7 +185,7 @@
       ></app-form-button>
       <app-form-button
         [text]="submitButtonText"
-        icon="checkmark-circle"
+        icon="save-outline"
         iconSlot="start"
         variant="solid"
         color="primary"

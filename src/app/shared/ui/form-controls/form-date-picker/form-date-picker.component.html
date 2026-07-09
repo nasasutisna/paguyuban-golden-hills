@@ -1,0 +1,83 @@
+<div class="form-control-wrapper" [class.has-error]="showError">
+  <!-- Label -->
+  @if (label) {
+    <ion-label
+      [color]="labelColor"
+      [position]="labelPosition"
+      [class.required]="required"
+    >
+      {{ label }}
+    </ion-label>
+  }
+
+  <!-- Date Picker Input Container -->
+  <div class="form-date-picker-item" [class.error]="showError" [class.with-border]="border">
+    <ion-input
+      class="datetime-input"
+      [value]="value | date: getDisplayFormat()"
+      [placeholder]="placeholder"
+      [readonly]="true"
+      [disabled]="isDisabled"
+      (click)="presentDatetimeModal()">
+    </ion-input>
+
+    <!-- Calendar Icon -->
+    <span class="date-picker-icon" (click)="presentDatetimeModal()">
+      <ion-icon name="calendar-outline"></ion-icon>
+    </span>
+
+    <!-- Clear Button -->
+    @if (clearable && !isEmpty && !isDisabled) {
+      <span class="date-picker-clear" (click)="clearDate()">
+        <ion-icon name="close-circle"></ion-icon>
+      </span>
+    }
+  </div>
+
+  <!-- Validation Error Message -->
+  @if (showError && errorMessage) {
+    <ion-text class="error-message">
+      <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+      {{ errorMessage }}
+    </ion-text>
+  }
+
+  <!-- Helper Text -->
+  @if (helperText && !showError) {
+    <ion-note class="helper-text">
+      {{ helperText }}
+    </ion-note>
+  }
+</div>
+
+<!-- Modal for datetime picker - OUTSIDE the wrapper -->
+<ion-modal #datetimeModal [isOpen]="isModalOpen" (willDismiss)="onModalDismiss()">
+  <ng-template>
+
+    <ion-content>
+      <ion-datetime
+        #datetime
+        [value]="tempValue || value"
+        [disabled]="isDisabled"
+        [presentation]="presentation"
+        [locale]="locale"
+        [min]="minDate"
+        [max]="maxDate"
+        [firstDayOfWeek]="firstDayOfWeek"
+        [formatOptions]="getFormatOptions()"
+        (ionChange)="onDateTimeChange($event)">
+      </ion-datetime>
+    </ion-content>
+
+     <ion-footer>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="dismissModal()">Batal</ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+          <ion-button (click)="confirmDate()">Pilih</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

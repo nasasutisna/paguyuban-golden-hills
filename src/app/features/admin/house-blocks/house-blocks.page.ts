@@ -45,19 +45,20 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
   // Table configuration
   tableConfig: TableConfig = {
     columns: [
-      { key: 'blockCode', header: 'Code', type: 'text', sortable: true },
-      { key: 'blockName', header: 'Name', type: 'text', sortable: true },
-      { key: 'blockType', header: 'Type', type: 'status', sortable: true },
-      { key: 'totalUnits', header: 'Units', type: 'number', sortable: true, align: 'right' },
-      { key: 'totalFloors', header: 'Floors', type: 'number', sortable: true, align: 'right' },
-      { key: 'address', header: 'Address', type: 'text' },
+      { key: 'blockCode', header: 'Kode', type: 'text', sortable: true },
+      { key: 'blockName', header: 'Nama', type: 'text', sortable: true },
+      { key: 'blockType', header: 'Tipe', type: 'status', sortable: true },
+      { key: 'totalUnits', header: 'Unit', type: 'number', sortable: true, align: 'right' },
+      { key: 'totalFloors', header: 'Lantai', type: 'number', sortable: true, align: 'right' },
+      { key: 'coordinatorName', header: 'Koordinator', type: 'text' },
+      { key: 'address', header: 'Alamat', type: 'text' },
       { key: 'isActive', header: 'Status', type: 'status', sortable: true },
-      { key: 'createdAt', header: 'Created', type: 'date', sortable: true }
+      { key: 'createdAt', header: 'Dibuat', type: 'date', sortable: true }
     ],
     actions: [
       {
         id: 'view',
-        label: 'View',
+        label: 'Lihat',
         icon: 'eye-outline',
         color: 'medium',
         handler: (item) => this.navigateToView(item)
@@ -71,15 +72,15 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
       },
       {
         id: 'delete',
-        label: 'Delete',
+        label: 'Hapus',
         icon: 'trash-outline',
         color: 'danger',
         handler: (item) => this.confirmDelete(item),
         confirm: {
-          title: 'Delete House Block',
-          message: 'Are you sure you want to delete this house block? This action cannot be undone.',
-          confirmText: 'Delete',
-          cancelText: 'Cancel'
+          title: 'Hapus Blok',
+          message: 'Apakah Anda yakin ingin menghapus blok ini? Tindakan ini tidak dapat dibatalkan.',
+          confirmText: 'Hapus',
+          cancelText: 'Batal'
         }
       }
     ],
@@ -92,8 +93,8 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
     showFooter: true,
     striped: true,
     hoverable: true,
-    emptyMessage: 'No house blocks found',
-    loadingMessage: 'Loading house blocks...'
+    emptyMessage: 'Tidak ada blok ditemukan',
+    loadingMessage: 'Memuat blok...'
   };
 
   // Table data source
@@ -104,11 +105,11 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
 
   // Status badges for table
   statusBadges = [
-    { value: true, label: 'Active', color: 'success', icon: 'checkmark-circle' },
-    { value: false, label: 'Inactive', color: 'medium', icon: 'close-circle' },
-    { value: BlockType.RESIDENTIAL, label: 'Residential', color: 'success' },
-    { value: BlockType.COMMERCIAL, label: 'Commercial', color: 'warning' },
-    { value: BlockType.MIXED, label: 'Mixed', color: 'tertiary' }
+    { value: true, label: 'Aktif', color: 'success', icon: 'checkmark-circle' },
+    { value: false, label: 'Tidak Aktif', color: 'medium', icon: 'close-circle' },
+    { value: BlockType.RESIDENTIAL, label: 'Residensial', color: 'success' },
+    { value: BlockType.COMMERCIAL, label: 'Komersial', color: 'warning' },
+    { value: BlockType.MIXED, label: 'Campuran', color: 'tertiary' }
   ];
 
   private subscriptions: Subscription[] = [];
@@ -182,8 +183,9 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
         next: (response) => {
           console.log('resoonse',response)
           this.houseBlocks = response.data;
+          const transformedData = this.transformDataWithCoordinator(response.data);
           this.dataSource = {
-            data: response.data,
+            data: transformedData,
             loading: false,
             total: response.total,
             totalPages: response.totalPages
@@ -193,7 +195,7 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading house blocks:', error);
-          this.toastService.error('Failed to load house blocks');
+          this.toastService.error('Gagal memuat blok');
           this.dataSource = {
             data: [],
             loading: false,
@@ -242,16 +244,16 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
    */
   async confirmDelete(item: HouseBlock): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Delete House Block',
-      message: `Are you sure you want to delete "${item.blockName}"? This action cannot be undone.`,
+      header: 'Hapus Blok',
+      message: `Apakah Anda yakin ingin menghapus "${item.blockName}"? Tindakan ini tidak dapat dibatalkan.`,
       buttons: [
         {
-          text: 'Cancel',
+          text: 'Batal',
           role: 'cancel',
           cssClass: 'secondary'
         },
         {
-          text: 'Delete',
+          text: 'Hapus',
           role: 'destructive',
           handler: () => {
             this.handleDelete(item.id);
@@ -267,19 +269,19 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
    * Handle delete
    */
   private handleDelete(id: string): void {
-    this.loadingService.show({ message: 'Deleting house block...' });
+    this.loadingService.show({ message: 'Menghapus blok...' });
 
     this.subscriptions.push(
       this.houseBlocksService.delete(id).subscribe({
         next: () => {
           this.loadingService.dismiss();
-          this.toastService.success('House block deleted successfully');
+          this.toastService.success('Blok berhasil dihapus');
           this.loadHouseBlocks(); // Reload list
           this.loadOccupancyStats(); // Reload stats
         },
         error: (error) => {
           this.loadingService.dismiss();
-          this.toastService.error('Failed to delete house block');
+          this.toastService.error('Gagal menghapus blok');
           console.error('Delete house block error:', error);
         }
       })
@@ -326,8 +328,9 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
       this.houseBlocksService.getAll(params).subscribe({
         next: (response) => {
           this.houseBlocks = response.data;
+          const transformedData = this.transformDataWithCoordinator(response.data);
           this.dataSource = {
-            data: response.data,
+            data: transformedData,
             loading: false,
             total: response.total,
             totalPages: response.totalPages
@@ -346,6 +349,25 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  /**
+   * Transform house blocks data to include coordinator name
+   */
+  private transformDataWithCoordinator(blocks: HouseBlock[]): any[] {
+    return blocks.map(block => ({
+      ...block,
+      coordinatorName: this.getCoordinatorName(block)
+    }));
+  }
+
+  /**
+   * Get coordinator name from house block
+   */
+  getCoordinatorName(block: HouseBlock): string {
+    if (!block.coordinator) return '-';
+    const { firstName, lastName } = block.coordinator;
+    return `${firstName} ${lastName}`.trim();
   }
 
   /**

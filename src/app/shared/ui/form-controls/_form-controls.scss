@@ -207,12 +207,4 @@
   }
 }
 
-// Focus visible styles for accessibility
-.form-control-wrapper {
-  ion-input:focus-visible,
-  ion-select:focus-visible,
-  ion-textarea:focus-visible {
-    outline: 2px solid #3880ff;
-    outline-offset: 2px;
-  }
-}
+// Focus visible styles removed - no border highlight on focus

@@ -1,0 +1,192 @@
+.resident-payment-form {
+  ion-content {
+    --background: #f8f9fa;
+  }
+}
+
+.form-card {
+  margin: 0 0 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  ion-card-header {
+    padding-bottom: 8px;
+
+    ion-card-subtitle {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.9rem;
+    }
+  }
+
+  ion-card-content {
+    padding: 16px;
+
+    // Add spacing between form control components
+    app-form-input,
+    app-form-select,
+    app-form-textarea,
+    app-form-date-picker {
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    app-form-input:last-child,
+    app-form-select:last-child,
+    app-form-textarea:last-child,
+    app-form-date-picker:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.invoice-info-card {
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  ion-card-header {
+    padding-bottom: 8px;
+
+    ion-card-title {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+  }
+
+  ion-card-content {
+    padding: 16px;
+  }
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+
+  span {
+    color: var(--ion-color-medium);
+  }
+
+  strong {
+    color: var(--ion-color-dark);
+    text-align: right;
+  }
+
+  &.total-row {
+    font-size: 16px;
+  }
+
+  .total-amount {
+    color: var(--ion-color-primary);
+    font-size: 18px;
+  }
+
+  .paid-amount {
+    color: var(--ion-color-success);
+  }
+
+  .remaining-amount {
+    color: var(--ion-color-warning);
+    font-weight: 600;
+  }
+}
+
+.info-divider {
+  height: 1px;
+  background: var(--ion-color-light);
+  margin: 8px 0;
+}
+
+.resident-info {
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 14px;
+    color: var(--ion-color-medium-shade);
+  }
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.summary-card {
+  margin: 0 0 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  ion-card-header {
+    padding-bottom: 8px;
+
+    ion-card-title {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+  }
+
+  ion-card-content {
+    padding: 16px;
+  }
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+
+  &.total {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ion-color-success);
+  }
+
+  &.remaining {
+    color: var(--ion-color-warning);
+  }
+}
+
+.summary-divider {
+  height: 1px;
+  background: var(--ion-color-light);
+  margin: 8px 0;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 0 16px 0;
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .form-card,
+  .invoice-info-card,
+  .summary-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .resident-info {
+    background: var(--ion-color-dark-shade);
+  }
+
+  .info-row strong {
+    color: var(--ion-color-light);
+  }
+}

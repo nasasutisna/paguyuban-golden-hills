@@ -1,0 +1,163 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/cash-transactions"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="cashTransactionForm" (ngSubmit)="onSubmit()">
+    <!-- Transaction Information -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Transaksi</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-input
+          label="Tanggal Transaksi"
+          type="date"
+          formControlName="transactionDate"
+          placeholder="Pilih tanggal"
+          [required]="true"
+          [showError]="isFieldInvalid('transactionDate')"
+          [errorMessage]="getErrorMessage('transactionDate')"
+        ></app-form-input>
+
+        <app-form-select
+          label="Jenis Transaksi"
+          formControlName="transactionType"
+          placeholder="Pilih jenis transaksi"
+          [options]="transactionTypeOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('transactionType')"
+          [errorMessage]="getErrorMessage('transactionType')"
+        ></app-form-select>
+
+        <app-form-select
+          label="Kategori"
+          formControlName="categoryId"
+          placeholder="Pilih kategori"
+          [options]="categoryOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('categoryId')"
+          [errorMessage]="getErrorMessage('categoryId')"
+        ></app-form-select>
+
+        <app-form-input
+          label="Nominal (Rp)"
+          type="number"
+          formControlName="amount"
+          placeholder="contoh: 500000"
+          [min]="0"
+          [required]="true"
+          [showError]="isFieldInvalid('amount')"
+          [errorMessage]="getErrorMessage('amount')"
+          [prefix]="'Rp '"
+        ></app-form-input>
+
+        <app-form-select
+          label="Metode Pembayaran"
+          formControlName="paymentMethod"
+          placeholder="Pilih metode pembayaran"
+          [options]="paymentMethodOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('paymentMethod')"
+          [errorMessage]="getErrorMessage('paymentMethod')"
+        ></app-form-select>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Reference Information (Optional) -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Referensi (Opsional)</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-input
+          label="Tipe Referensi"
+          formControlName="referenceType"
+          placeholder="contoh: ResidentPayment"
+          [maxlength]="50"
+          [showError]="isFieldInvalid('referenceType')"
+          [errorMessage]="getErrorMessage('referenceType')"
+          helperText="Tipe entitas yang terkait dengan transaksi ini"
+        ></app-form-input>
+
+        <app-form-input
+          label="ID Referensi"
+          formControlName="referenceId"
+          placeholder="ID entitas referensi"
+          [showError]="isFieldInvalid('referenceId')"
+          [errorMessage]="getErrorMessage('referenceId')"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nomor Referensi"
+          formControlName="referenceNumber"
+          placeholder="contoh: INV-2024-001"
+          [maxlength]="100"
+          [showError]="isFieldInvalid('referenceNumber')"
+          [errorMessage]="getErrorMessage('referenceNumber')"
+        ></app-form-input>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Description & Notes -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Deskripsi & Catatan</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-textarea
+          label="Deskripsi Transaksi"
+          formControlName="description"
+          placeholder="Jelaskan tujuan transaksi ini..."
+          [rows]="3"
+          [required]="true"
+          [showError]="isFieldInvalid('description')"
+          [errorMessage]="getErrorMessage('description')"
+        ></app-form-textarea>
+
+        <app-form-textarea
+          label="Catatan Tambahan"
+          formControlName="notes"
+          placeholder="Catatan tambahan mengenai transaksi..."
+          [rows]="3"
+          [maxlength]="1000"
+          [showError]="isFieldInvalid('notes')"
+          [errorMessage]="getErrorMessage('notes')"
+        ></app-form-textarea>
+
+        <ion-item class="toggle-item">
+          <ion-label>Butuh Persetujuan?</ion-label>
+          <ion-toggle formControlName="requiresApproval"></ion-toggle>
+          <ion-note slot="helper">Aktifkan jika transaksi ini memerlukan persetujuan admin</ion-note>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        expand="block"
+        (click)="goBack()"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="save-outline"
+        iconSlot="start"
+        variant="solid"
+        color="primary"
+        type="submit"
+        expand="block"
+        [disabled]="!isFormValid()"
+        [loading]="isSubmitting"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>

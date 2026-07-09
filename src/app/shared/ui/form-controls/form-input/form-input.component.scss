@@ -30,17 +30,8 @@
       border-radius: 8px;
       transition: all 0.2s ease;
 
-      &:focus-within {
-        border-color: #3880ff;
-        box-shadow: 0 0 0 3px rgba(56, 128, 255, 0.1);
-      }
-
       &.error {
         border-color: #eb445a;
-
-        &:focus-within {
-          box-shadow: 0 0 0 3px rgba(235, 68, 90, 0.1);
-        }
       }
     }
 
@@ -54,6 +45,11 @@
       font-size: 1rem;
       --color: #222428;
 
+      // Remove Ionic's default valid/invalid highlight (green bottom border)
+      --highlight-color-valid: transparent !important;
+      --highlight-color-invalid: transparent !important;
+      --highlight-background: transparent !important;
+
       &.custom-styled-input {
         border: none;
         background: transparent;
@@ -61,6 +57,11 @@
 
       &::placeholder {
         --color: #92949e;
+      }
+
+      // Force hide the highlight bar element
+      ::ng-deep .input-bottom {
+        display: none !important;
       }
     }
 

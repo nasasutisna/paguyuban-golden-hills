@@ -12,3 +12,4 @@ export * from './form-select/form-select.component';
 export * from './form-radio/form-radio.component';
 export * from './form-textarea/form-textarea.component';
 export * from './form-button/form-button.component';
+export * from './form-date-picker/form-date-picker.component';

@@ -1,0 +1,239 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/resident-payments"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading Data State -->
+  <div *ngIf="loadingData" class="ion-padding ion-text-center">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p class="ion-margin-top">Memuat data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loadingData" class="ion-padding ion-text-center">
+    <ion-icon name="alert-circle-outline" size="large" color="danger"></ion-icon>
+    <p class="ion-margin-top">{{ error }}</p>
+  </div>
+
+  <!-- Empty State -->
+  <ion-alert
+    *ngIf="!loadingData && !error && invoices.length === 0"
+    header="Info"
+    message="Tidak ada tagihan yang menunggu pembayaran"
+    [buttons]="['OK']">
+  </ion-alert>
+
+  <!-- Form -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingData && !error && invoices.length > 0">
+    <!-- Tagihan & Warga -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Pilih Tagihan</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-select
+          label="Tagihan"
+          formControlName="invoiceId"
+          placeholder="Pilih tagihan"
+          [options]="invoiceOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('invoiceId')"
+          [errorMessage]="getErrorMessage('invoiceId')"
+        ></app-form-select>
+
+        <!-- Selected Invoice Info Card -->
+        <ion-card *ngIf="selectedInvoiceData" class="invoice-info-card">
+          <ion-card-header>
+            <ion-card-title>Detail Tagihan</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="info-row">
+              <span>No. Tagihan</span>
+              <strong>{{ selectedInvoiceData.invoiceNumber }}</strong>
+            </div>
+            <div class="info-row">
+              <span>Jenis Iuran</span>
+              <strong>{{ selectedInvoiceData.feeType?.feeName || '-' }}</strong>
+            </div>
+            <div class="info-row">
+              <span>Periode</span>
+              <strong>{{ selectedInvoiceData.periodStartDate | date:'dd MMM yyyy' }} - {{ selectedInvoiceData.periodEndDate | date:'dd MMM yyyy' }}</strong>
+            </div>
+            <div class="info-divider"></div>
+            <div class="info-row total-row">
+              <span>Total Tagihan</span>
+              <strong class="total-amount">{{ formatCurrency(selectedInvoiceData.totalAmount) }}</strong>
+            </div>
+            <div class="info-row">
+              <span>Sudah Dibayar</span>
+              <strong class="paid-amount">{{ formatCurrency(selectedInvoiceData.paidAmount) }}</strong>
+            </div>
+            <div class="info-row remaining-row">
+              <span>Sisa Tagihan</span>
+              <strong class="remaining-amount">{{ formatCurrency(selectedInvoiceData.remainingAmount) }}</strong>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Resident Display (Auto-filled) -->
+        <div *ngIf="selectedResident" class="resident-info">
+          <p>
+            <ion-icon name="person-outline"></ion-icon>
+            {{ selectedResident.firstName }} {{ selectedResident.lastName }}
+          </p>
+          <p>
+            <ion-icon name="home-outline"></ion-icon>
+            {{ selectedResident.houseBlock?.blockName || '-' }} - {{ selectedResident.unitNumber }}
+          </p>
+          <p *ngIf="selectedResident.phoneNumber">
+            <ion-icon name="call-outline"></ion-icon>
+            {{ selectedResident.phoneNumber }}
+          </p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Informasi Pembayaran -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Pembayaran</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-date-picker
+          formControlName="paymentDate"
+          label="Tanggal Pembayaran"
+          placeholder="Pilih tanggal pembayaran"
+          [showError]="isFieldInvalid('paymentDate')"
+          [errorMessage]="getErrorMessage('paymentDate')"
+          [required]="true"
+        ></app-form-date-picker>
+
+        <app-form-select
+          label="Metode Pembayaran"
+          formControlName="paymentMethod"
+          placeholder="Pilih metode pembayaran"
+          [options]="paymentMethodOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('paymentMethod')"
+          [errorMessage]="getErrorMessage('paymentMethod')"
+        ></app-form-select>
+
+        <!-- Payment Channel (for non-cash) -->
+        <app-form-input
+          *ngIf="form.get('paymentMethod')?.value !== 'CASH'"
+          label="Channel Pembayaran"
+          formControlName="paymentChannel"
+          placeholder="Contoh: BCA, Mandiri, GoPay, OVO"
+          helperText="Nama bank atau layanan e-wallet"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nomor Referensi"
+          formControlName="referenceNumber"
+          placeholder="Contoh: REF123456789"
+          helperText="Nomor referensi dari bukti transfer"
+        ></app-form-input>
+
+        <!-- Bank Info (for transfer/card) -->
+        <ng-container *ngIf="needsBankInfo()">
+          <app-form-input
+            label="Nama Bank"
+            formControlName="bankName"
+            placeholder="Contoh: BCA"
+          ></app-form-input>
+
+          <app-form-input
+            label="Nomor Rekening"
+            formControlName="accountNumber"
+            placeholder="Contoh: 1234567890"
+          ></app-form-input>
+        </ng-container>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Jumlah Pembayaran -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Jumlah Pembayaran</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-input
+          label="Jumlah Pembayaran"
+          type="number"
+          formControlName="amount"
+          placeholder="0"
+          [min]="1"
+          [required]="true"
+          [showError]="isFieldInvalid('amount')"
+          [errorMessage]="getErrorMessage('amount')"
+          [helperText]="selectedInvoiceData ? 'Maksimal: ' + formatCurrency(selectedInvoiceData.remainingAmount) : ''"
+        ></app-form-input>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Catatan -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Catatan</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-textarea
+          label="Catatan Tambahan"
+          formControlName="notes"
+          placeholder="Catatan tambahan..."
+          [rows]="3"
+        ></app-form-textarea>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Summary Card -->
+    <ion-card class="summary-card" *ngIf="form.get('amount')?.value > 0">
+      <ion-card-header>
+        <ion-card-title>Ringkasan Pembayaran</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="summary-row">
+          <span>Metode</span>
+          <strong>{{ getPaymentMethodLabel() }}</strong>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row total">
+          <span>Jumlah Dibayar</span>
+          <strong>{{ formatCurrency(form.get('amount')?.value || 0) }}</strong>
+        </div>
+        <div class="summary-row remaining" *ngIf="selectedInvoiceData">
+          <span>Sisa Setelah Bayar</span>
+          <strong>{{ formatCurrency(getRemainingAfterPayment()) }}</strong>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        expand="block"
+        (click)="navigateBack()"
+        [disabled]="loading"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="save-outline"
+        iconSlot="start"
+        variant="solid"
+        color="primary"
+        type="submit"
+        expand="block"
+        [disabled]="loading || !isFormValid()"
+        [loading]="loading"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>

@@ -16,6 +16,8 @@ import { ToastService } from '@services/toast.service';
 import { LoadingService } from '@services/loading.service';
 import { getErrorMessage } from '@validators/validators';
 import { HouseBlock, CreateHouseBlockDto, UpdateHouseBlockDto, BlockType } from '../house-blocks.model';
+import { ResidentsService } from '@features/admin/residents/residents.service';
+import { Resident } from '@features/admin/residents/residents.model';
 
 // Form control components
 import {
@@ -50,6 +52,7 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private houseBlocksService = inject(HouseBlocksService);
+  private residentsService = inject(ResidentsService);
   private toastService = inject(ToastService);
   private loadingService = inject(LoadingService);
 
@@ -61,10 +64,13 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
 
   // Block type options
   blockTypeOptions = [
-    { value: BlockType.RESIDENTIAL, label: 'Residential' },
-    { value: BlockType.COMMERCIAL, label: 'Commercial' },
-    { value: BlockType.MIXED, label: 'Mixed Use' }
+    { value: BlockType.RESIDENTIAL, label: 'Perumahan' },
+    { value: BlockType.COMMERCIAL, label: 'Komersial' },
+    { value: BlockType.MIXED, label: 'Campuran' }
   ];
+
+  // Coordinator options
+  coordinatorOptions: SelectOption[] = [];
 
   // Current year for validation
   currentYear = new Date().getFullYear();
@@ -76,6 +82,9 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Load residents for coordinator dropdown
+    this.loadResidents();
+
     // Check if we're in edit mode by checking for :id parameter
     this.subscriptions.push(
       this.route.paramMap.subscribe((params) => {
@@ -84,6 +93,26 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
           this.isEditMode = true;
           this.houseBlockId = id;
           this.loadHouseBlock(id);
+        }
+      })
+    );
+  }
+
+  /**
+   * Load residents for coordinator dropdown
+   */
+  private loadResidents(): void {
+    this.subscriptions.push(
+      this.residentsService.getAll({ limit: 1000 }).subscribe({
+        next: (response) => {
+          this.coordinatorOptions = response.data.map((resident: Resident) => ({
+            value: resident.id,
+            label: `${resident.residentCode} - ${resident.firstName} ${resident.lastName}`.trim()
+          }));
+        },
+        error: (error) => {
+          console.error('Error loading residents:', error);
+          this.coordinatorOptions = [];
         }
       })
     );
@@ -136,6 +165,7 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
       ],
       facilities: [''],
       amenities: [''],
+      coordinatorId: [''],
       isActive: [true],
       description: ['']
     });
@@ -145,7 +175,7 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
    * Load existing house block for edit
    */
   private loadHouseBlock(id: string): void {
-    this.loadingService.show({ message: 'Loading house block...' });
+    this.loadingService.show({ message: 'Memuat blok...' });
 
     this.subscriptions.push(
       this.houseBlocksService.getById(id).subscribe({
@@ -154,13 +184,13 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
           if (houseBlock) {
             this.populateForm(houseBlock);
           } else {
-            this.toastService.error('House block not found');
+            this.toastService.error('Blok tidak ditemukan');
             this.goBack();
           }
         },
         error: (error) => {
           this.loadingService.dismiss();
-          this.toastService.error('Failed to load house block');
+          this.toastService.error('Gagal memuat blok');
           console.error('Load house block error:', error);
           this.goBack();
         }
@@ -182,6 +212,7 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
       constructionYear: houseBlock.constructionYear || '',
       facilities: houseBlock.facilities || '',
       amenities: houseBlock.amenities || '',
+      coordinatorId: houseBlock.coordinatorId || '',
       isActive: houseBlock.isActive ?? true,
       description: houseBlock.description || ''
     });
@@ -204,18 +235,19 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
     }
 
     const fieldLabels: { [key: string]: string } = {
-      blockCode: 'Block code',
-      blockName: 'Block name',
-      blockType: 'Block type',
-      address: 'Address',
-      totalUnits: 'Total units',
-      totalFloors: 'Total floors',
-      constructionYear: 'Construction year',
-      facilities: 'Facilities',
-      amenities: 'Amenities',
-      description: 'Description',
-      landArea: 'Land area',
-      buildingArea: 'Building area'
+      blockCode: 'Kode blok',
+      blockName: 'Nama blok',
+      blockType: 'Tipe blok',
+      address: 'Alamat',
+      totalUnits: 'Total unit',
+      totalFloors: 'Total lantai',
+      constructionYear: 'Tahun pembangunan',
+      facilities: 'Fasilitas',
+      amenities: 'Fasilitas tambahan',
+      coordinatorId: 'Koordinator',
+      description: 'Deskripsi',
+      landArea: 'Luas tanah',
+      buildingArea: 'Luas bangunan'
     };
 
     return getErrorMessage(control.errors, fieldLabels[fieldName] || fieldName);
@@ -257,7 +289,7 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
 
     try {
       await this.loadingService.show({
-        message: this.isEditMode ? 'Updating house block...' : 'Creating house block...'
+        message: this.isEditMode ? 'Menyimpan blok...' : 'Membuat blok...'
       });
 
       if (this.isEditMode && this.houseBlockId) {
@@ -266,13 +298,13 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
           this.houseBlocksService.update(this.houseBlockId, dto).subscribe({
             next: () => {
               this.loadingService.dismiss();
-              this.toastService.success('House block updated successfully!');
+              this.toastService.success('Blok berhasil disimpan!');
               this.goBack();
             },
             error: (error) => {
               this.loadingService.dismiss();
               this.isSubmitting = false;
-              this.toastService.error('Failed to update house block');
+              this.toastService.error('Gagal menyimpan blok');
               console.error('Update house block error:', error);
             }
           })
@@ -283,13 +315,13 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
           this.houseBlocksService.create(dto as CreateHouseBlockDto).subscribe({
             next: () => {
               this.loadingService.dismiss();
-              this.toastService.success('House block created successfully!');
+              this.toastService.success('Blok berhasil dibuat!');
               this.goBack();
             },
             error: (error) => {
               this.loadingService.dismiss();
               this.isSubmitting = false;
-              this.toastService.error('Failed to create house block');
+              this.toastService.error('Gagal membuat blok');
               console.error('Create house block error:', error);
             }
           })
@@ -298,7 +330,7 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
     } catch (error) {
       this.loadingService.dismiss();
       this.isSubmitting = false;
-      this.toastService.error('An error occurred');
+      this.toastService.error('Terjadi kesalahan');
       console.error('Submit error:', error);
     }
   }
@@ -337,6 +369,9 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
     if (formValue.amenities?.trim()) {
       dto.amenities = formValue.amenities.trim();
     }
+    if (formValue.coordinatorId?.trim()) {
+      dto.coordinatorId = formValue.coordinatorId.trim();
+    }
     if (formValue.description?.trim()) {
       dto.description = formValue.description.trim();
     }
@@ -355,13 +390,13 @@ export class HouseBlockFormPage implements OnInit, OnDestroy {
    * Get page title
    */
   get pageTitle(): string {
-    return this.isEditMode ? 'Edit House Block' : 'Create House Block';
+    return this.isEditMode ? 'Edit Blok' : 'Buat Blok';
   }
 
   /**
    * Get submit button text
    */
   get submitButtonText(): string {
-    return this.isEditMode ? 'Update' : 'Create';
+    return this.isEditMode ? 'Simpan' : 'Buat';
   }
 }

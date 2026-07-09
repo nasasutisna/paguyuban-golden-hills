@@ -1,0 +1,394 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Tagihan Warga</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Stats Cards -->
+  <div class="ion-padding">
+    <ion-grid class="stats-grid">
+      <ion-col size="6">
+        <ion-card class="stat-card primary">
+          <ion-card-content>
+            <div class="stat-content">
+              <ion-icon name="document-text-outline"></ion-icon>
+              <div class="stat-info">
+                <h3>{{ total }}</h3>
+                <p>Total Tagihan</p>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6">
+        <ion-card class="stat-card success">
+          <ion-card-content>
+            <div class="stat-content">
+              <ion-icon name="time-outline"></ion-icon>
+              <div class="stat-info">
+                <h3>{{ pendingCount }}</h3>
+                <p>Menunggu</p>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-grid>
+
+    <ion-button expand="block" (click)="navigateToCreate()" class="create-button">
+      <ion-icon name="add-outline" slot="start"></ion-icon>
+      Buat Tagihan Baru
+    </ion-button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="ion-padding-horizontal">
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearch($event)"
+      placeholder="Cari tagihan..."
+      animated="true">
+    </ion-searchbar>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="ion-padding ion-text-center">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p class="ion-margin-top">Memuat data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="ion-padding ion-text-center">
+    <ion-icon name="alert-circle-outline" size="large" color="danger"></ion-icon>
+    <p class="ion-margin-top">{{ error }}</p>
+    <ion-button fill="outline" (click)="loadInvoices()">
+      <ion-icon name="refresh-outline" slot="start"></ion-icon>
+      Coba Lagi
+    </ion-button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && invoices.length === 0" class="ion-padding ion-text-center empty-state">
+    <div class="empty-icon">
+      <ion-icon name="document-text-outline"></ion-icon>
+    </div>
+    <h3>Belum ada tagihan</h3>
+    <p>Mulai dengan membuat tagihan untuk warga</p>
+    <ion-button (click)="navigateToCreate()" fill="solid" class="ion-margin-top">
+      <ion-icon name="add-outline" slot="start"></ion-icon>
+      Buat Tagihan
+    </ion-button>
+  </div>
+
+  <!-- Invoices List -->
+  <div class="ion-margin-horizontal ion-margin-bottom" *ngIf="!loading && !error && invoices.length > 0">
+    <div class="list-header">
+      <h3>Daftar Tagihan</h3>
+      <span class="count">{{ total }} tagihan</span>
+    </div>
+
+    <ion-card *ngFor="let invoice of invoices" [class.overdue]="isOverdue(invoice)" class="invoice-card">
+      <ion-card-header>
+        <div class="card-header-top">
+          <ion-card-title>{{ invoice.invoiceNumber }}</ion-card-title>
+          <ion-chip [color]="getStatusColor(invoice.status)">
+            {{ INVOICE_STATUS_LABELS[invoice.status] }}
+          </ion-chip>
+        </div>
+        <ion-card-subtitle>
+          {{ getFeeTypeName(invoice) }} • {{ getResidentName(invoice) }}
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Resident Info -->
+        <div class="resident-info">
+          <ion-icon name="person-outline"></ion-icon>
+          <span>{{ getResidentAddress(invoice) }}</span>
+        </div>
+
+        <!-- Period Info -->
+        <div class="period-info">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <span>
+            {{ formatDate(invoice.periodStartDate) }} - {{ formatDate(invoice.periodEndDate) }}
+          </span>
+        </div>
+
+        <!-- Due Date -->
+        <div class="due-date-info" [class.overdue]="isOverdue(invoice)">
+          <ion-icon name="time-outline"></ion-icon>
+          <span>Jatuh Tempo: {{ formatDate(invoice.dueDate) }}</span>
+        </div>
+
+        <!-- Amount Progress -->
+        <div class="amount-section">
+          <div class="amount-labels">
+            <span>Total: {{ formatCurrency(invoice.totalAmount) }}</span>
+            <span>Dibayar: {{ formatCurrency(invoice.paidAmount) }}</span>
+          </div>
+          <ion-progress-bar
+            [value]="getProgressPercentage(invoice) / 100"
+            color="success">
+          </ion-progress-bar>
+          <div class="remaining-amount" *ngIf="invoice.remainingAmount > 0">
+            Sisa: {{ formatCurrency(invoice.remainingAmount) }}
+          </div>
+        </div>
+      </ion-card-content>
+
+      <div class="card-footer">
+        <ion-button size="small" fill="clear" (click)="navigateToDetail(invoice.id)">
+          <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button size="small" fill="clear" (click)="navigateToEdit(invoice.id)">
+          <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-card>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && totalPages > 1" class="ion-padding">
+    <ion-grid>
+      <ion-row class="ion-align-items-center ion-justify-content-center">
+        <ion-col size="auto">
+          <ion-button
+            [disabled]="page === 1"
+            fill="outline"
+            size="small"
+            (click)="loadPrevious()">
+            <ion-icon name="chevron-back" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-col>
+        <ion-col size="auto" class="ion-text-center">
+          <span class="page-info">Halaman {{ page }} dari {{ totalPages }}</span>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-button
+            [disabled]="page === totalPages"
+            fill="outline"
+            size="small"
+            (click)="loadNext()">
+            <ion-icon name="chevron-forward" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>
+
+<style>
+.stats-grid {
+  padding: 0;
+}
+
+.stat-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card.primary {
+  border-left: 4px solid var(--ion-color-primary);
+}
+
+.stat-card.success {
+  border-left: 4px solid var(--ion-color-warning);
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-content ion-icon {
+  font-size: 32px;
+  color: var(--ion-color-primary);
+}
+
+.stat-card.success .stat-content ion-icon {
+  color: var(--ion-color-warning);
+}
+
+.stat-info h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.stat-info p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ion-color-medium);
+}
+
+.create-button {
+  margin-top: 12px;
+  border-radius: 12px;
+}
+
+.empty-state {
+  padding: 48px 24px;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ion-color-light);
+  border-radius: 50%;
+}
+
+.empty-icon ion-icon {
+  font-size: 40px;
+  color: var(--ion-color-medium);
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  color: var(--ion-color-dark);
+}
+
+.empty-state p {
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.list-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.list-header .count {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+.invoice-card {
+  margin: 0 0 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.invoice-card.overdue {
+  border-left: 4px solid var(--ion-color-danger);
+}
+
+.card-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card-header-top ion-card-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.resident-info,
+.period-info,
+.due-date-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+.resident-info ion-icon,
+.period-info ion-icon,
+.due-date-info ion-icon {
+  font-size: 18px;
+}
+
+.due-date-info {
+  font-weight: 500;
+  color: var(--ion-color-warning);
+}
+
+.due-date-info.overdue {
+  color: var(--ion-color-danger);
+  font-weight: 600;
+}
+
+.amount-section {
+  margin-top: 16px;
+}
+
+.amount-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.amount-labels span:first-child {
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.amount-labels span:last-child {
+  font-weight: 600;
+  color: var(--ion-color-success);
+}
+
+.remaining-amount {
+  text-align: right;
+  font-size: 12px;
+  color: var(--ion-color-warning);
+  margin-top: 4px;
+}
+
+ion-progress-bar {
+  height: 8px;
+  --border-radius: 4px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--ion-color-light);
+}
+
+.page-info {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  padding: 0 16px;
+}
+
+@media (max-width: 768px) {
+  .stat-content ion-icon {
+    font-size: 28px;
+  }
+
+  .stat-info h3 {
+    font-size: 20px;
+  }
+}
+</style>

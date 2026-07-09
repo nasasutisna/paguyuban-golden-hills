@@ -9,283 +9,229 @@
 
 <ion-content class="ion-padding">
   <form [formGroup]="residentForm" (ngSubmit)="onSubmit()">
+    <!-- Basic Information -->
     <ion-card class="form-card">
       <ion-card-header>
-        <ion-card-subtitle>Basic Information</ion-card-subtitle>
+        <ion-card-subtitle>Informasi Dasar</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <!-- Resident Code -->
-        <ion-item class="form-item" [class.error]="f['residentCode'].invalid && f['residentCode'].touched">
-          <ion-label position="stacked" class="required">Resident Code</ion-label>
-          <ion-input
-            type="text"
-            formControlName="residentCode"
-            placeholder="e.g., RES001"
-            maxlength="20"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('residentCode')">
-          {{ getErrorMessage('residentCode') }}
-        </ion-text>
+        <app-form-input
+          label="Kode Warga"
+          formControlName="residentCode"
+          placeholder="contoh: RES001"
+          [maxlength]="20"
+          [required]="true"
+          [showError]="isFieldInvalid('residentCode')"
+          [errorMessage]="getErrorMessage('residentCode')"
+        ></app-form-input>
 
-        <!-- First Name -->
-        <ion-item class="form-item" [class.error]="f['firstName'].invalid && f['firstName'].touched">
-          <ion-label position="stacked" class="required">First Name</ion-label>
-          <ion-input
-            type="text"
-            formControlName="firstName"
-            placeholder="e.g., John"
-            maxlength="100"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('firstName')">
-          {{ getErrorMessage('firstName') }}
-        </ion-text>
+        <app-form-input
+          label="Nama Depan"
+          formControlName="firstName"
+          placeholder="contoh: Budi"
+          [maxlength]="100"
+          [required]="true"
+          [showError]="isFieldInvalid('firstName')"
+          [errorMessage]="getErrorMessage('firstName')"
+        ></app-form-input>
 
-        <!-- Last Name -->
-        <ion-item class="form-item" [class.error]="f['lastName'].invalid && f['lastName'].touched">
-          <ion-label position="stacked" class="required">Last Name</ion-label>
-          <ion-input
-            type="text"
-            formControlName="lastName"
-            placeholder="e.g., Doe"
-            maxlength="100"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('lastName')">
-          {{ getErrorMessage('lastName') }}
-        </ion-text>
+        <app-form-input
+          label="Nama Belakang"
+          formControlName="lastName"
+          placeholder="contoh: Santoso"
+          [maxlength]="100"
+          [required]="true"
+          [showError]="isFieldInvalid('lastName')"
+          [errorMessage]="getErrorMessage('lastName')"
+        ></app-form-input>
 
-        <!-- Email -->
-        <ion-item class="form-item" [class.error]="f['email'].invalid && f['email'].touched">
-          <ion-label position="stacked">Email</ion-label>
-          <ion-input
-            type="email"
-            formControlName="email"
-            placeholder="e.g., john.doe@example.com"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('email')">
-          {{ getErrorMessage('email') }}
-        </ion-text>
+        <app-form-input
+          label="Email"
+          type="email"
+          formControlName="email"
+          placeholder="contoh: budi.santoso@email.com"
+          [showError]="isFieldInvalid('email')"
+          [errorMessage]="getErrorMessage('email')"
+        ></app-form-input>
 
-        <!-- Phone Number -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Phone Number</ion-label>
-          <ion-input
-            type="tel"
-            formControlName="phoneNumber"
-            placeholder="e.g., +6281234567890"
-          ></ion-input>
-        </ion-item>
+        <app-form-input
+          label="Nomor Telepon"
+          type="tel"
+          formControlName="phoneNumber"
+          placeholder="contoh: +6281234567890"
+        ></app-form-input>
 
-        <!-- Alternate Phone -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Alternate Phone</ion-label>
-          <ion-input
-            type="tel"
-            formControlName="alternatePhone"
-            placeholder="e.g., +6281234567891"
-          ></ion-input>
-        </ion-item>
+        <app-form-input
+          label="Telepon Alternatif"
+          type="tel"
+          formControlName="alternatePhone"
+          placeholder="contoh: +6281234567891"
+        ></app-form-input>
 
-        <!-- Identity Number -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Identity Number (KTP/Passport)</ion-label>
-          <ion-input
-            type="text"
-            formControlName="identityNumber"
-            placeholder="e.g., 1234567890123456"
-          ></ion-input>
-        </ion-item>
+        <app-form-input
+          label="Nomor Identitas (KTP/Paspor)"
+          formControlName="identityNumber"
+          placeholder="contoh: 1234567890123456"
+        ></app-form-input>
 
-        <!-- Date of Birth -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Date of Birth</ion-label>
+        <ion-item class="date-item">
+          <ion-label position="stacked">Tanggal Lahir</ion-label>
           <ion-datetime
             formControlName="dateOfBirth"
             presentation="date"
-            placeholder="Select date"
+            placeholder="Pilih tanggal lahir"
           ></ion-datetime>
         </ion-item>
 
-        <!-- Gender -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Gender</ion-label>
-          <ion-select formControlName="gender" placeholder="Select gender">
-            <ion-select-option *ngFor="let option of genderOptions" [value]="option.value">
-              {{ option.label }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
+        <app-form-select
+          label="Jenis Kelamin"
+          formControlName="gender"
+          placeholder="Pilih jenis kelamin"
+          [options]="genderOptions"
+        ></app-form-select>
 
-        <!-- Occupation -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Occupation</ion-label>
-          <ion-input
-            type="text"
-            formControlName="occupation"
-            placeholder="e.g., Engineer"
-            maxlength="100"
-          ></ion-input>
-        </ion-item>
+        <app-form-input
+          label="Pekerjaan"
+          formControlName="occupation"
+          placeholder="contoh: Insinyur"
+          [maxlength]="100"
+        ></app-form-input>
 
-        <!-- Marital Status -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Marital Status</ion-label>
-          <ion-select formControlName="maritalStatus" placeholder="Select marital status">
-            <ion-select-option *ngFor="let option of maritalStatusOptions" [value]="option.value">
-              {{ option.label }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
+        <app-form-select
+          label="Status Perkawinan"
+          formControlName="maritalStatus"
+          placeholder="Pilih status perkawinan"
+          [options]="maritalStatusOptions"
+        ></app-form-select>
 
-        <!-- Active Status -->
-        <ion-item class="form-item toggle-item">
-          <ion-label>Active Status</ion-label>
+        <ion-item class="toggle-item">
+          <ion-label>Status Aktif</ion-label>
           <ion-toggle formControlName="isActive"></ion-toggle>
         </ion-item>
       </ion-card-content>
     </ion-card>
 
+    <!-- Address & Emergency Contact -->
     <ion-card class="form-card">
       <ion-card-header>
-        <ion-card-subtitle>Address & Emergency Contact</ion-card-subtitle>
+        <ion-card-subtitle>Alamat & Kontak Darurat</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <!-- Address -->
-        <ion-item class="form-item textarea-item">
-          <ion-label position="stacked">Address</ion-label>
-          <ion-textarea
-            formControlName="address"
-            placeholder="e.g., Jalan Golden Hills No. 123"
-            rows="3"
-          ></ion-textarea>
-        </ion-item>
+        <app-form-textarea
+          label="Alamat"
+          formControlName="address"
+          placeholder="contoh: Jalan Golden Hills No. 123"
+          [rows]="3"
+          [maxlength]="255"
+        ></app-form-textarea>
 
-        <!-- Emergency Contact -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Emergency Contact Name</ion-label>
-          <ion-input
-            type="text"
-            formControlName="emergencyContact"
-            placeholder="e.g., Jane Doe"
-            maxlength="100"
-          ></ion-input>
-        </ion-item>
+        <app-form-input
+          label="Nama Kontak Darurat"
+          formControlName="emergencyContact"
+          placeholder="contoh: Ahmad Santoso"
+          [maxlength]="100"
+        ></app-form-input>
 
-        <!-- Emergency Phone -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Emergency Phone Number</ion-label>
-          <ion-input
-            type="tel"
-            formControlName="emergencyPhone"
-            placeholder="e.g., +6281234567892"
-          ></ion-input>
-        </ion-item>
+        <app-form-input
+          label="Nomor Telepon Darurat"
+          type="tel"
+          formControlName="emergencyPhone"
+          placeholder="contoh: +6281234567892"
+        ></app-form-input>
       </ion-card-content>
     </ion-card>
 
+    <!-- Property Information -->
     <ion-card class="form-card">
       <ion-card-header>
-        <ion-card-subtitle>Property Information</ion-card-subtitle>
+        <ion-card-subtitle>Informasi Properti</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <!-- House Block -->
-        <ion-item class="form-item" [class.error]="f['houseBlockId'].invalid && f['houseBlockId'].touched">
-          <ion-label position="stacked" class="required">House Block</ion-label>
-          <ion-select formControlName="houseBlockId" placeholder="Select house block">
-            <ion-select-option *ngFor="let block of houseBlocks" [value]="block.id">
-              {{ block.blockName }} ({{ block.blockCode }})
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('houseBlockId')">
-          {{ getErrorMessage('houseBlockId') }}
-        </ion-text>
+        <app-form-select
+          label="Blok Rumah"
+          formControlName="houseBlockId"
+          placeholder="Pilih blok rumah"
+          [options]="houseBlockOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('houseBlockId')"
+          [errorMessage]="getErrorMessage('houseBlockId')"
+        ></app-form-select>
 
-        <!-- Unit Number -->
-        <ion-item class="form-item" [class.error]="f['unitNumber'].invalid && f['unitNumber'].touched">
-          <ion-label position="stacked" class="required">Unit Number</ion-label>
-          <ion-input
-            type="text"
-            formControlName="unitNumber"
-            placeholder="e.g., A-101"
-            maxlength="20"
-          ></ion-input>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('unitNumber')">
-          {{ getErrorMessage('unitNumber') }}
-        </ion-text>
+        <app-form-input
+          label="Nomor Unit"
+          formControlName="unitNumber"
+          placeholder="contoh: A-101"
+          [maxlength]="20"
+          [required]="true"
+          [showError]="isFieldInvalid('unitNumber')"
+          [errorMessage]="getErrorMessage('unitNumber')"
+        ></app-form-input>
 
-        <!-- Ownership Type -->
-        <ion-item class="form-item" [class.error]="f['ownershipType'].invalid && f['ownershipType'].touched">
-          <ion-label position="stacked" class="required">Ownership Type</ion-label>
-          <ion-select formControlName="ownershipType" placeholder="Select ownership type">
-            <ion-select-option *ngFor="let option of ownershipTypeOptions" [value]="option.value">
-              {{ option.label }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-text class="error-text" *ngIf="getErrorMessage('ownershipType')">
-          {{ getErrorMessage('ownershipType') }}
-        </ion-text>
+        <app-form-select
+          label="Tipe Kepemilikan"
+          formControlName="ownershipType"
+          placeholder="Pilih tipe kepemilikan"
+          [options]="ownershipTypeOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('ownershipType')"
+          [errorMessage]="getErrorMessage('ownershipType')"
+        ></app-form-select>
 
-        <!-- Move In Date -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Move In Date</ion-label>
+        <ion-item class="date-item">
+          <ion-label position="stacked">Tanggal Masuk</ion-label>
           <ion-datetime
             formControlName="moveInDate"
             presentation="date"
-            placeholder="Select move in date"
+            placeholder="Pilih tanggal masuk"
           ></ion-datetime>
         </ion-item>
 
-        <!-- Move Out Date -->
-        <ion-item class="form-item">
-          <ion-label position="stacked">Move Out Date</ion-label>
+        <ion-item class="date-item">
+          <ion-label position="stacked">Tanggal Keluar</ion-label>
           <ion-datetime
             formControlName="moveOutDate"
             presentation="date"
-            placeholder="Select move out date"
+            placeholder="Pilih tanggal keluar"
           ></ion-datetime>
         </ion-item>
       </ion-card-content>
     </ion-card>
 
+    <!-- Additional Information -->
     <ion-card class="form-card">
       <ion-card-header>
-        <ion-card-subtitle>Additional Information</ion-card-subtitle>
+        <ion-card-subtitle>Informasi Tambahan</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <!-- Notes -->
-        <ion-item class="form-item textarea-item">
-          <ion-label position="stacked">Notes</ion-label>
-          <ion-textarea
-            formControlName="notes"
-            placeholder="Additional notes about this resident..."
-            rows="4"
-          ></ion-textarea>
-        </ion-item>
+        <app-form-textarea
+          label="Catatan"
+          formControlName="notes"
+          placeholder="Catatan tambahan tentang warga ini..."
+          [rows]="4"
+        ></app-form-textarea>
       </ion-card-content>
     </ion-card>
 
     <!-- Form Actions -->
     <div class="form-actions">
-      <ion-button expand="block" fill="solid" color="medium" (click)="goBack()">
-        <ion-icon slot="start" name="arrow-back"></ion-icon>
-        Cancel
-      </ion-button>
-      <ion-button
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
         expand="block"
-        fill="solid"
+        (click)="goBack()"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="save-outline"
+        iconSlot="start"
+        variant="solid"
         color="primary"
         type="submit"
+        expand="block"
         [disabled]="!isFormValid()"
-      >
-        <ion-icon slot="start" name="checkmark-circle"></ion-icon>
-        {{ submitButtonText }}
-      </ion-button>
+        [loading]="isSubmitting"
+      ></app-form-button>
     </div>
   </form>
 </ion-content>

@@ -1,0 +1,155 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/fee-types"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isEditMode ? 'Edit' : 'Tambah' }} Jenis Iuran</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <ion-list class="ion-margin-bottom">
+      <!-- Fee Code -->
+      <ion-item [class.ion-invalid]="isFieldInvalid('feeCode')">
+        <ion-label position="stacked" color="primary">Kode Iuran *</ion-label>
+        <ion-input
+          type="text"
+          formControlName="feeCode"
+          placeholder="Contoh: IPL-001"
+          maxlength="20">
+        </ion-input>
+        <ion-note slot="error" *ngIf="isFieldInvalid('feeCode')">
+          {{ getErrorMessage('feeCode') }}
+        </ion-note>
+      </ion-item>
+
+      <!-- Fee Name -->
+      <ion-item [class.ion-invalid]="isFieldInvalid('feeName')">
+        <ion-label position="stacked" color="primary">Nama Iuran *</ion-label>
+        <ion-input
+          type="text"
+          formControlName="feeName"
+          placeholder="Contoh: IPL Bulanan"
+          maxlength="100">
+        </ion-input>
+        <ion-note slot="error" *ngIf="isFieldInvalid('feeName')">
+          {{ getErrorMessage('feeName') }}
+        </ion-note>
+      </ion-item>
+
+      <!-- Description -->
+      <ion-item>
+        <ion-label position="stacked" color="primary">Deskripsi</ion-label>
+        <ion-textarea
+          formControlName="description"
+          placeholder="Deskripsi jenis iuran..."
+          rows="3">
+        </ion-textarea>
+      </ion-item>
+
+      <!-- Fee Category -->
+      <ion-item [class.ion-invalid]="isFieldInvalid('feeCategory')">
+        <ion-label position="stacked" color="primary">Kategori Iuran *</ion-label>
+        <ion-select formControlName="feeCategory" placeholder="Pilih kategori">
+          <ion-select-option *ngFor="let opt of feeCategoryOptions" [value]="opt.value">
+            {{ opt.label }}
+          </ion-select-option>
+        </ion-select>
+        <ion-note slot="error" *ngIf="isFieldInvalid('feeCategory')">
+          {{ getErrorMessage('feeCategory') }}
+        </ion-note>
+      </ion-item>
+
+      <!-- Is Recurring -->
+      <ion-item>
+        <ion-label position="stacked">Iuran Berulang?</ion-label>
+        <ion-toggle formControlName="isRecurring" (ionChange)="onIsRecurringChange()"></ion-toggle>
+      </ion-item>
+
+      <!-- Recurring Period -->
+      <ion-item *ngIf="form.get('isRecurring')?.value">
+        <ion-label position="stacked" color="primary">Periode Berulang</ion-label>
+        <ion-select formControlName="recurrencePeriod" placeholder="Pilih periode">
+          <ion-select-option *ngFor="let opt of recurrencePeriodOptions" [value]="opt.value">
+            {{ opt.label }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <!-- Is Taxable -->
+      <ion-item>
+        <ion-label position="stacked">Dikenakan Pajak?</ion-label>
+        <ion-toggle formControlName="isTaxable"></ion-toggle>
+      </ion-item>
+
+      <!-- Tax Rate -->
+      <ion-item *ngIf="form.get('isTaxable')?.value">
+        <ion-label position="stacked" color="primary">Tarif Pajak (%)</ion-label>
+        <ion-input
+          type="number"
+          formControlName="taxRate"
+          placeholder="0"
+          min="0"
+          max="100">
+        </ion-input>
+        <ion-note slot="helper">Masukkan tarif pajak dalam persen (0-100)</ion-note>
+      </ion-item>
+
+      <!-- Default Amount -->
+      <ion-item>
+        <ion-label position="stacked" color="primary">Nominal Default</ion-label>
+        <ion-input
+          type="number"
+          formControlName="defaultAmount"
+          placeholder="0"
+          min="0">
+        </ion-input>
+        <ion-note slot="helper">Nominal default untuk jenis iuran ini (opsional)</ion-note>
+      </ion-item>
+
+      <!-- Is Active -->
+      <ion-item>
+        <ion-label position="stacked">Status Aktif</ion-label>
+        <ion-toggle formControlName="isActive"></ion-toggle>
+        <ion-note slot="helper">Nonaktifkan untuk menyembunyikan jenis iuran ini</ion-note>
+      </ion-item>
+    </ion-list>
+
+    <!-- Form Actions -->
+    <div class="ion-padding">
+      <ion-button type="submit" expand="block" [disabled]="loading || form.invalid">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        {{ isEditMode ? 'Simpan Perubahan' : 'Buat Jenis Iuran' }}
+      </ion-button>
+
+      <ion-button
+        type="button"
+        expand="block"
+        fill="outline"
+        color="medium"
+        class="ion-margin-top"
+        (click)="goBack()"
+        [disabled]="loading">
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        Batal
+      </ion-button>
+    </div>
+  </form>
+</ion-content>
+
+<style>
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+ion-item.ion-invalid {
+  --highlight-color: var(--ion-color-danger);
+}
+
+ion-note[slot="error"] {
+  color: var(--ion-color-danger);
+  font-size: 12px;
+}
+</style>

@@ -1,0 +1,52 @@
+.form-card {
+  margin: 0 0 16px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  ion-card-header {
+    padding-bottom: 8px;
+  }
+
+  ion-card-subtitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  ion-card-content {
+    padding: 16px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0;
+
+  app-form-button {
+    flex: 1;
+  }
+}
+
+.toggle-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+
+  ion-label {
+    font-size: 14px;
+    color: var(--ion-color-medium);
+  }
+
+  ion-toggle {
+    --padding-start: 12px;
+  }
+
+  ion-note {
+    font-size: 12px;
+    display: block;
+    margin-top: 8px;
+  }
+}

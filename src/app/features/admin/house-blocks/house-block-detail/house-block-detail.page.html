@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/admin/house-blocks"></ion-back-button>
     </ion-buttons>
-    <ion-title>Block Details</ion-title>
+    <ion-title>Detail Blok</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="navigateToEdit()">
         <ion-icon slot="icon-only" name="create"></ion-icon>
@@ -27,7 +27,7 @@
     <div class="error-state">
       <ion-icon name="warning-outline"></ion-icon>
       <h2>{{ error }}</h2>
-      <ion-button (click)="navigateBack()">Go Back</ion-button>
+      <ion-button (click)="navigateBack()">Kembali</ion-button>
     </div>
   }
 
@@ -43,12 +43,12 @@
       <div class="stats-row">
         <span class="stat-item">
           <ion-icon name="home-outline"></ion-icon>
-          {{ houseBlock.totalUnits }} Units
+          {{ houseBlock.totalUnits }} Unit
         </span>
         @if (houseBlock.totalFloors) {
           <span class="stat-item">
             <ion-icon name="layers-outline"></ion-icon>
-            {{ houseBlock.totalFloors }} Floors
+            {{ houseBlock.totalFloors }} Lantai
           </span>
         }
       </div>
@@ -74,31 +74,37 @@
         [color]="houseBlock.isActive ? 'warning' : 'success'"
         (click)="toggleActiveStatus()">
         <ion-icon slot="start" name="swap-horizontal-outline"></ion-icon>
-        {{ houseBlock.isActive ? 'Deactivate' : 'Activate' }}
+        {{ houseBlock.isActive ? 'Nonaktifkan' : 'Aktifkan' }}
       </ion-button>
       <ion-button size="small" fill="outline" color="danger" (click)="confirmDelete()">
         <ion-icon slot="start" name="trash-outline"></ion-icon>
-        Delete
+        Hapus
       </ion-button>
     </div>
 
     <!-- Block Details -->
     <ion-card class="info-card">
       <ion-card-header>
-        <ion-card-title>Block Details</ion-card-title>
+        <ion-card-title>Detail Blok</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-list lines="full" class="info-list">
           <ion-item>
             <ion-label>
-              <h2>Address</h2>
+              <h2>Alamat</h2>
               <p>{{ houseBlock.address || '-' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h2>Koordinator</h2>
+              <p>{{ getCoordinatorName() }}</p>
             </ion-label>
           </ion-item>
           @if (houseBlock.description) {
             <ion-item>
               <ion-label>
-                <h2>Description</h2>
+                <h2>Deskripsi</h2>
                 <p>{{ houseBlock.description }}</p>
               </ion-label>
             </ion-item>
@@ -111,7 +117,7 @@
     @if (getAmenities().length > 0) {
       <ion-card class="info-card">
         <ion-card-header>
-          <ion-card-title>Facilities</ion-card-title>
+          <ion-card-title>Fasilitas</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <div class="tags-wrapper">
@@ -130,7 +136,7 @@
     @if (getAmenities().length > 0) {
       <ion-card class="info-card">
         <ion-card-header>
-          <ion-card-title>Amenities</ion-card-title>
+          <ion-card-title>Fasilitas Tambahan</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <div class="tags-wrapper">
@@ -147,8 +153,8 @@
 
     <!-- Metadata -->
     <div class="metadata">
-      <p>Created: {{ formatDate(houseBlock.createdAt) }}</p>
-      <p>Last Updated: {{ formatDate(houseBlock.updatedAt) }}</p>
+      <p>Dibuat: {{ formatDate(houseBlock.createdAt) }}</p>
+      <p>Terakhir Diperbarui: {{ formatDate(houseBlock.updatedAt) }}</p>
     </div>
   }
 </ion-content>

@@ -1,0 +1,93 @@
+ion-card.invoice-card {
+  margin: 0 0 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+ion-card.invoice-card.overdue {
+  border-left: 4px solid var(--ion-color-danger);
+}
+
+.card-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header-top ion-card-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.resident-info,
+.period-info,
+.due-date-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+.resident-info ion-icon,
+.period-info ion-icon,
+.due-date-info ion-icon {
+  font-size: 18px;
+}
+
+.due-date-info {
+  font-weight: 500;
+  color: var(--ion-color-warning);
+}
+
+.due-date-info.overdue {
+  color: var(--ion-color-danger);
+  font-weight: 600;
+}
+
+.amount-section {
+  margin-top: 16px;
+}
+
+.amount-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.amount-labels span:first-child {
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.amount-labels span:last-child {
+  font-weight: 600;
+  color: var(--ion-color-success);
+}
+
+.remaining-amount {
+  text-align: right;
+  font-size: 12px;
+  color: var(--ion-color-warning);
+  margin-top: 4px;
+}
+
+ion-progress-bar {
+  height: 8px;
+  --border-radius: 4px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--ion-color-light);
+}
+
+.page-info {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  padding: 0 16px;
+}

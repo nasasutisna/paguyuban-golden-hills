@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/admin/dashboard"></ion-back-button>
     </ion-buttons>
-    <ion-title>Residents</ion-title>
+    <ion-title>Warga</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="navigateToCreate()">
         <ion-icon slot="icon-only" name="add-outline"></ion-icon>
@@ -34,7 +34,7 @@
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ residentStats.total }}</div>
-              <div class="stat-label">Total Residents</div>
+              <div class="stat-label">Total Warga</div>
             </div>
           </div>
         </ion-card-content>
@@ -49,7 +49,7 @@
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ residentStats.active }}</div>
-              <div class="stat-label">Active</div>
+              <div class="stat-label">Aktif</div>
             </div>
           </div>
         </ion-card-content>
@@ -64,7 +64,7 @@
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ residentStats.ownership.owners }}</div>
-              <div class="stat-label">Owners</div>
+              <div class="stat-label">Pemilik</div>
             </div>
           </div>
         </ion-card-content>
@@ -79,7 +79,7 @@
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ residentStats.ownership.renters }}</div>
-              <div class="stat-label">Renters</div>
+              <div class="stat-label">Penyewa</div>
             </div>
           </div>
         </ion-card-content>
@@ -94,7 +94,7 @@
       <div table-actions>
         <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
           <ion-icon slot="start" name="add"></ion-icon>
-          Add New
+          Tambah Baru
         </ion-button>
       </div>
     </app-table>

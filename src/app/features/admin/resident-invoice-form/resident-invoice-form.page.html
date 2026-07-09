@@ -1,0 +1,212 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/resident-invoices"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading Data State -->
+  <div *ngIf="loadingData" class="ion-padding ion-text-center">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p class="ion-margin-top">Memuat data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loadingData" class="ion-padding ion-text-center">
+    <ion-icon name="alert-circle-outline" size="large" color="danger"></ion-icon>
+    <p class="ion-margin-top">{{ error }}</p>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingData && !error">
+    <!-- Warga & Jenis Iuran -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Tagihan</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-select
+          label="Warga"
+          formControlName="residentId"
+          placeholder="Pilih warga"
+          [options]="residentOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('residentId')"
+          [errorMessage]="getErrorMessage('residentId')"
+        ></app-form-select>
+
+        <!-- Selected Resident Info -->
+        <div *ngIf="selectedResident" class="resident-info">
+          <p>
+            <ion-icon name="person-outline"></ion-icon>
+            {{ selectedResident.firstName }} {{ selectedResident.lastName }}
+          </p>
+          <p>
+            <ion-icon name="home-outline"></ion-icon>
+            {{ selectedResident.houseBlock?.blockName || '-' }} - {{ selectedResident.unitNumber }}
+          </p>
+          <p *ngIf="selectedResident.phoneNumber">
+            <ion-icon name="call-outline"></ion-icon>
+            {{ selectedResident.phoneNumber }}
+          </p>
+        </div>
+
+        <app-form-select
+          label="Jenis Iuran"
+          formControlName="feeTypeId"
+          placeholder="Pilih jenis iuran"
+          [options]="feeTypeOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('feeTypeId')"
+          [errorMessage]="getErrorMessage('feeTypeId')"
+        ></app-form-select>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Tanggal Tagihan -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Tanggal Tagihan</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-date-picker
+          formControlName="invoiceDate"
+          label="Tanggal Tagihan"
+          placeholder="Pilih tanggal tagihan"
+          [showError]="isFieldInvalid('invoiceDate')"
+          [errorMessage]="getErrorMessage('invoiceDate')"
+          [required]="true"
+        ></app-form-date-picker>
+
+        <app-form-date-picker
+          formControlName="periodStartDate"
+          label="Tanggal Mulai Periode"
+          placeholder="Pilih tanggal mulai periode"
+          [showError]="isFieldInvalid('periodStartDate')"
+          [errorMessage]="getErrorMessage('periodStartDate')"
+          [required]="true"
+        ></app-form-date-picker>
+
+        <app-form-date-picker
+          formControlName="periodEndDate"
+          label="Tanggal Akhir Periode"
+          placeholder="Pilih tanggal akhir periode"
+          [showError]="isFieldInvalid('periodEndDate')"
+          [errorMessage]="getErrorMessage('periodEndDate')"
+          [required]="true"
+        ></app-form-date-picker>
+
+        <app-form-date-picker
+          formControlName="dueDate"
+          label="Jatuh Tempo"
+          placeholder="Pilih tanggal jatuh tempo"
+          [showError]="isFieldInvalid('dueDate')"
+          [errorMessage]="getErrorMessage('dueDate')"
+          [required]="true"
+        ></app-form-date-picker>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Nilai Tagihan -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Nilai Tagihan</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-input
+          label="Subtotal"
+          type="number"
+          formControlName="subtotal"
+          placeholder="0"
+          [min]="0"
+          [required]="true"
+          [showError]="isFieldInvalid('subtotal')"
+          [errorMessage]="getErrorMessage('subtotal')"
+        ></app-form-input>
+
+        <app-form-input
+          label="Pajak"
+          type="number"
+          formControlName="taxAmount"
+          placeholder="0"
+          [min]="0"
+        ></app-form-input>
+
+        <app-form-input
+          label="Diskon"
+          type="number"
+          formControlName="discountAmount"
+          placeholder="0"
+          [min]="0"
+        ></app-form-input>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Catatan -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Catatan</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-textarea
+          label="Catatan Tambahan"
+          formControlName="notes"
+          placeholder="Catatan tambahan..."
+          [rows]="3"
+        ></app-form-textarea>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Total Summary Card -->
+    <ion-card class="summary-card">
+      <ion-card-header>
+        <ion-card-title>Ringkasan Tagihan</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>{{ formatCurrency(form.get('subtotal')?.value || 0) }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Pajak</span>
+          <span>{{ formatCurrency(form.get('taxAmount')?.value || 0) }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Diskon</span>
+          <span class="discount">-{{ formatCurrency(form.get('discountAmount')?.value || 0) }}</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row total">
+          <span>Total Tagihan</span>
+          <span>{{ formatCurrency(totalAmount) }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        expand="block"
+        (click)="navigateBack()"
+        [disabled]="loading"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="save-outline"
+        iconSlot="start"
+        variant="solid"
+        color="primary"
+        type="submit"
+        expand="block"
+        [disabled]="loading || !isFormValid()"
+        [loading]="loading"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>

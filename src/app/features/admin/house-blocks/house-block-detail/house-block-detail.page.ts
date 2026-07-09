@@ -52,12 +52,12 @@ export class HouseBlockDetailPage implements OnInit {
   private loadHouseBlock(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.error = 'House Block ID not provided';
+      this.error = 'ID Blok tidak diberikan';
       this.loading = false;
       return;
     }
 
-    this.loadingService.show({ message: 'Loading block details...' });
+    this.loadingService.show({ message: 'Memuat detail blok...' });
 
     this.subscriptions.push(
       this.houseBlocksService.getById(id).subscribe({
@@ -67,13 +67,13 @@ export class HouseBlockDetailPage implements OnInit {
             this.houseBlock = block;
             this.loading = false;
           } else {
-            this.error = 'House Block not found';
+            this.error = 'Blok tidak ditemukan';
             this.loading = false;
           }
         },
         error: (error) => {
           this.loadingService.dismiss();
-          this.error = 'Failed to load house block details';
+          this.error = 'Gagal memuat detail blok';
           this.loading = false;
           console.error('Error loading house block:', error);
         }
@@ -104,19 +104,19 @@ export class HouseBlockDetailPage implements OnInit {
     if (!this.houseBlock) return;
 
     const newStatus = !this.houseBlock.isActive;
-    const statusText = newStatus ? 'activate' : 'deactivate';
+    const statusText = newStatus ? 'diaktifkan' : 'dinonaktifkan';
 
     this.subscriptions.push(
       this.houseBlocksService.update(this.houseBlock.id, { isActive: newStatus }).subscribe({
         next: (updated) => {
           if (updated) {
             this.houseBlock = updated;
-            this.toastService.success(`House block ${statusText}d successfully`);
+            this.toastService.success(`Blok berhasil ${statusText}`);
           }
         },
         error: (error) => {
           console.error('Error updating house block status:', error);
-          this.toastService.error(`Failed to ${statusText} house block`);
+          this.toastService.error(`Gagal ${statusText.replace('di', 'mem')} blok`);
         }
       })
     );
@@ -129,15 +129,15 @@ export class HouseBlockDetailPage implements OnInit {
     if (!this.houseBlock) return;
 
     const alert = await this.alertController.create({
-      header: 'Delete House Block',
-      message: `Are you sure you want to delete "${this.houseBlock.blockName}"? This action cannot be undone.`,
+      header: 'Hapus Blok',
+      message: `Apakah Anda yakin ingin menghapus "${this.houseBlock.blockName}"? Tindakan ini tidak dapat dibatalkan.`,
       buttons: [
         {
-          text: 'Cancel',
+          text: 'Batal',
           role: 'cancel'
         },
         {
-          text: 'Delete',
+          text: 'Hapus',
           role: 'destructive',
           handler: () => {
             this.handleDelete();
@@ -155,18 +155,18 @@ export class HouseBlockDetailPage implements OnInit {
   private handleDelete(): void {
     if (!this.houseBlock) return;
 
-    this.loadingService.show({ message: 'Deleting house block...' });
+    this.loadingService.show({ message: 'Menghapus blok...' });
 
     this.subscriptions.push(
       this.houseBlocksService.delete(this.houseBlock.id).subscribe({
         next: () => {
           this.loadingService.dismiss();
-          this.toastService.success('House block deleted successfully');
+          this.toastService.success('Blok berhasil dihapus');
           this.router.navigate(['/admin/house-blocks']);
         },
         error: (error) => {
           this.loadingService.dismiss();
-          this.toastService.error('Failed to delete house block');
+          this.toastService.error('Gagal menghapus blok');
           console.error('Delete house block error:', error);
         }
       })
@@ -178,7 +178,7 @@ export class HouseBlockDetailPage implements OnInit {
    */
   formatDate(date?: string): string {
     if (!date) return '-';
-    return new Date(date).toLocaleDateString('en-US', {
+    return new Date(date).toLocaleDateString('id-ID', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -204,7 +204,7 @@ export class HouseBlockDetailPage implements OnInit {
    * Get status text
    */
   getStatusText(): string {
-    return this.houseBlock?.isActive ? 'Active' : 'Inactive';
+    return this.houseBlock?.isActive ? 'Aktif' : 'Tidak Aktif';
   }
 
   /**
@@ -238,6 +238,15 @@ export class HouseBlockDetailPage implements OnInit {
     } catch {
       return [];
     }
+  }
+
+  /**
+   * Get coordinator name from house block
+   */
+  getCoordinatorName(): string {
+    if (!this.houseBlock?.coordinator) return '-';
+    const { firstName, lastName } = this.houseBlock.coordinator;
+    return `${firstName} ${lastName}`.trim();
   }
 
   /**

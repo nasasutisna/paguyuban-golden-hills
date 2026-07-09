@@ -56,12 +56,12 @@ export class ResidentDetailPage implements OnInit {
   private loadResident(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.error = 'Resident ID not provided';
+      this.error = 'ID Warga tidak diberikan';
       this.loading = false;
       return;
     }
 
-    this.loadingService.show({ message: 'Loading resident details...' });
+    this.loadingService.show({ message: 'Memuat detail warga...' });
 
     this.subscriptions.push(
       this.residentsService.getById(id).subscribe({
@@ -71,13 +71,13 @@ export class ResidentDetailPage implements OnInit {
             this.resident = resident;
             this.loading = false;
           } else {
-            this.error = 'Resident not found';
+            this.error = 'Warga tidak ditemukan';
             this.loading = false;
           }
         },
         error: (error) => {
           this.loadingService.dismiss();
-          this.error = 'Failed to load resident details';
+          this.error = 'Gagal memuat detail warga';
           this.loading = false;
           console.error('Error loading resident:', error);
         }
@@ -115,12 +115,12 @@ export class ResidentDetailPage implements OnInit {
         next: (updated) => {
           if (updated) {
             this.resident = updated;
-            this.toastService.success(`Resident ${statusText}d successfully`);
+            this.toastService.success(`Warga berhasil ${statusText}kan`);
           }
         },
         error: (error) => {
           console.error('Error updating resident status:', error);
-          this.toastService.error(`Failed to ${statusText} resident`);
+          this.toastService.error(`Gagal ${statusText}kan warga`);
         }
       })
     );
@@ -133,15 +133,15 @@ export class ResidentDetailPage implements OnInit {
     if (!this.resident) return;
 
     const alert = await this.alertController.create({
-      header: 'Delete Resident',
-      message: `Are you sure you want to delete "${this.resident.firstName} ${this.resident.lastName}"? This action cannot be undone.`,
+      header: 'Hapus Warga',
+      message: `Apakah Anda yakin ingin menghapus "${this.resident.firstName} ${this.resident.lastName}"? Tindakan ini tidak dapat dibatalkan.`,
       buttons: [
         {
-          text: 'Cancel',
+          text: 'Batal',
           role: 'cancel'
         },
         {
-          text: 'Delete',
+          text: 'Hapus',
           role: 'destructive',
           handler: () => {
             this.handleDelete();
@@ -159,18 +159,18 @@ export class ResidentDetailPage implements OnInit {
   private handleDelete(): void {
     if (!this.resident) return;
 
-    this.loadingService.show({ message: 'Deleting resident...' });
+    this.loadingService.show({ message: 'Menghapus warga...' });
 
     this.subscriptions.push(
       this.residentsService.delete(this.resident.id).subscribe({
         next: () => {
           this.loadingService.dismiss();
-          this.toastService.success('Resident deleted successfully');
+          this.toastService.success('Warga berhasil dihapus');
           this.router.navigate(['/admin/residents']);
         },
         error: (error) => {
           this.loadingService.dismiss();
-          this.toastService.error('Failed to delete resident');
+          this.toastService.error('Gagal menghapus warga');
           console.error('Delete resident error:', error);
         }
       })
@@ -200,7 +200,7 @@ export class ResidentDetailPage implements OnInit {
    * Get status text
    */
   getStatusText(): string {
-    return this.resident?.isActive ? 'Active' : 'Inactive';
+    return this.resident?.isActive ? 'Aktif' : 'Tidak Aktif';
   }
 
   /**

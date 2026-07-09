@@ -57,23 +57,23 @@ export class ResidentsPage implements OnInit, OnDestroy {
   // Table configuration
   tableConfig: TableConfig = {
     columns: [
-      { key: 'residentCode', header: 'Code', type: 'text', sortable: true },
-      { key: 'firstName', header: 'First Name', type: 'text', sortable: true },
-      { key: 'lastName', header: 'Last Name', type: 'text', sortable: true },
+      { key: 'residentCode', header: 'Kode', type: 'text', sortable: true },
+      { key: 'firstName', header: 'Nama Depan', type: 'text', sortable: true },
+      { key: 'lastName', header: 'Nama Belakang', type: 'text', sortable: true },
       { key: 'email', header: 'Email', type: 'text' },
-      { key: 'phoneNumber', header: 'Phone', type: 'text' },
-      { key: 'gender', header: 'Gender', type: 'status', sortable: true },
-      { key: 'maritalStatus', header: 'Marital Status', type: 'status', sortable: true },
-      { key: 'ownershipType', header: 'Ownership', type: 'status', sortable: true },
+      { key: 'phoneNumber', header: 'Telepon', type: 'text' },
+      { key: 'gender', header: 'Jenis Kelamin', type: 'status', sortable: true },
+      { key: 'maritalStatus', header: 'Status Perkawinan', type: 'status', sortable: true },
+      { key: 'ownershipType', header: 'Kepemilikan', type: 'status', sortable: true },
       { key: 'unitNumber', header: 'Unit', type: 'text', sortable: true },
-      { key: 'houseBlock.blockName', header: 'Block', type: 'text' },
+      { key: 'houseBlock.blockName', header: 'Blok', type: 'text' },
       { key: 'isActive', header: 'Status', type: 'status', sortable: true },
-      { key: 'createdAt', header: 'Created', type: 'date', sortable: true }
+      { key: 'createdAt', header: 'Dibuat', type: 'date', sortable: true }
     ],
     actions: [
       {
         id: 'view',
-        label: 'View',
+        label: 'Lihat',
         icon: 'eye-outline',
         color: 'medium',
         handler: (item) => this.navigateToView(item)
@@ -87,15 +87,15 @@ export class ResidentsPage implements OnInit, OnDestroy {
       },
       {
         id: 'delete',
-        label: 'Delete',
+        label: 'Hapus',
         icon: 'trash-outline',
         color: 'danger',
         handler: (item) => this.confirmDelete(item),
         confirm: {
-          title: 'Delete Resident',
-          message: 'Are you sure you want to delete this resident? This action cannot be undone.',
-          confirmText: 'Delete',
-          cancelText: 'Cancel'
+          title: 'Hapus Warga',
+          message: 'Apakah Anda yakin ingin menghapus warga ini? Tindakan ini tidak dapat dibatalkan.',
+          confirmText: 'Hapus',
+          cancelText: 'Batal'
         }
       }
     ],
@@ -108,8 +108,8 @@ export class ResidentsPage implements OnInit, OnDestroy {
     showFooter: true,
     striped: true,
     hoverable: true,
-    emptyMessage: 'No residents found',
-    loadingMessage: 'Loading residents...'
+    emptyMessage: 'Tidak ada warga ditemukan',
+    loadingMessage: 'Memuat warga...'
   };
 
   // Table data source
@@ -120,8 +120,8 @@ export class ResidentsPage implements OnInit, OnDestroy {
 
   // Status badges for table
   statusBadges = [
-    { value: true, label: 'Active', color: 'success', icon: 'checkmark-circle' },
-    { value: false, label: 'Inactive', color: 'medium', icon: 'close-circle' },
+    { value: true, label: 'Aktif', color: 'success', icon: 'checkmark-circle' },
+    { value: false, label: 'Tidak Aktif', color: 'medium', icon: 'close-circle' },
     { value: Gender.MALE, label: GENDER_LABELS[Gender.MALE], color: GENDER_COLORS[Gender.MALE] },
     { value: Gender.FEMALE, label: GENDER_LABELS[Gender.FEMALE], color: GENDER_COLORS[Gender.FEMALE] },
     { value: Gender.OTHER, label: GENDER_LABELS[Gender.OTHER], color: GENDER_COLORS[Gender.OTHER] },
@@ -215,7 +215,7 @@ export class ResidentsPage implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading residents:', error);
-          this.toastService.error('Failed to load residents');
+          this.toastService.error('Gagal memuat warga');
           this.dataSource = {
             data: [],
             loading: false,
@@ -264,16 +264,16 @@ export class ResidentsPage implements OnInit, OnDestroy {
    */
   async confirmDelete(item: Resident): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Delete Resident',
-      message: `Are you sure you want to delete "${item.firstName} ${item.lastName}"? This action cannot be undone.`,
+      header: 'Hapus Warga',
+      message: `Apakah Anda yakin ingin menghapus "${item.firstName} ${item.lastName}"? Tindakan ini tidak dapat dibatalkan.`,
       buttons: [
         {
-          text: 'Cancel',
+          text: 'Batal',
           role: 'cancel',
           cssClass: 'secondary'
         },
         {
-          text: 'Delete',
+          text: 'Hapus',
           role: 'destructive',
           handler: () => {
             this.handleDelete(item.id);
@@ -289,19 +289,19 @@ export class ResidentsPage implements OnInit, OnDestroy {
    * Handle delete
    */
   private handleDelete(id: string): void {
-    this.loadingService.show({ message: 'Deleting resident...' });
+    this.loadingService.show({ message: 'Menghapus warga...' });
 
     this.subscriptions.push(
       this.residentsService.delete(id).subscribe({
         next: () => {
           this.loadingService.dismiss();
-          this.toastService.success('Resident deleted successfully');
+          this.toastService.success('Warga berhasil dihapus');
           this.loadResidents(); // Reload list
           this.loadResidentStats(); // Reload stats
         },
         error: (error) => {
           this.loadingService.dismiss();
-          this.toastService.error('Failed to delete resident');
+          this.toastService.error('Gagal menghapus warga');
           console.error('Delete resident error:', error);
         }
       })

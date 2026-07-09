@@ -54,6 +54,22 @@ ion-content {
 }
 
 /**
+ * Form Actions Styles
+ * -----------------------------------------------------
+ * Global styles for form action buttons
+ */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0;
+  justify-content: flex-end;
+
+  app-form-button {
+    flex: 0 0 auto;
+  }
+}
+
+/**
  * Desktop Mode - Hide Page Headers
  * -----------------------------------------------------
  * Hide ion-header on all pages except app.component header
@@ -63,5 +79,21 @@ ion-content {
   /* Hide all ion-header elements except the admin-header in app.component */
   ion-router-outlet ion-header {
     display: none !important;
+  }
+}
+
+/**
+ * Date Picker Modal Styles
+ * -----------------------------------------------------
+ * Custom modal styles for the date picker component
+ */
+ion-modal.date-picker-modal {
+  --height: auto;
+  --max-width: 400px;
+  --max-height: 550px;
+  --border-radius: 16px;
+
+  .ion-page {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
 }

@@ -39,7 +39,12 @@ import {
   playCircle,
   swapHorizontalOutline,
   alertCircle,
-  saveOutline
+  saveOutline,
+  time,
+  walletOutline,
+  cardOutline,
+  cashOutline,
+  newspaperOutline
 } from 'ionicons/icons';
 import { AuthService } from '@core/auth/auth.service';
 import { User } from '@models/auth.model';
@@ -83,33 +88,39 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Main Menu Items
   mainMenuItems: MenuItem[] = [
-    { title: 'Dashboard', url: '/dashboard', icon: 'grid', description: 'Overview & Statistics' },
-    { title: 'Profile', url: '/profile', icon: 'person-circle', description: 'Account Settings' },
+    { title: 'Dasbor', url: '/dashboard', icon: 'grid', description: 'Ringkasan & Statistik' },
+    { title: 'Profil', url: '/profile', icon: 'person-circle', description: 'Pengaturan Akun' },
   ];
 
   // Management Menu Items
   managementMenuItems: MenuItem[] = [
-    { title: 'Residents', url: '/admin/residents', icon: 'home', description: 'Manage Residents' },
-    { title: 'Employees', url: '/admin/employees', icon: 'people', description: 'Staff Management' },
-    { title: 'House Units', url: '/admin/house-units', icon: 'business-outline', description: 'House Unit Management' },
-    { title: 'House Blocks', url: '/admin/house-blocks', icon: 'business', description: 'Building Management' },
-    { title: 'Transactions', url: '/admin/transactions', icon: 'swap-horizontal', description: 'Financial Records' },
-    { title: 'Invoices', url: '/admin/invoices', icon: 'document', description: 'Billing & Invoices' },
+    { title: 'Warga', url: '/admin/residents', icon: 'home', description: 'Kelola Warga' },
+    { title: 'Karyawan', url: '/admin/employees', icon: 'people', description: 'Manajemen Staf' },
+    { title: 'Unit Rumah', url: '/admin/house-units', icon: 'business-outline', description: 'Manajemen Unit Rumah' },
+    { title: 'Blok', url: '/admin/house-blocks', icon: 'business', description: 'Manajemen Blok' },
+  ];
+
+  // Keuangan Menu Items
+  keuanganMenuItems: MenuItem[] = [
+    { title: 'Jenis Iuran', url: '/admin/fee-types', icon: 'funnel', description: 'Kelola Jenis Iuran & IPL' },
+    { title: 'Tagihan Warga', url: '/admin/resident-invoices', icon: 'document', description: 'Daftar Tagihan Warga' },
+    { title: 'Pembayaran', url: '/admin/resident-payments', icon: 'card-outline', description: 'Riwayat Pembayaran' },
+    { title: 'Transaksi', url: '/admin/transactions', icon: 'swap-horizontal', description: 'Catatan Keuangan' },
   ];
 
   // Reports Menu Items
   reportsMenuItems: MenuItem[] = [
-    { title: 'Financial Reports', url: '/admin/reports/financial', icon: 'trending-up', description: 'Income & Expenses' },
-    { title: 'Monthly Reports', url: '/admin/reports/monthly', icon: 'calendar', description: 'Monthly Summaries' },
-    { title: 'Activity Logs', url: '/admin/reports/activity', icon: 'receipt', description: 'System Activities' },
+    { title: 'Laporan Keuangan', url: '/admin/reports/financial', icon: 'trending-up', description: 'Pemasukan & Pengeluaran' },
+    { title: 'Laporan Bulanan', url: '/admin/reports/monthly', icon: 'calendar', description: 'Ringkasan Bulanan' },
+    { title: 'Log Aktivitas', url: '/admin/reports/activity', icon: 'receipt', description: 'Aktivitas Sistem' },
   ];
 
   // Settings Menu Items
   settingsMenuItems: MenuItem[] = [
-    { title: 'General Settings', url: '/admin/settings/general', icon: 'settings', description: 'App Configuration' },
-    { title: 'Security', url: '/admin/settings/security', icon: 'shield', description: 'Security & Access' },
-    { title: 'Roles & Permissions', url: '/admin/settings/roles', icon: 'key', description: 'User Roles' },
-    { title: 'Backup & Restore', url: '/admin/settings/backup', icon: 'cloud-upload', description: 'Data Management' },
+    { title: 'Pengaturan Umum', url: '/admin/settings/general', icon: 'settings', description: 'Konfigurasi Aplikasi' },
+    { title: 'Keamanan', url: '/admin/settings/security', icon: 'shield', description: 'Keamanan & Akses' },
+    { title: 'Role & Izin', url: '/admin/settings/roles', icon: 'key', description: 'Role Pengguna' },
+    { title: 'Backup & Restore', url: '/admin/settings/backup', icon: 'cloud-upload', description: 'Manajemen Data' },
   ];
 
   constructor() {
@@ -124,7 +135,8 @@ export class AppComponent implements OnInit, OnDestroy {
       searchOutline, add, addCircle, personAdd, addCircleOutline, chevronBack, arrowBack,
       chevronBackCircleOutline, checkmarkCircle, closeCircle, callOutline, mailOutline,
       layersOutline, resizeOutline, star, warningOutline, buildOutline, expandOutline,
-      medicalOutline, stopCircle, playCircle, swapHorizontalOutline, alertCircle, saveOutline
+      medicalOutline, stopCircle, playCircle, swapHorizontalOutline, alertCircle, saveOutline, time,
+      walletOutline, cardOutline, cashOutline, newspaperOutline
     });
   }
 
@@ -200,14 +212,16 @@ export class AppComponent implements OnInit, OnDestroy {
     this.currentUrl = url;
 
     const pageMap: { [key: string]: { title: string; icon: string } } = {
-      '/dashboard': { title: 'Dashboard', icon: 'grid' },
-      '/profile': { title: 'Profile', icon: 'person-circle' },
-      '/admin/residents': { title: 'Residents', icon: 'home' },
-      '/admin/employees': { title: 'Employees', icon: 'people' },
-      '/admin/house-units': { title: 'House Units', icon: 'business-outline' },
-      '/admin/house-blocks': { title: 'House Blocks', icon: 'business' },
-      '/admin/transactions': { title: 'Transactions', icon: 'receipt' },
-      '/admin/invoices': { title: 'Invoices', icon: 'document' },
+      '/dashboard': { title: 'Dasbor', icon: 'grid' },
+      '/profile': { title: 'Profil', icon: 'person-circle' },
+      '/admin/residents': { title: 'Warga', icon: 'home' },
+      '/admin/employees': { title: 'Karyawan', icon: 'people' },
+      '/admin/house-units': { title: 'Unit Rumah', icon: 'business-outline' },
+      '/admin/house-blocks': { title: 'Blok', icon: 'business' },
+      '/admin/fee-types': { title: 'Jenis Iuran', icon: 'funnel' },
+      '/admin/resident-invoices': { title: 'Tagihan Warga', icon: 'document' },
+      '/admin/resident-payments': { title: 'Pembayaran', icon: 'card-outline' },
+      '/admin/transactions': { title: 'Transaksi', icon: 'swap-horizontal' },
     };
 
     // Find matching page

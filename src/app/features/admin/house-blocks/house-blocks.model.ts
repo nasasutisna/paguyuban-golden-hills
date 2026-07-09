@@ -16,9 +16,9 @@ export enum BlockType {
  * Block Type display labels
  */
 export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
-  [BlockType.RESIDENTIAL]: 'Residential',
-  [BlockType.COMMERCIAL]: 'Commercial',
-  [BlockType.MIXED]: 'Mixed Use'
+  [BlockType.RESIDENTIAL]: 'Residensial',
+  [BlockType.COMMERCIAL]: 'Komersial',
+  [BlockType.MIXED]: 'Campuran'
 };
 
 /**
@@ -46,11 +46,23 @@ export interface HouseBlock {
   amenities?: string;
   isActive?: boolean;
   description?: string;
+  coordinatorId?: string;
+  coordinator?: ResidentReference;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
   // Nested relations
   units?: HouseUnit[];
+}
+
+/**
+ * Resident Reference (included in house block data)
+ */
+export interface ResidentReference {
+  id: string;
+  residentCode: string;
+  firstName: string;
+  lastName: string;
 }
 
 /**
@@ -82,6 +94,7 @@ export interface CreateHouseBlockDto {
   amenities?: string;
   isActive?: boolean;
   description?: string;
+  coordinatorId?: string;
 }
 
 /**
@@ -99,6 +112,7 @@ export interface UpdateHouseBlockDto {
   amenities?: string;
   isActive?: boolean;
   description?: string;
+  coordinatorId?: string;
 }
 
 /**
