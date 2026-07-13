@@ -1,0 +1,406 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/ipl-payments"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detail Pembayaran IPL</ion-title>
+    <ion-buttons slot="end">
+      @if (payment && !isPending()) {
+        <ion-button (click)="navigateToEdit()">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-state">
+      <ion-skeleton-text animated style="width: 60px; height: 60px; border-radius: 50%;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 150px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100px;"></ion-skeleton-text>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error && !loading) {
+    <div class="error-state">
+      <ion-icon name="warning-outline"></ion-icon>
+      <h2>{{ error }}</h2>
+      <ion-button (click)="navigateBack()">Kembali</ion-button>
+    </div>
+  }
+
+  <!-- Detail Content -->
+  @if (payment && !loading) {
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="payment-avatar">
+        <ion-icon name="receipt-outline"></ion-icon>
+      </div>
+      <h2>{{ payment.paymentNumber }}</h2>
+      <p class="code">{{ getPeriodName() }}</p>
+      <div class="badges">
+        <ion-chip [color]="getStatusColor()">
+          <ion-label>{{ STATUS_LABELS[payment.status] }}</ion-label>
+        </ion-chip>
+        <ion-chip [color]="getMethodColor()">
+          <ion-label>{{ getMethodLabel() }}</ion-label>
+        </ion-chip>
+        @if (isOverdue()) {
+          <ion-chip color="danger">
+            <ion-label>Terlambat</ion-label>
+          </ion-chip>
+        }
+      </div>
+    </div>
+
+    <!-- Amount Display -->
+    <ion-card class="amount-card">
+      <ion-card-content>
+        <div class="amount-row">
+          <span>Total IPL</span>
+          <span class="amount-value">{{ formatCurrency(payment.calculatedAmount) }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Actions -->
+    <div class="actions-row">
+      @if (isApproved()) {
+        <ion-button size="small" fill="solid" color="tertiary" (click)="downloadReceipt()">
+          <ion-icon slot="start" name="document-text-outline"></ion-icon>
+          Download Kwitansi
+        </ion-button>
+      }
+      @if (isPending()) {
+        <ion-button size="small" fill="solid" color="success" (click)="approvePayment()">
+          <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+          Setujui
+        </ion-button>
+        <ion-button size="small" fill="solid" color="danger" (click)="rejectPayment()">
+          <ion-icon slot="start" name="close-outline"></ion-icon>
+          Tolak
+        </ion-button>
+      }
+      <ion-button size="small" fill="outline" (click)="confirmDelete()">
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        Hapus
+      </ion-button>
+    </div>
+
+    <!-- Payment Information -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Informasi Pembayaran</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="info-list">
+          <ion-item>
+            <ion-icon name="receipt-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Nomor Pembayaran</h2>
+              <p>{{ payment.paymentNumber }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Tanggal Pembayaran</h2>
+              <p>{{ formatDate(payment.paymentDate) }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="card-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Metode Pembayaran</h2>
+              <p>
+                <ion-chip [color]="getMethodColor()">
+                  <ion-label>{{ getMethodLabel() }}</ion-label>
+                </ion-chip>
+              </p>
+            </ion-label>
+          </ion-item>
+          @if (payment.referenceNumber) {
+            <ion-item>
+              <ion-icon name="hash-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Nomor Referensi</h2>
+                <p>{{ payment.referenceNumber }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (payment.notes) {
+            <ion-item>
+              <ion-icon name="text-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Catatan</h2>
+                <p>{{ payment.notes }}</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Resident Information -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Informasi Warga</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="info-list">
+          <ion-item>
+            <ion-icon name="person-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Nama</h2>
+              <p>{{ getResidentName() }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="call-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Telepon</h2>
+              <p>{{ getResidentPhone() }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="location-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Alamat</h2>
+              <p>{{ getResidentAddress() }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- IPL Calculation Details -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Perhitungan IPL</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="info-list">
+          <ion-item>
+            <ion-icon name="expand-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Luas Tanah</h2>
+              <p>{{ payment.landArea }} m²</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="percent-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Persentase IPL</h2>
+              <p>{{ payment.iplPercentage }}%</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="cash-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Tarif Dasar</h2>
+              <p>{{ formatCurrency(payment.baseRate) }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item class="total-item">
+            <ion-icon name="wallet-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h2>Total IPL</h2>
+              <p class="total-value">{{ formatCurrency(payment.calculatedAmount) }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Period Information -->
+    @if (payment.period) {
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Informasi Periode</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="full" class="info-list">
+            <ion-item>
+              <ion-icon name="calendar-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Nama Periode</h2>
+                <p>{{ payment.period.periodName }}</p>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="code-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Kode Periode</h2>
+                <p>{{ payment.period.periodCode }}</p>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="calendar-clear-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Bulan/Tahun</h2>
+                <p>{{ payment.period.month }} / {{ payment.period.year }}</p>
+              </ion-label>
+            </ion-item>
+            @if (payment.period.dueDate) {
+              <ion-item>
+                <ion-icon name="time-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>Tanggal Jatuh Tempo</h2>
+                  <p>@if (isOverdue()) {
+                    <span class="overdue-text">{{ formatDate(payment.period.dueDate) }}</span>
+                  } @else {
+                    <span>{{ formatDate(payment.period.dueDate) }}</span>
+                  }</p>
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Approval Information -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Status Persetujuan</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="info-list">
+          <ion-item>
+            <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Diajukan Oleh</h2>
+              <p>{{ getSubmitterName() }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="time-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Tanggal Pengajuan</h2>
+              <p>{{ formatDateTime(payment.createdAt) }}</p>
+            </ion-label>
+          </ion-item>
+          @if (isApproved()) {
+            <ion-item>
+              <ion-icon name="checkmark-circle-outline" slot="start" color="success"></ion-icon>
+              <ion-label>
+                <h2>Disetujui Oleh</h2>
+                <p>{{ getApproverName() }}</p>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="calendar-check-outline" slot="start" color="success"></ion-icon>
+              <ion-label>
+                <h2>Tanggal Persetujuan</h2>
+                <p>{{ formatDateTime(payment.approvedAt) }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (isRejected()) {
+            <ion-item>
+              <ion-icon name="close-circle-outline" slot="start" color="danger"></ion-icon>
+              <ion-label>
+                <h2>Alasan Penolakan</h2>
+                <p class="rejection-reason">{{ payment.rejectionReason }}</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Attached Files / Bukti Pembayaran -->
+    @if (hasFiles()) {
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Bukti Pembayaran</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="files-grid">
+            @for (file of payment.files; track file.id) {
+              <div class="file-item" (click)="viewFile(file)">
+                @if (isImage(file)) {
+                  <div class="file-preview">
+                    <img [src]="getFileUrl(file)" [alt]="file.fileName" (error)="onImageError($event)" />
+                  </div>
+                } @else {
+                  <div class="file-icon-preview">
+                    <ion-icon [name]="getFileIcon(file.mimeType)"></ion-icon>
+                  </div>
+                }
+                <div class="file-info">
+                  <p class="file-name">{{ file.fileName }}</p>
+                  <p class="file-meta">{{ getFileSize(file.fileSize) }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Kwitansi Pembayaran -->
+    @if (isApproved()) {
+      <ion-card class="info-card receipt-card">
+        <ion-card-header>
+          <ion-card-title>Kwitansi Pembayaran</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="receipt-content">
+            <ion-icon name="document-text-outline" class="receipt-icon"></ion-icon>
+            <div class="receipt-info">
+              <h3>Kwitansi Tersedia</h3>
+              <p>Kwitansi pembayaran IPL telah dibuat secara otomatis.</p>
+            </div>
+            <ion-button size="small" fill="solid" color="tertiary" (click)="downloadReceipt()">
+              <ion-icon slot="start" name="download-outline"></ion-icon>
+              Download PDF
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Approval History -->
+    @if (hasApprovalHistory()) {
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Riwayat Persetujuan</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="full" class="info-list">
+            @for (history of payment.approvalHistories; track history.id) {
+              <ion-item class="history-item">
+                <ion-label>
+                  <h3>
+                    <span class="history-action">{{ history.action }}</span>
+                    @if (history.toStatus) {
+                      <span class="history-status" [ngStyle]="{color: 'var(--ion-color-' + getStatusColor() + ')'}">
+                        → {{ getStatusLabel(history.toStatus) }}
+                      </span>
+                    }
+                  </h3>
+                  <p>Oleh: {{ history.approver?.username || '-' }}</p>
+                  <p>{{ formatDateTime(history.createdAt) }}</p>
+                  @if (history.comments) {
+                    <p class="history-comments">{{ history.comments }}</p>
+                  }
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Metadata -->
+    <div class="metadata">
+      <p>Dibuat: {{ formatDateTime(payment.createdAt) }}</p>
+      <p>Terakhir Diperbarui: {{ formatDateTime(payment.updatedAt) }}</p>
+    </div>
+  }
+</ion-content>

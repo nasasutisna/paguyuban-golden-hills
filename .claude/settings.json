@@ -3,7 +3,8 @@
     "allow": [
       "Bash(rm -rf .git)",
       "Bash(git init *)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(pkill -f \"ionic serve\")"
     ]
   }
 }

@@ -1,0 +1,349 @@
+:host {
+  --background: #f5f5f5;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 20px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-medium);
+  }
+
+  h2 {
+    margin: 0;
+    color: var(--ion-color-dark);
+  }
+}
+
+// Header Section
+.header-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 20px;
+  background: white;
+  margin: -16px -16px 20px -16px;
+  text-align: center;
+
+  .payment-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--ion-color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+
+    ion-icon {
+      font-size: 36px;
+      color: white;
+    }
+  }
+
+  h2 {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+  }
+
+  .code {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+
+    ion-chip {
+      height: 28px;
+      font-size: 13px;
+    }
+  }
+}
+
+// Amount Card
+.amount-card {
+  margin: 0 0 20px 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+
+  ion-card-content {
+    padding: 20px;
+
+    .amount-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      span {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .amount-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+      }
+    }
+  }
+}
+
+// Actions Row
+.actions-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+
+  ion-button {
+    flex-shrink: 0;
+    --border-radius: 8px;
+    height: 36px;
+  }
+}
+
+// Info Cards
+.info-card {
+  margin: 0 0 16px 0;
+  border-radius: 16px;
+
+  ion-card-header {
+    padding-bottom: 8px;
+
+    ion-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      margin: 0;
+    }
+  }
+
+  ion-card-content {
+    padding: 0;
+
+    .info-list {
+      ion-item {
+        --padding-start: 16px;
+        --padding-end: 16px;
+        --min-height: 56px;
+
+        &:last-child {
+          --border-width: 0;
+        }
+
+        ion-icon {
+          color: var(--ion-color-primary);
+          margin-right: 16px;
+        }
+
+        ion-label {
+          h2 {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ion-color-medium);
+            margin: 0 0 4px 0;
+          }
+
+          p {
+            font-size: 15px;
+            color: var(--ion-color-dark);
+            margin: 0;
+
+            ion-chip {
+              margin: 0;
+              height: 24px;
+              font-size: 12px;
+            }
+
+            span {
+              color: var(--ion-color-medium);
+            }
+          }
+        }
+      }
+
+      .total-item {
+        --background: rgba(var(--ion-color-primary-rgb), 0.08);
+
+        ion-label {
+          h2 {
+            color: var(--ion-color-primary);
+            font-weight: 600;
+          }
+
+          .total-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--ion-color-primary);
+          }
+        }
+      }
+    }
+
+    .notes-text {
+      font-size: 15px;
+      color: var(--ion-color-dark);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      margin: 0;
+      padding: 16px;
+    }
+  }
+}
+
+// File Items
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+.file-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--ion-color-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.file-preview {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--ion-color-medium-shade);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.file-icon-preview {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.file-info {
+  text-align: center;
+  width: 100%;
+
+  .file-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ion-color-dark);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .file-meta {
+    font-size: 11px;
+    color: var(--ion-color-medium);
+    margin: 2px 0 0 0;
+  }
+}
+
+// History Items
+.history-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --min-height: auto;
+
+  ion-label {
+    h3 {
+      margin: 0 0 4px 0;
+      font-size: 14px;
+      font-weight: 500;
+
+      .history-action {
+        color: var(--ion-color-dark);
+      }
+
+      .history-status {
+        color: var(--ion-color-primary);
+        margin-left: 8px;
+      }
+    }
+
+    p {
+      font-size: 13px;
+      color: var(--ion-color-medium);
+      margin: 2px 0;
+    }
+
+    .history-comments {
+      font-size: 14px;
+      color: var(--ion-color-dark);
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(var(--ion-color-medium-rgb), 0.1);
+      border-radius: 8px;
+    }
+  }
+}
+
+// Rejection Reason
+.rejection-reason {
+  color: var(--ion-color-danger) !important;
+  font-weight: 500;
+}
+
+// Overdue Text
+.overdue-text {
+  color: var(--ion-color-danger) !important;
+  font-weight: 600;
+}
+
+// Metadata
+.metadata {
+  text-align: center;
+  padding: 20px;
+  color: var(--ion-color-medium);
+
+  p {
+    margin: 4px 0;
+    font-size: 12px;
+  }
+}

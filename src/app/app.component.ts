@@ -108,6 +108,12 @@ export class AppComponent implements OnInit, OnDestroy {
     { title: 'Transaksi', url: '/admin/transactions', icon: 'swap-horizontal', description: 'Catatan Keuangan' },
   ];
 
+  // IPL Menu Items
+  iplMenuItems: MenuItem[] = [
+    { title: 'Periode IPL', url: '/admin/ipl-periods', icon: 'calendar', description: 'Kelola Periode IPL' },
+    { title: 'Pembayaran IPL', url: '/admin/ipl-payments', icon: 'wallet-outline', description: 'Daftar Pembayaran IPL' },
+  ];
+
   // Reports Menu Items
   reportsMenuItems: MenuItem[] = [
     { title: 'Laporan Keuangan', url: '/admin/reports/financial', icon: 'trending-up', description: 'Pemasukan & Pengeluaran' },
@@ -222,6 +228,8 @@ export class AppComponent implements OnInit, OnDestroy {
       '/admin/resident-invoices': { title: 'Tagihan Warga', icon: 'document' },
       '/admin/resident-payments': { title: 'Pembayaran', icon: 'card-outline' },
       '/admin/transactions': { title: 'Transaksi', icon: 'swap-horizontal' },
+      '/admin/ipl-periods': { title: 'Periode IPL', icon: 'calendar' },
+      '/admin/ipl-payments': { title: 'Pembayaran IPL', icon: 'wallet-outline' },
     };
 
     // Find matching page

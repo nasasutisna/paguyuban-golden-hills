@@ -220,6 +220,64 @@ export const routes: Routes = [
           import('./features/admin/resident-payments/resident-payments.page').then(
             (m) => m.ResidentPaymentsPage
           )
+      },
+      // IPL Periods Routes
+      {
+        path: 'ipl-periods',
+        loadComponent: () =>
+          import('./features/admin/ipl-payments/ipl-periods.page').then(
+            (m) => m.IplPeriodsPage
+          )
+      },
+      {
+        path: 'ipl-periods/new',
+        loadComponent: () =>
+          import('./features/admin/ipl-payments/ipl-period-form/ipl-period-form.page').then(
+            (m) => m.IplPeriodFormPage
+          )
+      },
+      {
+        path: 'ipl-periods/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/ipl-payments/ipl-period-form/ipl-period-form.page').then(
+            (m) => m.IplPeriodFormPage
+          )
+      },
+      // IPL Payments Routes
+      {
+        path: 'ipl-payments',
+        loadComponent: () =>
+          import('./features/admin/ipl-payments/ipl-payments.page').then(
+            (m) => m.IplPaymentsPage
+          )
+      },
+      {
+        path: 'ipl-payments/new',
+        loadComponent: () =>
+          import('./features/admin/ipl-payments/ipl-payment-form/ipl-payment-form.page').then(
+            (m) => m.IplPaymentFormPage
+          )
+      },
+      {
+        path: 'ipl-payments/bulk/new',
+        loadComponent: () =>
+          import('./features/admin/ipl-payments/ipl-bulk-payment-form/ipl-bulk-payment-form.page').then(
+            (m) => m.IplBulkPaymentFormPage
+          )
+      },
+      {
+        path: 'ipl-payments/:id',
+        loadComponent: () =>
+          import('./features/admin/ipl-payments/ipl-payment-detail/ipl-payment-detail.page').then(
+            (m) => m.IplPaymentDetailPage
+          )
+      },
+      {
+        path: 'ipl-payments/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/ipl-payments/ipl-payment-form/ipl-payment-form.page').then(
+            (m) => m.IplPaymentFormPage
+          )
       }
     ]
   },

@@ -1,28 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { Subscription } from 'rxjs';
-import { FeeTypesService } from '../fee-types/fee-types.service';
-import {
-  FeeType,
-  FeeCategory,
-  RecurringPeriod,
-  CreateFeeTypeDto,
-  UpdateFeeTypeDto,
-  FEE_CATEGORY_LABELS,
-  RECURRING_PERIOD_LABELS
-} from '../fee-types/fee-types.model';
-import { LoadingService } from '@services/loading.service';
 import { ToastService } from '@services/toast.service';
+import { Subscription } from 'rxjs';
+import {
+  CreateFeeTypeDto,
+  FEE_CATEGORY_LABELS,
+  FeeCategory,
+  FeeType,
+  RECURRING_PERIOD_LABELS,
+  RecurringPeriod,
+  UpdateFeeTypeDto
+} from '../fee-types/fee-types.model';
+import { FeeTypesService } from '../fee-types/fee-types.service';
 
 // Form control components
 import {
-  FormInputComponent,
-  FormSelectComponent,
-  FormTextareaComponent,
-  FormButtonComponent,
   SelectOption
 } from '@shared/ui/form-controls';
 
@@ -36,11 +31,7 @@ import {
   imports: [
     CommonModule,
     IonicModule,
-    ReactiveFormsModule,
-    FormInputComponent,
-    FormSelectComponent,
-    FormTextareaComponent,
-    FormButtonComponent
+    ReactiveFormsModule
   ],
   templateUrl: './fee-type-form.page.html',
   styleUrls: ['./fee-type-form.page.scss']
@@ -50,7 +41,6 @@ export class FeeTypeFormPage implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private feeTypesService = inject(FeeTypesService);
-  private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
 
   form: FormGroup;

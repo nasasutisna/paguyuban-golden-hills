@@ -184,3 +184,41 @@ export interface PaymentStats {
   todayAmount: number;
   thisMonthAmount: number;
 }
+
+/**
+ * Bulk Payment Item DTO
+ */
+export interface BulkPaymentItemDto {
+  residentId: string;
+  invoiceId: string;
+  paymentDate: string;
+  paymentMethod: PaymentMethod;
+  paymentChannel?: string;
+  referenceNumber?: string;
+  amount: number;
+  bankName?: string;
+  accountNumber?: string;
+  notes?: string;
+}
+
+/**
+ * Create Bulk Payment DTO
+ */
+export interface CreateBulkResidentPaymentDto {
+  payments: BulkPaymentItemDto[];
+  batchNotes?: string;
+}
+
+/**
+ * Bulk Payment Result
+ */
+export interface BulkPaymentResult {
+  successful: ResidentPayment[];
+  failed: Array<{
+    payment: BulkPaymentItemDto;
+    error: string;
+  }>;
+  total: number;
+  successCount: number;
+  failureCount: number;
+}

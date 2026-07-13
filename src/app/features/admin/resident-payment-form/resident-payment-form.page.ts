@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Subscription, combineLatest } from 'rxjs';
 import { ResidentPaymentsService } from '../resident-payments/resident-payments.service';
@@ -10,7 +10,9 @@ import { ResidentsService } from '../residents/residents.service';
 import {
   ResidentPayment,
   CreateResidentPaymentDto,
-  PaymentMethod
+  PaymentMethod,
+  BulkPaymentItemDto,
+  CreateBulkResidentPaymentDto
 } from '../resident-payments/resident-payments.model';
 import { ResidentInvoice } from '../resident-invoices/resident-invoices.model';
 import { Resident } from '../residents/residents.model';
@@ -63,6 +65,11 @@ export class ResidentPaymentFormPage implements OnInit {
   loadingData = true;
   error: string | null = null;
 
+  // Bulk payment mode
+  isBulkMode = false;
+  selectedInvoices = new Set<string>();
+  bulkPayments: BulkPaymentItemDto[] = [];
+
   residents: Resident[] = [];
   invoices: ResidentInvoice[] = [];
   selectedInvoice: ResidentInvoice | null = null;
@@ -86,7 +93,7 @@ export class ResidentPaymentFormPage implements OnInit {
       paymentMethod: [PaymentMethod.TRANSFER, Validators.required],
       paymentChannel: [''],
       referenceNumber: [''],
-      amount: [0, [Validators.required, Validators.min(1)]],
+      amount: [0, Validators.min(1)],
       bankName: [''],
       accountNumber: [''],
       notes: ['']
@@ -161,6 +168,22 @@ export class ResidentPaymentFormPage implements OnInit {
    * Submit form
    */
   async onSubmit(): Promise<void> {
+    // For bulk mode, check if invoices are selected
+    if (this.isBulkMode) {
+      if (this.selectedInvoices.size === 0) {
+        this.toastService.error('Mohon pilih minimal satu tagihan');
+        return;
+      }
+      if (this.form.invalid) {
+        this.form.markAllAsTouched();
+        this.toastService.error('Mohon lengkapi semua field yang wajib diisi');
+        return;
+      }
+      this.submitBulkPayments(this.form.value);
+      return;
+    }
+
+    // Single mode validation
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.toastService.error('Mohon lengkapi semua field yang wajib diisi');
@@ -176,6 +199,56 @@ export class ResidentPaymentFormPage implements OnInit {
     }
 
     this.createPayment(formValue);
+  }
+
+  /**
+   * Submit bulk payments
+   */
+  private submitBulkPayments(formValue: any): void {
+    this.loadingService.show({ message: 'Memproses pembayaran bulk...' });
+
+    // Create bulk payment items from selected invoices
+    const payments: BulkPaymentItemDto[] = Array.from(this.selectedInvoices).map(invoiceId => {
+      const invoice = this.invoices.find(inv => inv.id === invoiceId);
+      return {
+        residentId: invoice?.residentId || '',
+        invoiceId: invoiceId,
+        paymentDate: formValue.paymentDate,
+        paymentMethod: formValue.paymentMethod,
+        paymentChannel: formValue.paymentChannel,
+        referenceNumber: formValue.referenceNumber,
+        amount: invoice?.remainingAmount || 0,
+        bankName: formValue.bankName,
+        accountNumber: formValue.accountNumber,
+        notes: formValue.notes
+      };
+    });
+
+    const bulkDto: CreateBulkResidentPaymentDto = {
+      payments,
+      batchNotes: `Bulk payment created on ${new Date().toISOString()}`
+    };
+
+    this.subscriptions.push(
+      this.residentPaymentsService.createBulk(bulkDto).subscribe({
+        next: (result) => {
+          this.loadingService.dismiss();
+          if (result.failureCount > 0) {
+            this.toastService.warning(
+              `${result.successCount} pembayaran berhasil, ${result.failureCount} gagal`
+            );
+          } else {
+            this.toastService.success('Semua pembayaran berhasil dicatat');
+          }
+          this.router.navigate(['/admin/resident-payments']);
+        },
+        error: (error) => {
+          this.loadingService.dismiss();
+          this.toastService.error('Gagal memproses pembayaran bulk');
+          console.error('Bulk payment error:', error);
+        }
+      })
+    );
   }
 
   /**
@@ -340,20 +413,64 @@ export class ResidentPaymentFormPage implements OnInit {
    * Check if form is valid
    */
   isFormValid(): boolean {
+    if (this.isBulkMode) {
+      return this.form.valid && this.selectedInvoices.size > 0;
+    }
     return this.form.valid;
   }
 
   /**
-   * Get submit button text
+   * Toggle bulk mode
    */
-  get submitButtonText(): string {
-    return 'Catat Pembayaran';
+  toggleBulkMode(): void {
+    this.isBulkMode = !this.isBulkMode;
+    if (!this.isBulkMode) {
+      this.selectedInvoices.clear();
+    }
   }
 
   /**
    * Get page title
    */
   get pageTitle(): string {
+    return this.isBulkMode ? 'Catat Pembayaran Bulk' : 'Catat Pembayaran';
+  }
+
+  /**
+   * Toggle invoice selection for bulk
+   */
+  toggleInvoiceSelection(invoiceId: string): void {
+    if (this.selectedInvoices.has(invoiceId)) {
+      this.selectedInvoices.delete(invoiceId);
+    } else {
+      this.selectedInvoices.add(invoiceId);
+    }
+  }
+
+  /**
+   * Check if invoice is selected
+   */
+  isInvoiceSelected(invoiceId: string): boolean {
+    return this.selectedInvoices.has(invoiceId);
+  }
+
+  /**
+   * Get total amount for selected invoices
+   */
+  getSelectedTotalAmount(): number {
+    return Array.from(this.selectedInvoices).reduce((total, invoiceId) => {
+      const invoice = this.invoices.find(inv => inv.id === invoiceId);
+      return total + (invoice?.remainingAmount || 0);
+    }, 0);
+  }
+
+  /**
+   * Get submit button text
+   */
+  get submitButtonText(): string {
+    if (this.isBulkMode && this.selectedInvoices.size > 0) {
+      return `Catat ${this.selectedInvoices.size} Pembayaran`;
+    }
     return 'Catat Pembayaran';
   }
 

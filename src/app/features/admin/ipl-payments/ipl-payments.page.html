@@ -1,0 +1,92 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Pembayaran IPL</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="navigateToPending()">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Stats Cards -->
+  <div class="stats-container ion-margin-top">
+    @if (dataSource.loading) {
+      <!-- Loading skeleton -->
+      <div class="stats-skeleton">
+        <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 100%; height: 80px;"></ion-skeleton-text>
+      </div>
+    } @else {
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <!-- Total Payments -->
+        <ion-card class="stat-card primary">
+          <ion-card-content>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <ion-icon name="wallet-outline"></ion-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ total }}</div>
+                <div class="stat-label">Total</div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Pending -->
+        <ion-card class="stat-card warning">
+          <ion-card-content>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <ion-icon name="time-outline"></ion-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ pendingCount }}</div>
+                <div class="stat-label">Menunggu</div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Approved -->
+        <ion-card class="stat-card success">
+          <ion-card-content>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <ion-icon name="checkmark-done-outline"></ion-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ approvedCount }}</div>
+                <div class="stat-label">Disetujui</div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    }
+  </div>
+
+  <!-- Table Section -->
+  <div>
+    <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
+      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
+      <div table-actions>
+        <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          Input Pembayaran Baru
+        </ion-button>
+        <ion-button fill="outline" color="secondary" (click)="navigateToCreateBulk()">
+          <ion-icon slot="start" name="calendar-outline"></ion-icon>
+          Bayar Beberapa Bulan
+        </ion-button>
+      </div>
+    </app-table>
+  </div>
+</ion-content>

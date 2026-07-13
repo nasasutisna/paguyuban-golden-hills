@@ -150,14 +150,14 @@
             <!-- Row Actions -->
             <td class="actions-column" *ngIf="actions.length > 0">
               <div class="row-actions">
-                @for(action of actions; track action.icon) { 
+                @for(action of actions; track action.id) {
+                @if(shouldShowAction(action, item)) {
                 <ion-button
                   size="small"
                   fill="clear"
                   [color]="action.color"
                   [disabled]="isActionDisabled(action, item)"
                   (click)="onActionClick(action, item, $event)"
-                  [hidden]="!shouldShowAction(action, item)"
                 >
                 @if(action.icon) {
                   <ion-icon
@@ -168,8 +168,11 @@
                   {{ action.label }}
                 }
                 </ion-button>
+                } @else {
+                <!-- Hidden action -->
                 }
-                
+                }
+
               </div>
             </td>
           </tr>

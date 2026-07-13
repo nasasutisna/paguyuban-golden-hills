@@ -134,6 +134,39 @@
               </ion-menu-toggle>
             }
 
+            <!-- IPL Section -->
+            <ion-list-header class="menu-section-header">
+              <div class="section-header-content">
+                <ion-icon name="wallet"></ion-icon>
+                <span>IPL</span>
+              </div>
+            </ion-list-header>
+
+            @for (item of iplMenuItems; track item.url) {
+              <ion-menu-toggle auto-hide="false">
+                <ion-item
+                  class="menu-item"
+                  (click)="navigateWithSetRoot(item.url)"
+                  lines="none"
+                  detail="false"
+                  [class.active]="isActiveMenu(item.url)"
+                >
+                  <div class="menu-item-icon" slot="start">
+                    <ion-icon [name]="item.icon"></ion-icon>
+                  </div>
+                  <ion-label>
+                    <span class="menu-label">{{ item.title }}</span>
+                    @if (item.description) {
+                      <span class="menu-description">{{ item.description }}</span>
+                    }
+                  </ion-label>
+                  @if (item.badge) {
+                    <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
+                  }
+                </ion-item>
+              </ion-menu-toggle>
+            }
+
             <!-- Reports Section -->
             <ion-list-header class="menu-section-header">
               <div class="section-header-content">

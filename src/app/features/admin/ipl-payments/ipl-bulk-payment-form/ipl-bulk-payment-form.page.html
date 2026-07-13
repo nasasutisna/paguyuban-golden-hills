@@ -1,0 +1,681 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/ipl-payments"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading Data State -->
+  <div *ngIf="loadingData" class="ion-padding ion-text-center">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p class="ion-margin-top">Memuat data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loadingData" class="ion-padding ion-text-center">
+    <ion-icon name="alert-circle-outline" size="large" color="danger"></ion-icon>
+    <p class="ion-margin-top">{{ error }}</p>
+    <ion-button fill="outline" (click)="loadData()">
+      <ion-icon name="refresh-outline" slot="start"></ion-icon>
+      Coba Lagi
+    </ion-button>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingData && !error">
+    <!-- Info Banner -->
+    <ion-card class="info-banner">
+      <ion-card-content>
+        <div class="banner-content">
+          <ion-icon name="information-circle-outline" color="primary"></ion-icon>
+          <div class="banner-text">
+            <strong>Pembayaran Bulk IPL</strong>
+            <p>Bayar IPL untuk beberapa bulan sekaligus (2-24 bulan)</p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Pilih Periode & Warga -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Pembayaran</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-select
+          label="Periode Awal"
+          formControlName="startPeriodId"
+          placeholder="Pilih periode awal pembayaran"
+          [options]="periodOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('startPeriodId')"
+          [errorMessage]="getErrorMessage('startPeriodId')"
+          (ngModelChange)="onPeriodChange()"
+        ></app-form-select>
+
+        <app-form-select
+          label="Warga"
+          formControlName="residentId"
+          placeholder="Pilih warga yang membayar"
+          [options]="residentOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('residentId')"
+          [errorMessage]="getErrorMessage('residentId')"
+          (ngModelChange)="onResidentChange()"
+        ></app-form-select>
+
+        <!-- Month Count Selection -->
+        <div class="month-count-section">
+          <label class="field-label">
+            Jumlah Bulan
+            <span class="required">*</span>
+          </label>
+          <div class="month-count-options">
+            <div
+              *ngFor="let month of MONTH_OPTIONS"
+              class="month-option"
+              [class.selected]="form.get('monthCount')?.value === month"
+              (click)="form.get('monthCount')?.setValue(month)">
+              {{ month }} Bulan
+            </div>
+          </div>
+          <div class="month-count-custom">
+            <ion-range
+              formControlName="monthCount"
+              min="2"
+              max="24"
+              snaps="true"
+              steps="1"
+              color="primary">
+              <ion-label slot="start" class="range-label">2</ion-label>
+              <ion-label slot="end" class="range-label">24</ion-label>
+            </ion-range>
+            <div class="range-value">
+              Dipilih: <strong>{{ getMonthCountLabel() }}</strong>
+            </div>
+          </div>
+          <div *ngIf="isFieldInvalid('monthCount')" class="error-message">
+            {{ getErrorMessage('monthCount') }}
+          </div>
+        </div>
+
+        <!-- Calculated Amount Display -->
+        <div *ngIf="selectedResident && selectedStartPeriod" class="calculated-amount-card">
+          <div class="calc-header">
+            <ion-icon name="calculator-outline"></ion-icon>
+            <span>Kalkulasi IPL Bulk</span>
+          </div>
+          <div class="calc-details">
+            <div class="calc-row">
+              <span>Luas Tanah:</span>
+              <strong>{{ selectedResident.landArea || selectedResident.houseUnit?.landArea || 0 }} m²</strong>
+            </div>
+            <div class="calc-row">
+              <span>Prosentase IPL:</span>
+              <strong>{{ selectedResident.iplPercentage || selectedResident.houseUnit?.iplPercentage || 100 }}%</strong>
+            </div>
+            <div class="calc-row">
+              <span>Base Rate:</span>
+              <strong>Rp {{ selectedStartPeriod.baseRate || 2500 }}/m²</strong>
+            </div>
+            <div class="calc-row">
+              <span>IPL per Bulan:</span>
+              <strong>{{ formatCurrency(calculateMonthlyIplAmount()) }}</strong>
+            </div>
+            <div class="calc-row">
+              <span>Jumlah Bulan:</span>
+              <strong>{{ form.get('monthCount')?.value }} bulan</strong>
+            </div>
+            <div class="calc-divider"></div>
+            <div class="calc-row total">
+              <span>Total Estimasi:</span>
+              <strong class="total-amount">{{ formatCurrency(calculateEstimatedTotal()) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Period Range Summary -->
+        <div *ngIf="selectedStartPeriod" class="period-range-summary">
+          <div class="range-header">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <span>Range Periode</span>
+          </div>
+          <div class="range-content">
+            {{ getPeriodRangeSummary() }}
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Informasi Pembayaran -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Detail Pembayaran</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-date-picker
+          formControlName="paymentDate"
+          label="Tanggal Pembayaran"
+          placeholder="Pilih tanggal pembayaran"
+          [showError]="isFieldInvalid('paymentDate')"
+          [errorMessage]="getErrorMessage('paymentDate')"
+          [required]="true"
+        ></app-form-date-picker>
+
+        <app-form-select
+          label="Metode Pembayaran"
+          formControlName="paymentMethod"
+          placeholder="Pilih metode pembayaran"
+          [options]="paymentMethodOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('paymentMethod')"
+          [errorMessage]="getErrorMessage('paymentMethod')"
+        ></app-form-select>
+
+        <app-form-input
+          label="Nomor Referensi"
+          formControlName="referenceNumber"
+          placeholder="Contoh: REF123456789"
+          helperText="Nomor referensi dari bukti transfer"
+        ></app-form-input>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Upload Bukti Transfer -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Bukti Transfer</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- File Upload Area -->
+        <div class="file-upload-area">
+          <input
+            type="file"
+            id="proofFile"
+            [disabled]="loading"
+            accept="image/jpeg,image/png,image/jpg,application/pdf"
+            (change)="onFileSelect($event)"
+            class="hidden-file-input">
+
+          <label for="proofFile" class="file-upload-label" [class.has-file]="selectedFile !== null">
+            <div class="upload-icon">
+              <ion-icon name="cloud-upload-outline"></ion-icon>
+            </div>
+            <div class="upload-text">
+              <p *ngIf="!selectedFile">Klik untuk upload bukti transfer</p>
+              <p *ngIf="selectedFile" class="file-name">{{ selectedFile.name }}</p>
+              <span *ngIf="selectedFile" class="file-size">{{ formatFileSize(selectedFile.size || 0) }}</span>
+              <span *ngIf="!selectedFile" class="file-formats">JPG, PNG, PDF (Max 5MB)</span>
+            </div>
+          </label>
+
+          <!-- Remove File Button -->
+          <ion-button
+            *ngIf="selectedFile"
+            size="small"
+            fill="clear"
+            color="danger"
+            (click)="removeFile()"
+            class="remove-file-btn">
+            <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <!-- File Preview (for images) -->
+        <div *ngIf="filePreview" class="file-preview">
+          <img [src]="filePreview" alt="Preview bukti transfer" />
+        </div>
+
+        <!-- Validation Message -->
+        <div *ngIf="!selectedFile && form.touched" class="validation-message">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <span>Bukti transfer wajib diupload</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Catatan -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Catatan</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-textarea
+          label="Catatan Tambahan"
+          formControlName="notes"
+          placeholder="Catatan tambahan (opsional)..."
+          [rows]="3"
+        ></app-form-textarea>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Summary Card -->
+    <ion-card class="summary-card" *ngIf="selectedResident && selectedStartPeriod">
+      <ion-card-header>
+        <ion-card-title>Ringkasan Pembayaran Bulk</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="summary-row">
+          <span>Warga</span>
+          <strong>{{ selectedResident.firstName }} {{ selectedResident.lastName }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Alamat</span>
+          <strong>{{ selectedResident.houseBlock?.blockName || '-' }} {{ selectedResident.unitNumber }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Jumlah Bulan</span>
+          <strong>{{ form.get('monthCount')?.value }} Bulan</strong>
+        </div>
+        <div class="summary-row">
+          <span>Range Periode</span>
+          <strong>{{ getPeriodRangeSummary() }}</strong>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row total">
+          <span>Total Estimasi</span>
+          <strong>{{ formatCurrency(calculateEstimatedTotal()) }}</strong>
+        </div>
+        <div class="summary-note ion-margin-top">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>Pembayaran bulk akan membuat {{ form.get('monthCount')?.value }} record pembayaran individual yang memerlukan persetujuan admin/keuangan</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        expand="block"
+        (click)="navigateBack()"
+        [disabled]="loading"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="send-outline"
+        iconSlot="start"
+        variant="solid"
+        color="primary"
+        type="submit"
+        expand="block"
+        [disabled]="loading || !isFormValid()"
+        [loading]="loading"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>
+
+<style>
+.info-banner {
+  margin-bottom: 16px;
+  background: rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.1);
+  border: 1px solid var(--ion-color-primary);
+}
+
+.banner-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.banner-content ion-icon {
+  font-size: 24px;
+  margin-top: 2px;
+}
+
+.banner-text {
+  flex: 1;
+}
+
+.banner-text strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ion-color-primary);
+}
+
+.banner-text p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ion-color-medium);
+}
+
+.form-card {
+  margin-bottom: 16px;
+}
+
+.month-count-section {
+  margin-top: 16px;
+}
+
+.field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin-bottom: 12px;
+}
+
+.required {
+  color: var(--ion-color-danger);
+}
+
+.month-count-options {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.month-option {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  border: 2px solid var(--ion-color-light);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ion-color-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.month-option:hover {
+  border-color: var(--ion-color-primary);
+  color: var(--ion-color-primary);
+}
+
+.month-option.selected {
+  border-color: var(--ion-color-primary);
+  background: rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.1);
+  color: var(--ion-color-primary);
+  font-weight: 600;
+}
+
+.month-count-custom {
+  padding: 12px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+}
+
+.range-label {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+}
+
+.range-value {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--ion-color-dark);
+}
+
+.error-message {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ion-color-danger);
+}
+
+.calculated-amount-card {
+  margin-top: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(56, 128, 255, 0.1) 0%, rgba(56, 128, 255, 0.05) 100%);
+  border: 1px solid var(--ion-color-primary);
+  border-radius: 12px;
+}
+
+.calc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  margin-bottom: 12px;
+}
+
+.calc-header ion-icon {
+  font-size: 20px;
+}
+
+.calc-details {
+  background: var(--ion-background-color);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin: 6px 0;
+  color: var(--ion-color-medium);
+}
+
+.calc-row strong {
+  color: var(--ion-color-dark);
+}
+
+.calc-divider {
+  margin: 8px 0;
+  border-top: 1px dashed var(--ion-color-medium);
+}
+
+.calc-row.total {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ion-color-light);
+}
+
+.calc-row.total span {
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.total-amount {
+  font-size: 18px;
+  color: var(--ion-color-primary);
+}
+
+.period-range-summary {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(var(--ion-color-secondary-rgb, 112, 58, 207), 0.1);
+  border: 1px solid var(--ion-color-secondary);
+  border-radius: 8px;
+}
+
+.range-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--ion-color-secondary);
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.range-content {
+  font-size: 15px;
+  color: var(--ion-color-dark);
+  font-weight: 500;
+}
+
+.file-upload-area {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.hidden-file-input {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.file-upload-label {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  border: 2px dashed var(--ion-color-medium);
+  border-radius: 12px;
+  background: var(--ion-color-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.file-upload-label:hover {
+  border-color: var(--ion-color-primary);
+  background: rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.05);
+}
+
+.file-upload-label.has-file {
+  border-color: var(--ion-color-success);
+  background: rgba(var(--ion-color-success-rgb, 16, 220, 96), 0.05);
+}
+
+.upload-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--ion-background-color);
+  border-radius: 50%;
+}
+
+.upload-icon ion-icon {
+  font-size: 24px;
+  color: var(--ion-color-primary);
+}
+
+.upload-text {
+  flex: 1;
+}
+
+.upload-text p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ion-color-dark);
+}
+
+.upload-text .file-name {
+  font-weight: 600;
+  color: var(--ion-color-success);
+}
+
+.upload-text span {
+  display: block;
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  margin-top: 4px;
+}
+
+.remove-file-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.file-preview {
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--ion-color-light);
+}
+
+.file-preview img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  display: block;
+}
+
+.validation-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(var(--ion-color-danger-rgb, 235, 68, 90), 0.1);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ion-color-danger);
+}
+
+.validation-message ion-icon {
+  font-size: 16px;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, var(--ion-color-dark) 0%, #2c2c2c 100%);
+  color: white;
+}
+
+.summary-card ion-card-title {
+  color: white;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin: 8px 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.summary-row strong {
+  color: white;
+}
+
+.summary-divider {
+  margin: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.summary-row.total {
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.summary-row.total span,
+.summary-row.total strong {
+  font-size: 18px;
+  color: var(--ion-color-success-shade);
+}
+
+.summary-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 768px) {
+  .form-actions {
+    position: sticky;
+    bottom: 16px;
+    z-index: 10;
+  }
+}
+</style>

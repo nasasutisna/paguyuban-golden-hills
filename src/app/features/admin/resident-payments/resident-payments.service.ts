@@ -8,7 +8,9 @@ import {
   UpdateResidentPaymentDto,
   ResidentPaymentListResponse,
   ResidentPaymentQueryParams,
-  PaymentStats
+  PaymentStats,
+  CreateBulkResidentPaymentDto,
+  BulkPaymentResult
 } from './resident-payments.model';
 
 /**
@@ -189,5 +191,25 @@ export class ResidentPaymentsService {
       todayAmount: 0,
       thisMonthAmount: 0
     };
+  }
+
+  /**
+   * Create bulk payments
+   * @param dto - Create bulk resident payment DTO
+   */
+  createBulk(dto: CreateBulkResidentPaymentDto): Observable<BulkPaymentResult> {
+    return this.apiService.post<BulkPaymentResult>('/resident-payments/bulk', dto).pipe(
+      map((response) => response.data || {
+        successful: [],
+        failed: [],
+        total: 0,
+        successCount: 0,
+        failureCount: 0
+      }),
+      catchError((error) => {
+        console.error('Error creating bulk resident payments:', error);
+        throw error;
+      })
+    );
   }
 }
