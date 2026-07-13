@@ -78,7 +78,7 @@ export class IplPaymentsPage implements OnInit, OnDestroy {
       columns: [
         { key: 'paymentNumber', header: 'No. Pembayaran', type: 'text', sortable: true },
         { key: 'residentName', header: 'Warga', type: 'text' },
-        { key: 'residentAddress', header: 'Alamat', type: 'text' },
+        { key: 'unitNumber', header: 'Unit', type: 'text' },
         { key: 'periodName', header: 'Periode', type: 'text' },
         { key: 'paymentDate', header: 'Tanggal Bayar', type: 'date', sortable: true },
         { key: 'paymentMethod', header: 'Metode', type: 'text' },
@@ -177,7 +177,7 @@ export class IplPaymentsPage implements OnInit, OnDestroy {
     return payments.map(payment => ({
       ...payment,
       residentName: this.getResidentName(payment),
-      residentAddress: this.getResidentAddress(payment),
+      unitNumber: payment.houseUnit?.unitNumber || '-',
       periodName: this.getPeriodName(payment)
     }));
   }

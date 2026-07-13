@@ -95,6 +95,7 @@ export class IplPaymentFormPage implements OnInit {
     this.form = this.fb.group({
       periodId: ['', Validators.required],
       residentId: ['', Validators.required],
+      monthCount: [1, [Validators.min(1), Validators.max(24)]],
       paymentDate: [this.formatDateForInput(new Date()), Validators.required],
       paymentMethod: [IplPaymentMethod.TRANSFER, Validators.required],
       referenceNumber: [''],
@@ -237,6 +238,48 @@ export class IplPaymentFormPage implements OnInit {
   }
 
   /**
+   * Get total amount for multi-month payment
+   */
+  getTotalAmount(): number {
+    const monthCount = this.form.get('monthCount')?.value || 1;
+    return this.calculateIplAmount() * monthCount;
+  }
+
+  /**
+   * Get selected month count
+   */
+  getMonthCount(): number {
+    return this.form.get('monthCount')?.value || 1;
+  }
+
+  /**
+   * Check if this is a multi-month payment
+   */
+  isMultiMonthPayment(): boolean {
+    return this.getMonthCount() > 1;
+  }
+
+  /**
+   * Increment month count
+   */
+  incrementMonthCount(): void {
+    const current = this.getMonthCount();
+    if (current < 24) {
+      this.form.get('monthCount')?.setValue(current + 1);
+    }
+  }
+
+  /**
+   * Decrement month count
+   */
+  decrementMonthCount(): void {
+    const current = this.getMonthCount();
+    if (current > 1) {
+      this.form.get('monthCount')?.setValue(current - 1);
+    }
+  }
+
+  /**
    * Validate form
    */
   private validateForm(): { valid: boolean; error?: string } {
@@ -288,6 +331,7 @@ export class IplPaymentFormPage implements OnInit {
     const dto: CreateIplPaymentDto = {
       periodId: formValue.periodId,
       residentId: formValue.residentId,
+      monthCount: formValue.monthCount || 1,
       paymentDate: formValue.paymentDate,
       paymentMethod: formValue.paymentMethod,
       referenceNumber: formValue.referenceNumber,
@@ -309,7 +353,12 @@ export class IplPaymentFormPage implements OnInit {
         next: (result) => {
           this.loadingService.dismiss();
           if (result) {
-            this.toastService.success('Pembayaran berhasil dikirim dan menunggu persetujuan');
+            // Check if payment was auto-approved or pending
+            if (result.status === IplPaymentStatus.APPROVED) {
+              this.toastService.success('Pembayaran berhasil disetujui');
+            } else {
+              this.toastService.success('Pembayaran berhasil dikirim dan menunggu persetujuan');
+            }
             this.router.navigate(['/admin/ipl-payments', result.id]);
           }
         },

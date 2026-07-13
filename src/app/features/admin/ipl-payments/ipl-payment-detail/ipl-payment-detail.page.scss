@@ -98,6 +98,57 @@
         font-weight: 700;
         color: white;
       }
+
+      .amount-value-sub {
+        font-size: 16px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.95);
+      }
+
+      &.multi-month {
+        justify-content: center;
+        margin-bottom: 12px;
+      }
+    }
+
+    .amount-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.3);
+      margin: 12px 0;
+    }
+
+    .amount-row.total {
+      margin-top: 8px;
+
+      span {
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .amount-value {
+        font-size: 28px;
+      }
+    }
+
+    .multi-month-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+
+      ion-icon {
+        font-size: 20px;
+        color: white;
+      }
+
+      span {
+        font-size: 14px;
+        font-weight: 600;
+        color: white;
+      }
     }
   }
 }
@@ -345,5 +396,105 @@
   p {
     margin: 4px 0;
     font-size: 12px;
+  }
+}
+
+// Receipt Card
+.receipt-card {
+  ion-card-content {
+    padding: 16px;
+  }
+}
+
+.receipt-loading,
+.receipt-not-available {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 30px 20px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-medium);
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+  }
+
+  p {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+  }
+
+  ion-spinner {
+    --color: var(--ion-color-primary);
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.receipt-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .receipt-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ion-color-light);
+
+    .receipt-icon {
+      font-size: 32px;
+      color: var(--ion-color-primary);
+      flex-shrink: 0;
+    }
+
+    .receipt-info {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 4px 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+      }
+
+      p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    ion-button {
+      --border-radius: 8px;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  .pdf-viewer {
+    width: 100%;
+    height: 500px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--ion-color-light-shade);
+    border: 1px solid var(--ion-color-light);
+
+    .pdf-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
   }
 }

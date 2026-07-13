@@ -11,11 +11,13 @@ import {
   IPL_PAYMENT_STATUS_LABELS,
   IPL_PAYMENT_STATUS_COLORS,
   IPL_PAYMENT_METHOD_LABELS,
-  FileAttachment
+  FileAttachment,
+  ReceiptInfo
 } from '../ipl-payments.model';
 import { LoadingService } from '@services/loading.service';
 import { ToastService } from '@services/toast.service';
 import { environment } from 'src/environments/environment';
+import { SafeUrlPipe } from '@shared/pipes/safe-url.pipe';
 
 /**
  * IPL Payment Detail Page
@@ -25,7 +27,7 @@ import { environment } from 'src/environments/environment';
 @Component({
   selector: 'app-ipl-payment-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, SafeUrlPipe],
   templateUrl: './ipl-payment-detail.page.html',
   styleUrls: ['./ipl-payment-detail.page.scss']
 })
@@ -40,6 +42,8 @@ export class IplPaymentDetailPage implements OnInit {
   payment: IplPayment | null = null;
   loading = true;
   error: string | null = null;
+  receipt: ReceiptInfo | null = null;
+  receiptLoading = false;
 
   private subscriptions: Subscription[] = [];
 
@@ -73,6 +77,10 @@ export class IplPaymentDetailPage implements OnInit {
           if (payment) {
             this.payment = payment;
             this.loading = false;
+            // Load receipt if payment is approved
+            if (payment.status === IplPaymentStatus.APPROVED) {
+              this.loadReceipt(id);
+            }
           } else {
             this.error = 'Pembayaran tidak ditemukan';
             this.loading = false;
@@ -83,6 +91,26 @@ export class IplPaymentDetailPage implements OnInit {
           this.error = 'Gagal memuat detail pembayaran';
           this.loading = false;
           console.error('Error loading payment:', error);
+        }
+      })
+    );
+  }
+
+  /**
+   * Load receipt info for approved payment
+   */
+  private loadReceipt(paymentId: string): void {
+    this.receiptLoading = true;
+    this.subscriptions.push(
+      this.iplPaymentsService.getReceipt(paymentId).subscribe({
+        next: (receipt) => {
+          this.receipt = receipt;
+          this.receiptLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading receipt:', error);
+          this.receipt = null;
+          this.receiptLoading = false;
         }
       })
     );
@@ -153,6 +181,8 @@ export class IplPaymentDetailPage implements OnInit {
           if (updated) {
             this.payment = updated;
             this.toastService.success('Pembayaran disetujui');
+            // Load receipt after approval
+            this.loadReceipt(this.payment.id);
           }
         },
         error: (error) => {
@@ -551,14 +581,86 @@ export class IplPaymentDetailPage implements OnInit {
    */
   downloadReceipt(): void {
     if (!this.payment) return;
-    this.iplPaymentsService.downloadReceipt(this.payment.id);
+    if (this.receipt && this.receipt.url) {
+      window.open(this.receipt.url, '_blank');
+    } else {
+      this.toastService.error('Kwitansi belum tersedia');
+    }
   }
 
   /**
    * Check if receipt is available (for approved payments)
    */
   hasReceipt(): boolean {
-    return this.isApproved();
+    return this.isApproved() && !!this.receipt;
+  }
+
+  /**
+   * Check if receipt is loading
+   */
+  isReceiptLoading(): boolean {
+    return this.receiptLoading;
+  }
+
+  /**
+   * Get receipt file URL
+   */
+  getReceiptUrl(): string {
+    if (!this.receipt) return '';
+    const baseUrl = environment.apiUrl.replace('/api/v1', '');
+    return `${baseUrl}${this.receipt.filePath}`;
+  }
+
+  /**
+   * Get receipt file name
+   */
+  getReceiptFileName(): string {
+    return this.receipt?.fileName || 'Kwitansi.pdf';
+  }
+
+  /**
+   * Check if this is a multi-month payment
+   */
+  isMultiMonthPayment(): boolean {
+    return !!(this.payment?._meta?.isMultiMonth) || !!this.payment?.paymentGroupId;
+  }
+
+  /**
+   * Get month count for multi-month payments
+   */
+  getMonthCount(): number {
+    return this.payment?._meta?.monthCount || 1;
+  }
+
+  /**
+   * Get total amount for multi-month payments
+   */
+  getTotalAmount(): number {
+    return this.payment?._meta?.totalAmount || 0;
+  }
+
+  /**
+   * Get payment group ID
+   */
+  getPaymentGroupId(): string | null {
+    return this.payment?.paymentGroupId || null;
+  }
+
+  /**
+   * Get all payment IDs in the group
+   */
+  getAllPaymentIds(): string[] {
+    return this.payment?._meta?.allPaymentIds || [];
+  }
+
+  /**
+   * Get formatted multi-month info
+   */
+  getMultiMonthInfo(): string {
+    if (!this.isMultiMonthPayment()) return '';
+    const monthCount = this.getMonthCount();
+    const totalAmount = this.getTotalAmount();
+    return `Pembayaran ${monthCount} bulan - Total: ${this.formatCurrency(totalAmount)}`;
   }
 
   /**

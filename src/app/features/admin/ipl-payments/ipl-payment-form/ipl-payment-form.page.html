@@ -54,6 +54,39 @@
           (ngModelChange)="onResidentChange()"
         ></app-form-select>
 
+        <!-- Month Count Selector -->
+        <div class="month-count-selector">
+          <label class="field-label">
+            Jumlah Bulan <span class="required">*</span>
+          </label>
+          <div class="month-count-buttons">
+            <ion-button
+              size="small"
+              fill="clear"
+              color="medium"
+              [disabled]="getMonthCount() <= 1"
+              (click)="decrementMonthCount()">
+              <ion-icon name="remove-circle-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+            <div class="month-count-display">
+              <span class="count">{{ getMonthCount() }}</span>
+              <span class="label">bulan</span>
+            </div>
+            <ion-button
+              size="small"
+              fill="clear"
+              color="primary"
+              [disabled]="getMonthCount() >= 24"
+              (click)="incrementMonthCount()">
+              <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+          <div class="month-count-helper">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            <span>Pilih berapa bulan yang ingin dibayarkan (1-24 bulan)</span>
+          </div>
+        </div>
+
         <!-- Calculated Amount Display -->
         <div *ngIf="selectedResident && selectedPeriod" class="calculated-amount-card">
           <div class="calc-header">
@@ -73,10 +106,14 @@
               <span>Base Rate:</span>
               <strong>Rp {{ selectedPeriod.baseRate || 2500 }}/m²</strong>
             </div>
+            <div class="calc-row">
+              <span>IPL per Bulan:</span>
+              <strong>{{ formatCurrency(calculateIplAmount()) }}</strong>
+            </div>
             <div class="calc-divider"></div>
             <div class="calc-row total">
-              <span>Total IPL:</span>
-              <strong class="total-amount">{{ formatCurrency(calculateIplAmount()) }}</strong>
+              <span>Total IPL ({{ getMonthCount() }} bulan):</span>
+              <strong class="total-amount">{{ formatCurrency(getTotalAmount()) }}</strong>
             </div>
           </div>
         </div>
@@ -203,14 +240,23 @@
           <span>Periode</span>
           <strong>{{ selectedPeriod.periodName }}</strong>
         </div>
+        <div class="summary-row" *ngIf="isMultiMonthPayment()">
+          <span>Jumlah Bulan</span>
+          <strong>{{ getMonthCount() }} bulan</strong>
+        </div>
         <div class="summary-divider"></div>
         <div class="summary-row total">
-          <span>Jumlah IPL</span>
-          <strong>{{ formatCurrency(calculateIplAmount()) }}</strong>
+          <span>Total Pembayaran</span>
+          <strong>{{ formatCurrency(getTotalAmount()) }}</strong>
         </div>
         <div class="summary-note ion-margin-top">
           <ion-icon name="information-circle-outline"></ion-icon>
-          <span>Pembayaran memerlukan persetujuan admin/keuangan</span>
+          <span *ngIf="isMultiMonthPayment()">
+            Pembayaran untuk {{ getMonthCount() }} bulan. Memerlukan persetujuan admin/keuangan.
+          </span>
+          <span *ngIf="!isMultiMonthPayment()">
+            Pembayaran memerlukan persetujuan admin/keuangan
+          </span>
         </div>
       </ion-card-content>
     </ion-card>
@@ -477,5 +523,66 @@
     bottom: 16px;
     z-index: 10;
   }
+}
+
+/* Month Count Selector Styles */
+.month-count-selector {
+  margin-top: 16px;
+}
+
+.month-count-selector .field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ion-color-medium);
+}
+
+.month-count-selector .required {
+  color: var(--ion-color-primary);
+}
+
+.month-count-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  margin: 8px 0;
+}
+
+.month-count-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.month-count-display .count {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  line-height: 1;
+}
+
+.month-count-display .label {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+}
+
+.month-count-helper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  margin-top: 8px;
+}
+
+.month-count-helper ion-icon {
+  font-size: 14px;
 }
 </style>

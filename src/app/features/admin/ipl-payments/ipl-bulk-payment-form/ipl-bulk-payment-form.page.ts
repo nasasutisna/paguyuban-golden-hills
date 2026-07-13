@@ -10,9 +10,9 @@ import { ResidentsService } from '../../residents/residents.service';
 import { HouseUnitsService } from '../../house-units/house-units.service';
 import {
   IplPeriod,
-  CreateIplBulkPaymentDto,
   IplPaymentMethod,
-  IplBulkPayment
+  IplPayment,
+  CreateIplPaymentDto
 } from '../ipl-payments.model';
 import { SelectOption } from '@shared/ui/form-controls/form.model';
 import { Resident } from '../../residents/residents.model';
@@ -38,7 +38,8 @@ import {
 
 /**
  * IPL Bulk Payment Form Page
- * Create IPL bulk payment for multiple months
+ * NOTE: This component is deprecated. Use the main IPL Payment Form with monthCount instead.
+ * Multi-month payment support has been added to the main form.
  */
 @Component({
   selector: 'app-ipl-bulk-payment-form',
@@ -102,6 +103,12 @@ export class IplBulkPaymentFormPage implements OnInit {
   }
 
   ngOnInit(): void {
+    // Redirect to the main form with multi-month support
+    this.toastService.info('Silakan gunakan form pembayaran IPL utama dengan opsi multi-bulan');
+    this.router.navigate(['/admin/ipl-payments', 'form']);
+    return;
+
+    // The code below is disabled since this component is deprecated
     this.loadData();
   }
 
@@ -324,57 +331,9 @@ export class IplBulkPaymentFormPage implements OnInit {
    * Submit form
    */
   async onSubmit(): Promise<void> {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.toastService.error('Mohon lengkapi semua field yang wajib diisi');
-      return;
-    }
-
-    // Validate file and other conditions
-    const validation = this.validateForm();
-    if (!validation.valid) {
-      this.toastService.error(validation.error || 'Validasi gagal');
-      return;
-    }
-
-    const formValue = this.form.value;
-
-    const dto: CreateIplBulkPaymentDto = {
-      startPeriodId: formValue.startPeriodId,
-      residentId: formValue.residentId,
-      monthCount: formValue.monthCount,
-      paymentDate: formValue.paymentDate,
-      paymentMethod: formValue.paymentMethod,
-      referenceNumber: formValue.referenceNumber,
-      notes: formValue.notes,
-      proofFile: this.selectedFile || undefined
-    };
-
-    this.createBulkPayment(dto);
-  }
-
-  /**
-   * Create new bulk payment
-   */
-  private createBulkPayment(dto: CreateIplBulkPaymentDto): void {
-    this.loadingService.show({ message: 'Mengirim pembayaran bulk...' });
-
-    this.subscriptions.push(
-      this.iplPaymentsService.createBulk(dto).subscribe({
-        next: (result) => {
-          this.loadingService.dismiss();
-          if (result) {
-            this.toastService.success('Pembayaran bulk berhasil dikirim dan menunggu persetujuan');
-            this.router.navigate(['/admin/ipl-payments', result.id]);
-          }
-        },
-        error: (error) => {
-          this.loadingService.dismiss();
-          this.toastService.error('Gagal mengirim pembayaran bulk');
-          console.error('Create bulk payment error:', error);
-        }
-      })
-    );
+    // Redirect to main form instead
+    this.router.navigate(['/admin/ipl-payments', 'form']);
+    return;
   }
 
   /**

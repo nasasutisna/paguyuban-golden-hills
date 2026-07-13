@@ -118,6 +118,9 @@ export interface IplPayment {
   updatedAt: string;
   deletedAt?: string;
 
+  // Payment group reference (links multi-month payments together)
+  paymentGroupId?: string | null;
+
   // Relations
   period?: IplPeriod;
   resident?: IplPaymentResident;
@@ -126,6 +129,14 @@ export interface IplPayment {
   approver?: IplPaymentUser;
   files?: FileAttachment[];
   approvalHistories?: ApprovalHistory[];
+
+  // Meta info for multi-month payments
+  _meta?: {
+    isMultiMonth?: boolean;
+    monthCount?: number;
+    totalAmount?: number;
+    allPaymentIds?: string[];
+  };
 }
 
 /**
@@ -211,6 +222,7 @@ export interface ApprovalHistory {
 export interface CreateIplPaymentDto {
   periodId: string;
   residentId: string;
+  monthCount?: number;
   paymentDate: string;
   paymentMethod: IplPaymentMethod;
   referenceNumber?: string;
@@ -342,6 +354,21 @@ export interface IplPaymentStats {
 }
 
 /**
+ * Receipt Info interface
+ */
+export interface ReceiptInfo {
+  id: string;
+  fileName: string;
+  filePath: string;
+  url: string;
+  fileSize: number;
+  mimeType: string;
+  category: string;
+  paymentNumber: string;
+  paymentId: string;
+}
+
+/**
  * IPL Period with payment count
  */
 export interface IplPeriodWithStats extends IplPeriod {
@@ -351,125 +378,3 @@ export interface IplPeriodWithStats extends IplPeriod {
   pendingAmount?: number;
 }
 
-// ============================================================
-// BULK PAYMENT TYPES
-// ============================================================
-
-/**
- * IPL Bulk Payment Status
- */
-export enum IplBulkPaymentStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-  PARTIALLY_APPROVED = 'PARTIALLY_APPROVED'
-}
-
-/**
- * Bulk Payment Status display labels
- */
-export const IPL_BULK_PAYMENT_STATUS_LABELS: Record<IplBulkPaymentStatus, string> = {
-  [IplBulkPaymentStatus.PENDING]: 'Menunggu',
-  [IplBulkPaymentStatus.APPROVED]: 'Disetujui',
-  [IplBulkPaymentStatus.REJECTED]: 'Ditolak',
-  [IplBulkPaymentStatus.PARTIALLY_APPROVED]: 'Sebagian Disetujui'
-};
-
-/**
- * Bulk Payment Status color mappings for Ionic chips
- */
-export const IPL_BULK_PAYMENT_STATUS_COLORS: Record<IplBulkPaymentStatus, string> = {
-  [IplBulkPaymentStatus.PENDING]: 'warning',
-  [IplBulkPaymentStatus.APPROVED]: 'success',
-  [IplBulkPaymentStatus.REJECTED]: 'danger',
-  [IplBulkPaymentStatus.PARTIALLY_APPROVED]: 'tertiary'
-};
-
-/**
- * IPL Bulk Payment interface
- */
-export interface IplBulkPayment {
-  id: string;
-  bulkNumber: string;
-  residentId: string;
-  houseUnitId: string;
-  startPeriodId: string;
-  monthCount: number;
-  paymentDate: string;
-  paymentMethod: IplPaymentMethod;
-  referenceNumber?: string;
-  notes?: string;
-  proofFileId?: string;
-  totalAmount: number;
-  status: IplBulkPaymentStatus;
-  approvedBy?: string;
-  approvedAt?: string;
-  rejectionReason?: string;
-  submittedBy: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string;
-
-  // Relations
-  files?: FileAttachment[];
-  payments?: IplPayment[];
-  startPeriod?: IplPeriod;
-  resident?: IplPaymentResident;
-  houseUnit?: IplPaymentHouseUnit;
-  submitter?: IplPaymentUser;
-  approver?: IplPaymentUser;
-  _count?: {
-    payments: number;
-  };
-}
-
-/**
- * Create IPL Bulk Payment DTO
- */
-export interface CreateIplBulkPaymentDto {
-  startPeriodId: string;
-  residentId: string;
-  monthCount: number;
-  paymentDate: string;
-  paymentMethod: IplPaymentMethod;
-  referenceNumber?: string;
-  notes?: string;
-  proofFile?: File;
-}
-
-/**
- * Approve IPL Bulk Payment DTO
- */
-export interface ApproveIplBulkPaymentDto {
-  comments?: string;
-}
-
-/**
- * Reject IPL Bulk Payment DTO
- */
-export interface RejectIplBulkPaymentDto {
-  rejectionReason: string;
-}
-
-/**
- * Query parameters for bulk payments
- */
-export interface IplBulkPaymentQueryParams {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-  status?: IplBulkPaymentStatus;
-  residentId?: string;
-}
-
-/**
- * Paginated response for bulk payments
- */
-export interface IplBulkPaymentListResponse {
-  data: IplBulkPayment[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}

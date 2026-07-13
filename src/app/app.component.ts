@@ -11,10 +11,10 @@ import { addIcons } from 'ionicons';
 import {
   leaf, personCircle, personCircleOutline, menu, search, notificationsOutline,
   logOut, grid, cog, barChart, settings, openOutline, chevronForward,
-  home, homeOutline, people, business, businessOutline, document, receipt, wallet, trendingUp, calendar, calendarOutline,
+  home, homeOutline, people, business, businessOutline, document, receipt, receiptOutline, wallet, trendingUp, calendar, calendarOutline,
   shield, key, keyOutline, lockClosed, prism, card, fileTray, chatbubbles, informationCircle,
-  helpCircle, documentText, funnel, scan, cloudUpload, cloudDownload, swapHorizontal,
-  create, trashOutline, eyeOutline, addOutline, checkmarkOutline, closeOutline, pencilOutline,
+  helpCircle, documentText, documentTextOutline, funnel, scan, cloudUpload, cloudDownload, swapHorizontal,
+  create, createOutline, trashOutline, eyeOutline, addOutline, checkmarkOutline, closeOutline, pencilOutline,
   searchOutline,
   add,
   addCircle,
@@ -25,7 +25,9 @@ import {
   arrowBack,
   chevronBackCircleOutline,
   checkmarkCircle,
+  checkmarkCircleOutline,
   closeCircle,
+  closeCircleOutline,
   callOutline,
   mailOutline,
   layersOutline,
@@ -39,12 +41,20 @@ import {
   playCircle,
   swapHorizontalOutline,
   alertCircle,
+  alertCircleOutline,
   saveOutline,
   time,
   walletOutline,
   cardOutline,
   cashOutline,
-  newspaperOutline
+  newspaperOutline,
+  pricetagOutline,
+  textOutline,
+  locationOutline,
+  pieChartOutline,
+  codeOutline,
+  calendarClearOutline,
+  calendarNumberOutline
 } from 'ionicons/icons';
 import { AuthService } from '@core/auth/auth.service';
 import { User } from '@models/auth.model';
@@ -134,15 +144,16 @@ export class AppComponent implements OnInit, OnDestroy {
     addIcons({
       leaf, personCircle, personCircleOutline, personOutline, menu, search, notificationsOutline,
       logOut, grid, cog, barChart, settings, openOutline, chevronForward,
-      home, homeOutline, people, business, businessOutline, document, receipt, wallet, trendingUp, calendar, calendarOutline,
+      home, homeOutline, people, business, businessOutline, document, receipt, receiptOutline, wallet, trendingUp, calendar, calendarOutline,
       shield, key, keyOutline, lockClosed, prism, card, fileTray, chatbubbles, informationCircle,
-      helpCircle, documentText, funnel, scan, cloudUpload, cloudDownload, swapHorizontal,
-      create, trashOutline, eyeOutline, addOutline, checkmarkOutline, closeOutline, pencilOutline,
+      helpCircle, documentText, documentTextOutline, funnel, scan, cloudUpload, cloudDownload, swapHorizontal,
+      create, createOutline, trashOutline, eyeOutline, addOutline, checkmarkOutline, closeOutline, pencilOutline,
       searchOutline, add, addCircle, personAdd, addCircleOutline, chevronBack, arrowBack,
-      chevronBackCircleOutline, checkmarkCircle, closeCircle, callOutline, mailOutline,
+      chevronBackCircleOutline, checkmarkCircle, checkmarkCircleOutline, closeCircle, closeCircleOutline, callOutline, mailOutline,
       layersOutline, resizeOutline, star, warningOutline, buildOutline, expandOutline,
-      medicalOutline, stopCircle, playCircle, swapHorizontalOutline, alertCircle, saveOutline, time,
-      walletOutline, cardOutline, cashOutline, newspaperOutline
+      medicalOutline, stopCircle, playCircle, swapHorizontalOutline, alertCircle, alertCircleOutline, saveOutline, time,
+      walletOutline, cardOutline, cashOutline, newspaperOutline, pricetagOutline, textOutline, locationOutline,
+      pieChartOutline, codeOutline, calendarClearOutline, calendarNumberOutline
     });
   }
 
