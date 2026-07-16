@@ -153,7 +153,7 @@
             <p>Latest financial activities</p>
           </div>
         </div>
-        <ion-button fill="outline" size="small" routerLink="/transactions">
+        <ion-button fill="outline" size="small" routerLink="/admin/cash-transactions">
           View All
           <ion-icon slot="end" name="chevron-forward"></ion-icon>
         </ion-button>
@@ -206,7 +206,7 @@
     <div class="empty-state-card" *ngIf="!isLoadingTransactions">
       <ion-icon name="receipt"></ion-icon>
       <p>No recent transactions</p>
-      <ion-button fill="outline" size="small" routerLink="/transactions/new">
+      <ion-button fill="outline" size="small" routerLink="/admin/cash-transactions/create">
         <ion-icon slot="start" name="add"></ion-icon>
         Add Transaction
       </ion-button>
@@ -228,49 +228,67 @@
   <ion-content class="menu-content">
     <ion-list class="menu-list">
       <ion-list-header class="menu-section-header">Main</ion-list-header>
-      <ion-menu-button auto-close="true" routerLink="/dashboard">
-        <ion-icon slot="start" name="grid"></ion-icon>
-        <ion-label>Dashboard</ion-label>
-      </ion-menu-button>
-      <ion-menu-button auto-close="true" routerLink="/transactions">
-        <ion-icon slot="start" name="swap-horizontal"></ion-icon>
-        <ion-label>Transactions</ion-label>
-      </ion-menu-button>
-      <ion-menu-button auto-close="true" routerLink="/invoices">
-        <ion-icon slot="start" name="document"></ion-icon>
-        <ion-label>Invoices</ion-label>
-      </ion-menu-button>
+      <ion-menu-toggle auto-hide="false">
+        <ion-button routerLink="/dashboard" detail="false" style="--padding-start: 16px;">
+          <ion-icon slot="start" name="grid"></ion-icon>
+          <ion-label>Dashboard</ion-label>
+        </ion-button>
+      </ion-menu-toggle>
+      <ion-menu-toggle auto-hide="false">
+        <ion-button routerLink="/admin/cash-transactions" detail="false" style="--padding-start: 16px;">
+          <ion-icon slot="start" name="swap-horizontal"></ion-icon>
+          <ion-label>Transactions</ion-label>
+        </ion-button>
+      </ion-menu-toggle>
+      <ion-menu-toggle auto-hide="false">
+        <ion-button routerLink="/admin/resident-invoices" detail="false" style="--padding-start: 16px;">
+          <ion-icon slot="start" name="document"></ion-icon>
+          <ion-label>Invoices</ion-label>
+        </ion-button>
+      </ion-menu-toggle>
 
       <ion-list-header class="menu-section-header">Management</ion-list-header>
-      <ion-menu-button auto-close="true" routerLink="/residents">
-        <ion-icon slot="start" name="home"></ion-icon>
-        <ion-label>Residents</ion-label>
-      </ion-menu-button>
-      <ion-menu-button auto-close="true" routerLink="/employees">
-        <ion-icon slot="start" name="people"></ion-icon>
-        <ion-label>Employees</ion-label>
-      </ion-menu-button>
-      <ion-menu-button auto-close="true" routerLink="/house-blocks">
-        <ion-icon slot="start" name="business"></ion-icon>
-        <ion-label>House Blocks</ion-label>
-      </ion-menu-button>
+      <ion-menu-toggle auto-hide="false">
+        <ion-button routerLink="/admin/residents" detail="false" style="--padding-start: 16px;">
+          <ion-icon slot="start" name="home"></ion-icon>
+          <ion-label>Residents</ion-label>
+        </ion-button>
+      </ion-menu-toggle>
+      <ion-menu-toggle auto-hide="false">
+        <ion-button routerLink="/admin/house-blocks" detail="false" style="--padding-start: 16px;">
+          <ion-icon slot="start" name="business"></ion-icon>
+          <ion-label>House Blocks</ion-label>
+        </ion-button>
+      </ion-menu-toggle>
+      <ion-menu-toggle auto-hide="false">
+        <ion-button routerLink="/admin/ipl-payments" detail="false" style="--padding-start: 16px;">
+          <ion-icon slot="start" name="receipt"></ion-icon>
+          <ion-label>IPL Payments</ion-label>
+        </ion-button>
+      </ion-menu-toggle>
 
       <ion-list-header class="menu-section-header">Reports</ion-list-header>
-      <ion-menu-button auto-close="true" routerLink="/reports">
-        <ion-icon slot="start" name="bar-chart"></ion-icon>
-        <ion-label>Reports</ion-label>
-      </ion-menu-button>
-      <ion-menu-button auto-close="true" routerLink="/settings">
-        <ion-icon slot="start" name="settings"></ion-icon>
-        <ion-label>Settings</ion-label>
-      </ion-menu-button>
+      <ion-menu-toggle auto-hide="false">
+        <ion-button routerLink="/admin/cash-transactions/reports/ipl" detail="false" style="--padding-start: 16px;">
+          <ion-icon slot="start" name="bar-chart"></ion-icon>
+          <ion-label>IPL Report</ion-label>
+        </ion-button>
+      </ion-menu-toggle>
+      <ion-menu-toggle auto-hide="false">
+        <ion-button routerLink="/profile" detail="false" style="--padding-start: 16px;">
+          <ion-icon slot="start" name="person"></ion-icon>
+          <ion-label>Profile</ion-label>
+        </ion-button>
+      </ion-menu-toggle>
     </ion-list>
 
     <div class="menu-footer">
-      <ion-menu-button auto-close="true">
-        <ion-icon slot="start" name="log-out"></ion-icon>
-        <ion-label>Logout</ion-label>
-      </ion-menu-button>
+      <ion-menu-toggle auto-hide="false">
+        <ion-button routerLink="/auth/login" detail="false" style="--padding-start: 16px;">
+          <ion-icon slot="start" name="log-out"></ion-icon>
+          <ion-label>Logout</ion-label>
+        </ion-button>
+      </ion-menu-toggle>
     </div>
   </ion-content>
 </ion-menu>

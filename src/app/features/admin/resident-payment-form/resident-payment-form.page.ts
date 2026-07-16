@@ -74,6 +74,10 @@ export class ResidentPaymentFormPage implements OnInit {
   invoices: ResidentInvoice[] = [];
   selectedInvoice: ResidentInvoice | null = null;
 
+  // File upload (bukti transfer)
+  selectedFile: File | null = null;
+  filePreview: string | null = null;
+
   // Payment methods
   readonly PAYMENT_METHODS = Object.values(PaymentMethod);
   readonly PAYMENT_METHOD_LABELS = {
@@ -82,13 +86,19 @@ export class ResidentPaymentFormPage implements OnInit {
     CARD: 'Kartu',
     E_WALLET: 'E-Wallet'
   };
+  // Methods that require a bukti transfer upload (CASH is optional)
+  readonly PROOF_REQUIRED_METHODS: PaymentMethod[] = [
+    PaymentMethod.TRANSFER,
+    PaymentMethod.E_WALLET,
+    PaymentMethod.CARD
+  ];
 
   private subscriptions: Subscription[] = [];
 
   constructor() {
     this.form = this.fb.group({
       residentId: ['', Validators.required],
-      invoiceId: ['', Validators.required],
+      invoiceId: [''],
       paymentDate: [this.formatDateForInput(new Date()), Validators.required],
       paymentMethod: [PaymentMethod.TRANSFER, Validators.required],
       paymentChannel: [''],
@@ -190,15 +200,49 @@ export class ResidentPaymentFormPage implements OnInit {
       return;
     }
 
+    // Conditional proof-file validation (mirror backend: required for non-CASH)
+    if (this.isProofRequired() && !this.selectedFile) {
+      this.form.markAllAsTouched();
+      this.toastService.error(`Bukti transfer wajib diupload untuk metode ${this.getPaymentMethodLabel()}`);
+      return;
+    }
+
+    // Validate file size & type when a file is selected
+    if (this.selectedFile) {
+      if (this.selectedFile.size > 5 * 1024 * 1024) {
+        this.toastService.error('Ukuran file maksimal 5MB');
+        return;
+      }
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      if (!allowedTypes.includes(this.selectedFile.type)) {
+        this.toastService.error('Format file harus JPG, PNG, atau PDF');
+        return;
+      }
+    }
+
     const formValue = this.form.value;
 
-    // Validate amount against remaining
+    // Validate amount against remaining (only when linked to an invoice)
     if (this.selectedInvoice && formValue.amount > this.selectedInvoice.remainingAmount) {
       this.toastService.error(`Jumlah pembayaran melebihi sisa tagihan (${this.formatCurrency(this.selectedInvoice.remainingAmount)})`);
       return;
     }
 
-    this.createPayment(formValue);
+    const dto: CreateResidentPaymentDto = {
+      residentId: formValue.residentId,
+      invoiceId: formValue.invoiceId || undefined,
+      paymentDate: formValue.paymentDate,
+      paymentMethod: formValue.paymentMethod,
+      paymentChannel: formValue.paymentChannel || undefined,
+      referenceNumber: formValue.referenceNumber || undefined,
+      amount: formValue.amount,
+      bankName: formValue.bankName || undefined,
+      accountNumber: formValue.accountNumber || undefined,
+      notes: formValue.notes || undefined,
+      proofFile: this.selectedFile || undefined
+    };
+
+    this.createPayment(dto);
   }
 
   /**
@@ -416,7 +460,71 @@ export class ResidentPaymentFormPage implements OnInit {
     if (this.isBulkMode) {
       return this.form.valid && this.selectedInvoices.size > 0;
     }
+    // Bukti transfer is required for non-CASH methods
+    if (this.isProofRequired() && !this.selectedFile) {
+      return false;
+    }
     return this.form.valid;
+  }
+
+  /**
+   * Whether the currently selected payment method requires a bukti transfer.
+   */
+  isProofRequired(): boolean {
+    const method = this.form.get('paymentMethod')?.value as PaymentMethod;
+    return this.PROOF_REQUIRED_METHODS.includes(method);
+  }
+
+  /**
+   * Handle file selection (bukti transfer)
+   */
+  onFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+
+      // Create preview for images
+      if (this.selectedFile.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.filePreview = e.target?.result as string;
+        };
+        reader.readAsDataURL(this.selectedFile);
+      } else {
+        this.filePreview = null;
+      }
+    }
+  }
+
+  /**
+   * Remove selected file
+   */
+  removeFile(): void {
+    this.selectedFile = null;
+    this.filePreview = null;
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
+  /**
+   * Format file size for display
+   */
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  /**
+   * Convert residents to select options
+   */
+  get residentOptions(): SelectOption[] {
+    return this.residents.map(r => ({
+      value: r.id,
+      label: `${r.firstName} ${r.lastName} - ${r.houseBlock?.blockName || '-'} ${r.unitNumber || ''}`
+    }));
   }
 
   /**

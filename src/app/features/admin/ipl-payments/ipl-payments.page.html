@@ -5,6 +5,9 @@
     </ion-buttons>
     <ion-title>Pembayaran IPL</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="searchByReference()">
+        <ion-icon name="search-outline"></ion-icon>
+      </ion-button>
       <ion-button (click)="navigateToPending()">
         <ion-icon name="checkmark-circle-outline"></ion-icon>
       </ion-button>
@@ -78,6 +81,10 @@
     <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
       (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
       <div table-actions>
+        <ion-button fill="outline" color="medium" (click)="searchByReference()">
+          <ion-icon slot="start" name="search-outline"></ion-icon>
+          Cari Referensi
+        </ion-button>
         <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
           <ion-icon slot="start" name="add-outline"></ion-icon>
            Bayar IPL
@@ -86,3 +93,147 @@
     </app-table>
   </div>
 </ion-content>
+
+<style>
+/* Reference Result Modal Styles */
+.reference-result-alert .alert-wrapper {
+  max-width: 600px;
+  max-height: 80vh;
+}
+
+.reference-result-content {
+  padding: 8px 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.reference-header {
+  background: linear-gradient(135deg, rgba(56, 128, 255, 0.1) 0%, rgba(56, 128, 255, 0.05) 100%);
+  border: 2px solid var(--ion-color-primary);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.reference-label {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.reference-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+.payment-summary {
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.payment-summary .summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin: 8px 0;
+  color: var(--ion-color-medium-shade);
+}
+
+.payment-summary .summary-row strong {
+  color: var(--ion-color-dark);
+}
+
+.payment-summary .summary-divider {
+  margin: 8px 0;
+  border-top: 1px dashed var(--ion-color-medium);
+}
+
+.payment-summary .summary-row.total {
+  margin-top: 8px;
+  padding-top: 8px;
+}
+
+.payment-summary .summary-row.total span,
+.payment-summary .summary-row.total strong {
+  font-size: 16px;
+  color: var(--ion-color-success);
+  font-weight: 600;
+}
+
+.payments-list {
+  margin-bottom: 16px;
+}
+
+.payments-list h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+}
+
+.payments-list .empty-message {
+  font-size: 13px;
+  color: var(--ion-color-medium);
+  text-align: center;
+  padding: 12px;
+  font-style: italic;
+}
+
+.result-item {
+  background: var(--ion-background-color);
+  border: 1px solid var(--ion-color-light);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.result-item:hover {
+  border-color: var(--ion-color-primary);
+  background: rgba(var(--ion-color-primary-rgb), 0.05);
+}
+
+.result-item:active {
+  transform: scale(0.98);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.result-header ion-icon {
+  font-size: 18px;
+  color: var(--ion-color-primary);
+}
+
+.result-header strong {
+  font-size: 14px;
+  color: var(--ion-color-dark);
+}
+
+.result-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 13px;
+  color: var(--ion-color-medium);
+}
+
+.result-details span {
+  white-space: nowrap;
+}
+</style>

@@ -105,14 +105,21 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    console.log('[TableComponent] ngOnChanges called', changes);
+
     // Sync pagination.page when currentPage input changes from parent
     if (changes['currentPage'] && this.currentPage !== undefined) {
       this.pagination.page = this.currentPage;
     }
 
     if (changes['dataSource']) {
+      console.log('[TableComponent] dataSource changed:', this.dataSource);
+      console.log('[TableComponent] dataSource.data:', this.dataSource.data);
+      console.log('[TableComponent] dataSource.data length:', this.dataSource.data?.length);
       this.updateDisplayedData();
       this.updatePagination();
+      console.log('[TableComponent] displayedData after update:', this.displayedData);
+      console.log('[TableComponent] displayedData length:', this.displayedData.length);
     }
   }
 
@@ -128,8 +135,11 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
    * For server-side pagination, display all data as received (already paginated by server)
    */
   private updateDisplayedData(): void {
+    console.log('[TableComponent] updateDisplayedData called');
+    console.log('[TableComponent] dataSource.data:', this.dataSource.data);
     // Data is already paginated from server, display all received data
     this.displayedData = this.dataSource.data || [];
+    console.log('[TableComponent] displayedData set to:', this.displayedData);
   }
 
   /**
@@ -171,14 +181,18 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
    * Check if table is loading
    */
   get isLoading(): boolean {
-    return this.dataSource.loading ?? false;
+    const loading = this.dataSource.loading ?? false;
+    console.log('[TableComponent] isLoading:', loading);
+    return loading;
   }
 
   /**
    * Check if table is empty
    */
   get isEmpty(): boolean {
-    return !this.isLoading && this.displayedData.length === 0;
+    const empty = !this.isLoading && this.displayedData.length === 0;
+    console.log('[TableComponent] isEmpty:', empty, '(loading:', this.isLoading, ', displayedData.length:', this.displayedData.length, ')');
+    return empty;
   }
 
   /**

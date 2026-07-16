@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, AlertController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { IplPaymentsService } from '../ipl-payments.service';
+import { ResidentPaymentsService } from '../../resident-payments/resident-payments.service';
 import {
   IplPayment,
   IplPaymentStatus,
@@ -35,6 +36,7 @@ export class IplPaymentDetailPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private iplPaymentsService = inject(IplPaymentsService);
+  private residentPaymentsService = inject(ResidentPaymentsService);
   private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
   private alertController = inject(AlertController);
@@ -44,6 +46,8 @@ export class IplPaymentDetailPage implements OnInit {
   error: string | null = null;
   receipt: ReceiptInfo | null = null;
   receiptLoading = false;
+  // Separate kwitansi for the iuran kegiatan warga (ResidentPayment receipt)
+  kegiatanReceipt: ReceiptInfo | null = null;
 
   private subscriptions: Subscription[] = [];
 
@@ -80,6 +84,10 @@ export class IplPaymentDetailPage implements OnInit {
             // Load receipt if payment is approved
             if (payment.status === IplPaymentStatus.APPROVED) {
               this.loadReceipt(id);
+              // Also load the separate kwitansi for the iuran kegiatan warga (if any)
+              if (payment.kegiatanPayment) {
+                this.loadKegiatanReceipt(payment.kegiatanPayment.id);
+              }
             }
           } else {
             this.error = 'Pembayaran tidak ditemukan';
@@ -183,6 +191,9 @@ export class IplPaymentDetailPage implements OnInit {
             this.toastService.success('Pembayaran disetujui');
             // Load receipt after approval
             this.loadReceipt(this.payment.id);
+            if (this.payment.kegiatanPayment) {
+              this.loadKegiatanReceipt(this.payment.kegiatanPayment.id);
+            }
           }
         },
         error: (error) => {
@@ -634,9 +645,10 @@ export class IplPaymentDetailPage implements OnInit {
 
   /**
    * Get total amount for multi-month payments
+   * @deprecated Use getGrandTotal() instead
    */
   getTotalAmount(): number {
-    return this.payment?._meta?.totalAmount || 0;
+    return this.payment?._meta?.grandTotal || this.payment?.calculatedAmount || 0;
   }
 
   /**
@@ -661,6 +673,118 @@ export class IplPaymentDetailPage implements OnInit {
     const monthCount = this.getMonthCount();
     const totalAmount = this.getTotalAmount();
     return `Pembayaran ${monthCount} bulan - Total: ${this.formatCurrency(totalAmount)}`;
+  }
+
+  /**
+   * Check if has kegiatan payment
+   */
+  hasKegiatanPayment(): boolean {
+    return !!this.payment?.kegiatanPayment;
+  }
+
+  /**
+   * Get kegiatan payment amount
+   */
+  getKegiatanAmount(): number {
+    return this.payment?.kegiatanPayment?.amount || 0;
+  }
+
+  /**
+   * Get kegiatan payment number
+   */
+  getKegiatanPaymentNumber(): string {
+    return this.payment?.kegiatanPayment?.paymentNumber || '-';
+  }
+
+  /**
+   * Get kegiatan invoice ID
+   */
+  getKegiatanInvoiceId(): string {
+    return this.payment?.kegiatanPayment?.invoiceId || '-';
+  }
+
+  /**
+   * Load the separate kwitansi for the iuran kegiatan warga (ResidentPayment receipt)
+   */
+  private loadKegiatanReceipt(kegiatanPaymentId: string): void {
+    this.subscriptions.push(
+      this.residentPaymentsService.getReceipt(kegiatanPaymentId).subscribe({
+        next: (receipt) => {
+          this.kegiatanReceipt = receipt;
+        },
+        error: (error) => {
+          console.error('Error loading kegiatan receipt:', error);
+          this.kegiatanReceipt = null;
+        }
+      })
+    );
+  }
+
+  /**
+   * Whether the separate kegiatan kwitansi is available
+   */
+  hasKegiatanReceipt(): boolean {
+    return this.hasKegiatanPayment() && !!this.kegiatanReceipt;
+  }
+
+  /**
+   * Get the kegiatan kwitansi URL
+   */
+  getKegiatanReceiptUrl(): string {
+    if (!this.kegiatanReceipt) return '';
+    const baseUrl = environment.apiUrl.replace('/api/v1', '');
+    return `${baseUrl}${this.kegiatanReceipt.filePath}`;
+  }
+
+  /**
+   * Open the kegiatan kwitansi in a new tab
+   */
+  viewKegiatanReceipt(): void {
+    if (this.kegiatanReceipt) {
+      window.open(this.getKegiatanReceiptUrl(), '_blank');
+    } else {
+      this.toastService.error('Kwitansi iuran kegiatan belum tersedia');
+    }
+  }
+
+  /**
+   * Get total payment amount including IPL and kegiatan
+   */
+  getGrandTotal(): number {
+    const meta = this.payment?._meta;
+    if (meta?.grandTotal) {
+      return meta.grandTotal;
+    }
+    // Fallback calculation
+    const iplTotal = this.payment?.calculatedAmount || 0;
+    const kegiatanTotal = this.getKegiatanAmount();
+    return iplTotal + kegiatanTotal;
+  }
+
+  /**
+   * Get total IPL amount for multi-month payments
+   */
+  getTotalIplAmount(): number {
+    return this.payment?._meta?.totalIplAmount || this.payment?.calculatedAmount || 0;
+  }
+
+  /**
+   * Get formatted payment summary
+   */
+  getPaymentSummary(): { iplTotal: number; kegiatanTotal: number; grandTotal: number; monthCount: number } {
+    return {
+      iplTotal: this.getTotalIplAmount(),
+      kegiatanTotal: this.getKegiatanAmount(),
+      grandTotal: this.getGrandTotal(),
+      monthCount: this.getMonthCount()
+    };
+  }
+
+  /**
+   * Check if should show enhanced summary (multi-month or has kegiatan)
+   */
+  shouldShowEnhancedSummary(): boolean {
+    return this.isMultiMonthPayment() || this.hasKegiatanPayment();
   }
 
   /**

@@ -3,6 +3,32 @@
  * Defines interfaces, enums, and DTOs for cash transaction management
  */
 
+// Import reference types from shared constants
+import {
+  REFERENCE_TYPES,
+  REFERENCE_TYPE_LABELS,
+  INCOME_REFERENCE_TYPES,
+  EXPENSE_REFERENCE_TYPES,
+  isIncomeReferenceType,
+  isExpenseReferenceType,
+  getReferenceTypeOptions
+} from '@core/constants/reference-types';
+import type { ReferenceType } from '@core/constants/reference-types';
+
+// Re-export for convenience
+export {
+  REFERENCE_TYPES,
+  REFERENCE_TYPE_LABELS,
+  INCOME_REFERENCE_TYPES,
+  EXPENSE_REFERENCE_TYPES,
+  isIncomeReferenceType,
+  isExpenseReferenceType,
+  getReferenceTypeOptions
+};
+
+// Export the type
+export type { ReferenceType };
+
 /**
  * Transaction Type Enum
  */
@@ -74,17 +100,19 @@ export interface TransactionCategory {
  */
 export interface CashTransaction {
   id: string;
+  transactionNumber?: string;  // Transaction number from API
   transactionDate: string;
   transactionType: TransactionType;
   category: TransactionCategory;
   categoryId: string;
   amount: number;
   paymentMethod: PaymentMethod;
-  referenceType?: string;
+  referenceType?: ReferenceType;
   referenceId?: string;
   referenceNumber?: string;
   description: string;
   notes?: string;
+  // API returns 'status', mapped to 'approvalStatus' in service
   approvalStatus: ApprovalStatus;
   requiresApproval: boolean;
   approvedBy?: string;
@@ -94,6 +122,14 @@ export interface CashTransaction {
   createdBy?: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
+  // Optional nested objects from API
+  creator?: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+  };
 }
 
 /**
@@ -105,7 +141,7 @@ export interface CreateCashTransactionDto {
   categoryId: string;
   amount: number;
   paymentMethod: PaymentMethod;
-  referenceType?: string;
+  referenceType?: ReferenceType;
   referenceId?: string;
   referenceNumber?: string;
   description: string;
@@ -124,7 +160,7 @@ export interface UpdateCashTransactionDto {
   categoryId?: string;
   amount?: number;
   paymentMethod?: PaymentMethod;
-  referenceType?: string;
+  referenceType?: ReferenceType;
   referenceId?: string;
   referenceNumber?: string;
   description?: string;
@@ -160,11 +196,37 @@ export interface CashTransactionsResponse {
 
 /**
  * Transaction Summary
+ * Matches server response from /api/v1/cash-transactions/summary
  */
 export interface TransactionSummary {
+  totalTransactions: number;
+  totalIncome: number;
+  totalExpense: number;
+  netAmount: number;
+  pendingApproval: number;
+}
+
+/**
+ * Category Breakdown for Reports
+ */
+export interface CategoryBreakdown {
+  categoryId: string;
+  categoryCode: string;
+  categoryName: string;
+  totalAmount: number;
+  transactionCount: number;
+}
+
+/**
+ * IPL/KEGIATAN Report Statistics
+ */
+export interface ReportStatistics {
   totalIncome: number;
   totalExpense: number;
   balance: number;
-  pendingApproval: number;
-  transactionCount: number;
+  breakdownByCategory: CategoryBreakdown[];
+  period?: {
+    startDate: string;
+    endDate: string;
+  };
 }

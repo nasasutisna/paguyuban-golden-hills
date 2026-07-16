@@ -25,16 +25,16 @@
     <p class="ion-margin-top">{{ error }}</p>
   </div>
 
-  <!-- Empty State -->
+  <!-- Empty State (bulk mode only — single mode allows payment without invoice) -->
   <ion-alert
-    *ngIf="!loadingData && !error && invoices.length === 0"
+    *ngIf="!loadingData && !error && isBulkMode && invoices.length === 0"
     header="Info"
     message="Tidak ada tagihan yang menunggu pembayaran"
     [buttons]="['OK']">
   </ion-alert>
 
   <!-- Form -->
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingData && !error && invoices.length > 0">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingData && !error && (invoices.length > 0 || !isBulkMode)">
     <!-- Tagihan & Warga -->
     <ion-card class="form-card">
       <ion-card-header>
@@ -46,16 +46,26 @@
         </p>
       </ion-card-header>
       <ion-card-content>
-        <!-- Single Mode: Select Dropdown -->
+        <!-- Single Mode: Resident (required) + Invoice (optional) -->
         <app-form-select
           *ngIf="!isBulkMode"
-          label="Tagihan"
-          formControlName="invoiceId"
-          placeholder="Pilih tagihan"
-          [options]="invoiceOptions"
+          label="Warga"
+          formControlName="residentId"
+          placeholder="Pilih warga"
+          [options]="residentOptions"
           [required]="true"
-          [showError]="isFieldInvalid('invoiceId')"
-          [errorMessage]="getErrorMessage('invoiceId')"
+          [showError]="isFieldInvalid('residentId')"
+          [errorMessage]="getErrorMessage('residentId')"
+        ></app-form-select>
+
+        <app-form-select
+          *ngIf="!isBulkMode"
+          label="Tagihan (Opsional)"
+          formControlName="invoiceId"
+          placeholder="Pilih tagihan (kosongkan jika tanpa tagihan)"
+          [options]="invoiceOptions"
+          [required]="false"
+          (ngModelChange)="onInvoiceChange()"
         ></app-form-select>
 
         <!-- Bulk Mode: Invoice List with Selection -->
@@ -193,6 +203,61 @@
             placeholder="Contoh: 1234567890"
           ></app-form-input>
         </ng-container>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Bukti Transfer (single mode only — bulk doesn't support files) -->
+    <ion-card class="form-card" *ngIf="!isBulkMode">
+      <ion-card-header>
+        <ion-card-subtitle>
+          Bukti Transfer
+          <span *ngIf="!isProofRequired()" class="optional-tag">(Opsional)</span>
+          <span *ngIf="isProofRequired()" class="required-tag">*</span>
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="file-upload-area">
+          <input
+            type="file"
+            id="proofFile"
+            [disabled]="loading"
+            accept="image/jpeg,image/png,image/jpg,application/pdf"
+            (change)="onFileSelect($event)"
+            class="hidden-file-input">
+
+          <label for="proofFile" class="file-upload-label" [class.has-file]="selectedFile !== null">
+            <div class="upload-icon">
+              <ion-icon name="cloud-upload-outline"></ion-icon>
+            </div>
+            <div class="upload-text">
+              <p *ngIf="!selectedFile">Klik untuk upload bukti transfer</p>
+              <p *ngIf="selectedFile" class="file-name">{{ selectedFile.name }}</p>
+              <span *ngIf="selectedFile" class="file-size">{{ formatFileSize(selectedFile.size || 0) }}</span>
+              <span *ngIf="!selectedFile" class="file-formats">
+                JPG, PNG, PDF (Max 5MB) - {{ isProofRequired() ? 'Wajib' : 'Opsional untuk Tunai' }}
+              </span>
+            </div>
+          </label>
+
+          <ion-button
+            *ngIf="selectedFile"
+            size="small"
+            fill="clear"
+            color="danger"
+            (click)="removeFile()"
+            class="remove-file-btn">
+            <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div *ngIf="filePreview" class="file-preview">
+          <img [src]="filePreview" alt="Preview bukti transfer" />
+        </div>
+
+        <div *ngIf="isProofRequired() && !selectedFile && form.touched" class="validation-message">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <span>Bukti transfer wajib diupload untuk metode pembayaran ini</span>
+        </div>
       </ion-card-content>
     </ion-card>
 

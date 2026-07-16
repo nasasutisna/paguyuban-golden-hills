@@ -1,0 +1,161 @@
+// IPL Report Page Styles
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 16px;
+
+  ion-spinner {
+    --color: var(--ion-color-primary);
+    width: 50px;
+    height: 50px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+.filter-card {
+  margin-bottom: 20px;
+}
+
+.summary-row {
+  --ion-grid-column-padding: 8px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  margin: 0;
+  height: 100%;
+
+  ion-card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    font-weight: 500;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ion-color-dark);
+  }
+
+  &.income {
+    border-left: 4px solid var(--ion-color-success);
+
+    .stat-value {
+      color: var(--ion-color-success-shade);
+    }
+  }
+
+  &.expense {
+    border-left: 4px solid var(--ion-color-danger);
+
+    .stat-value {
+      color: var(--ion-color-danger-shade);
+    }
+  }
+
+  &.balance {
+    border-left: 4px solid var(--ion-color-primary);
+
+    .stat-value {
+      color: var(--ion-color-primary-shade);
+    }
+
+    &.negative {
+      border-left-color: var(--ion-color-danger);
+
+      .stat-value {
+        color: var(--ion-color-danger-shade);
+      }
+    }
+  }
+}
+
+.category-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 16px;
+  margin-bottom: 8px;
+
+  h3 {
+    font-weight: 600;
+    margin: 0;
+    color: var(--ion-color-dark);
+  }
+
+  .category-code {
+    font-size: 12px;
+    color: var(--ion-color-medium);
+    margin: 4px 0 0;
+  }
+}
+
+.category-amount {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+
+  .amount {
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    font-size: 16px;
+  }
+
+  .percentage {
+    font-size: 12px;
+    color: var(--ion-color-medium);
+  }
+}
+
+.export-btn {
+  margin-top: 20px;
+}
+
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  .no-data-icon {
+    font-size: 80px;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .stat-card {
+    ion-card-content {
+      padding: 16px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+    }
+  }
+}

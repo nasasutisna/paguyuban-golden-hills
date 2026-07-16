@@ -10,7 +10,9 @@ import {
   ResidentPaymentQueryParams,
   PaymentStats,
   CreateBulkResidentPaymentDto,
-  BulkPaymentResult
+  BulkPaymentResult,
+  FileAttachment,
+  ReceiptInfo
 } from './resident-payments.model';
 
 /**
@@ -99,15 +101,107 @@ export class ResidentPaymentsService {
   }
 
   /**
-   * Create new resident payment
-   * @param dto - Create resident payment DTO
+   * Create new resident payment (multipart/form-data when a proof file is attached)
+   * @param dto - Create resident payment DTO (proofFile triggers FormData upload)
    */
   create(dto: CreateResidentPaymentDto): Observable<ResidentPayment | null> {
-    return this.apiService.post<ResidentPayment>('/resident-payments', dto).pipe(
+    // If a proof file is present, use FormData (backend FileInterceptor('proofFile'))
+    if (dto.proofFile) {
+      const formData = new FormData();
+
+      // Attach the file under the field name expected by the backend
+      formData.append('proofFile', dto.proofFile);
+
+      // Required scalar fields
+      formData.append('residentId', dto.residentId);
+      formData.append('paymentDate', dto.paymentDate);
+      formData.append('paymentMethod', dto.paymentMethod);
+      formData.append('amount', dto.amount.toString());
+
+      // Optional scalar fields
+      if (dto.invoiceId) {
+        formData.append('invoiceId', dto.invoiceId);
+      }
+      if (dto.paymentChannel) {
+        formData.append('paymentChannel', dto.paymentChannel);
+      }
+      if (dto.referenceNumber) {
+        formData.append('referenceNumber', dto.referenceNumber);
+      }
+      if (dto.bankName) {
+        formData.append('bankName', dto.bankName);
+      }
+      if (dto.accountNumber) {
+        formData.append('accountNumber', dto.accountNumber);
+      }
+      if (dto.notes) {
+        formData.append('notes', dto.notes);
+      }
+
+      return this.apiService.post<ResidentPayment>('/resident-payments', formData).pipe(
+        map((response) => response.data || null),
+        catchError((error) => {
+          console.error('Error creating resident payment:', error);
+          throw error;
+        })
+      );
+    }
+
+    // No file — regular JSON request
+    const { proofFile, ...dtoWithoutFile } = dto;
+    return this.apiService.post<ResidentPayment>('/resident-payments', dtoWithoutFile).pipe(
       map((response) => response.data || null),
       catchError((error) => {
         console.error('Error creating resident payment:', error);
         throw error;
+      })
+    );
+  }
+
+  /**
+   * Verify (complete) a resident payment.
+   * Triggers async kwitansi generation + ledger entry on the backend.
+   * @param id - Payment ID
+   */
+  verify(id: string): Observable<ResidentPayment | null> {
+    return this.apiService.patch<ResidentPayment>(`/resident-payments/${id}/verify`, {}).pipe(
+      map((response) => response.data || null),
+      catchError((error) => {
+        console.error('Error verifying resident payment:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Get kwitansi (receipt) info for a COMPLETED payment.
+   * Backend throws 400 if the payment is not yet COMPLETED.
+   * @param id - Payment ID
+   */
+  getReceipt(id: string): Observable<ReceiptInfo | null> {
+    return this.apiService.get<ReceiptInfo>(`/resident-payments/${id}/receipt`).pipe(
+      map((response) => response.data || null),
+      catchError((error) => {
+        console.error('Error fetching receipt:', error);
+        return of(null);
+      })
+    );
+  }
+
+  /**
+   * Get all FileAttachments (bukti transfer, receipt) for a resident payment.
+   * Used by the detail page to display the uploaded proof file, since GET /:id does not embed files.
+   * @param id - Payment ID
+   */
+  getFilesByEntity(id: string): Observable<FileAttachment[]> {
+    return this.apiService.get<FileAttachment[]>(`/file-attachments/entity/ResidentPayment/${id}`).pipe(
+      map((response) => {
+        const data = response?.data;
+        return Array.isArray(data) ? data : [];
+      }),
+      catchError((error) => {
+        console.error('Error fetching payment files:', error);
+        return of([]);
       })
     );
   }

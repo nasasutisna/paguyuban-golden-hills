@@ -214,6 +214,164 @@ export class IplPaymentsPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Search by reference number
+   * Shows a modal with all payments for the given reference number
+   */
+  async searchByReference(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: '🔍 Cari Pembayaran Berdasarkan Referensi',
+      inputs: [
+        {
+          name: 'referenceNumber',
+          type: 'text',
+          placeholder: 'REF-20250114-0001',
+          label: 'Nomor Referensi',
+          attributes: {
+            maxlength: 50
+          }
+        }
+      ],
+      buttons: [
+        {
+          text: 'Batal',
+          role: 'cancel'
+        },
+        {
+          text: 'Cari',
+          handler: (data) => {
+            const ref = data.referenceNumber?.trim();
+            if (!ref) {
+              this.toastService.error('Nomor referensi wajib diisi');
+              return false;
+            }
+            this.handleReferenceSearch(ref);
+            return true;
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Handle reference search
+   * Fetches payments by reference number and shows results
+   */
+  private async handleReferenceSearch(referenceNumber: string): Promise<void> {
+    await this.loadingService.show({ message: 'Mencari pembayaran...' });
+
+    this.subscriptions.push(
+      this.iplPaymentsService.getByReferenceNumber(referenceNumber).subscribe({
+        next: async (result) => {
+          this.loadingService.dismiss();
+          if (result) {
+            await this.showReferenceResult(result);
+          } else {
+            this.toastService.error('Pembayaran dengan referensi tersebut tidak ditemukan');
+          }
+        },
+        error: (error) => {
+          this.loadingService.dismiss();
+          this.toastService.error('Gagal mencari pembayaran');
+          console.error('Reference search error:', error);
+        }
+      })
+    );
+  }
+
+  /**
+   * Show reference search result in a modal
+   */
+  private async showReferenceResult(result: any): Promise<void> {
+    const iplPaymentsHtml = result.iplPayments?.map((p: any) => `
+      <div class="result-item" onclick="window.location.href='/admin/ipl-payments/${p.id}'">
+        <div class="result-header">
+          <ion-icon name="receipt-outline"></ion-icon>
+          <strong>${p.paymentNumber}</strong>
+        </div>
+        <div class="result-details">
+          <span>Periode: ${p.period}</span>
+          <span>Nominal: ${this.formatCurrency(p.amount)}</span>
+          <span>Status: ${this.getStatusLabel(p.status)}</span>
+        </div>
+      </div>
+    `).join('') || '';
+
+    const kegiatanPaymentsHtml = result.kegiatanPayments?.map((p: any) => `
+      <div class="result-item" onclick="window.location.href='/admin/ipl-payments?search=${p.paymentNumber}'">
+        <div class="result-header">
+          <ion-icon name="cash-outline"></ion-icon>
+          <strong>${p.paymentNumber}</strong>
+        </div>
+        <div class="result-details">
+          <span>Invoice: ${p.invoiceNumber}</span>
+          <span>Nominal: ${this.formatCurrency(p.amount)}</span>
+        </div>
+      </div>
+    `).join('') || '';
+
+    const message = `
+      <div class="reference-result-content">
+        <div class="reference-header">
+          <p class="reference-label">Nomor Referensi:</p>
+          <p class="reference-number">${result.referenceNumber}</p>
+        </div>
+        <div class="payment-summary">
+          <div class="summary-row">
+            <span>Total IPL:</span>
+            <strong>${this.formatCurrency(result.summary.totalIpl)}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Total Iuran Kegiatan:</span>
+            <strong>${this.formatCurrency(result.summary.totalKegiatan)}</strong>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row total">
+            <span>Grand Total:</span>
+            <strong>${this.formatCurrency(result.summary.grandTotal)}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Jumlah Pembayaran:</span>
+            <strong>${result.summary.paymentCount} transaksi</strong>
+          </div>
+        </div>
+        <div class="payments-list">
+          <h4>Pembayaran IPL</h4>
+          ${iplPaymentsHtml || '<p class="empty-message">Tidak ada pembayaran IPL</p>'}
+        </div>
+        ${kegiatanPaymentsHtml ? `
+        <div class="payments-list">
+          <h4>Pembayaran Iuran Kegiatan</h4>
+          ${kegiatanPaymentsHtml}
+        </div>
+        ` : ''}
+      </div>
+    `;
+
+    const alert = await this.alertController.create({
+      header: 'Hasil Pencarian',
+      message: message,
+      cssClass: 'reference-result-alert',
+      buttons: [
+        {
+          text: 'Tutup',
+          role: 'cancel'
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Get status label
+   */
+  private getStatusLabel(status: string): string {
+    return this.STATUS_LABELS[status as IplPaymentStatus] || status;
+  }
+
+  /**
    * Handle table action click
    */
   onAction(event: { action: TableAction; item: IplPayment }): void {

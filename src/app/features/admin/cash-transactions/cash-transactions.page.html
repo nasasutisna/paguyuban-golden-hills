@@ -1,6 +1,6 @@
 <ion-content class="ion-padding">
   <!-- Statistics Cards -->
-  <div class="stats-container ion-margin-top" *ngIf="hasStats() || statsLoading">
+  <div class="stats-container" *ngIf="hasStats() || statsLoading">
     <!-- Loading skeleton -->
     <div class="stats-skeleton" *ngIf="statsLoading">
       <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
@@ -49,7 +49,7 @@
               <ion-icon name="wallet"></ion-icon>
             </div>
             <div class="stat-info">
-              <div class="stat-value">{{ formatCurrency(summary.balance) }}</div>
+              <div class="stat-value">{{ formatCurrency(summary.netAmount) }}</div>
               <div class="stat-label">Saldo</div>
             </div>
           </div>
@@ -73,10 +73,95 @@
     </div>
   </div>
 
+  <!-- Date Range Filter (Collapsible, below summary) -->
+  <ion-card class="filter-card ion-margin-top">
+    <div class="filter-header" (click)="toggleFilter()" [class.has-active-filter]="hasActiveDateFilter()">
+      <div class="filter-header-left">
+        <div class="filter-header-icon">
+          <ion-icon name="filter-outline"></ion-icon>
+        </div>
+        <div class="filter-header-titles">
+          <span class="filter-header-title">Filter Tanggal</span>
+          <span class="filter-header-subtitle" *ngIf="hasActiveDateFilter()">
+            {{ formatDateRange() }}
+          </span>
+          <span class="filter-header-subtitle muted" *ngIf="!hasActiveDateFilter()">
+            Semua tanggal
+          </span>
+        </div>
+      </div>
+      <ion-icon
+        class="filter-toggle-icon"
+        [name]="showFilter ? 'chevron-up-outline' : 'chevron-down-outline'"
+      ></ion-icon>
+    </div>
+
+    <ion-card-content *ngIf="showFilter">
+      <ion-row>
+        <ion-col size="12" size-md="5">
+          <ion-item lines="none" class="date-input-item">
+            <ion-label position="stacked">Dari Tanggal</ion-label>
+            <ion-datetime-button datetime="start-date"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime
+                  id="start-date"
+                  presentation="date"
+                  [value]="startDate"
+                  (ionChange)="onStartDateChange($event)"
+                  [max]="endDate || undefined"
+                ></ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12" size-md="5">
+          <ion-item lines="none" class="date-input-item">
+            <ion-label position="stacked">Sampai Tanggal</ion-label>
+            <ion-datetime-button datetime="end-date"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime
+                  id="end-date"
+                  presentation="date"
+                  [value]="endDate"
+                  (ionChange)="onEndDateChange($event)"
+                  [min]="startDate || undefined"
+                ></ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12" size-md="2" class="filter-actions">
+          <ion-button expand="block" fill="solid" color="primary" (click)="applyDateFilter()">
+            <ion-icon slot="start" name="filter-outline"></ion-icon>
+            Terapkan
+          </ion-button>
+          <ion-button
+            expand="block"
+            fill="clear"
+            color="medium"
+            (click)="clearDateFilter()"
+            *ngIf="hasActiveDateFilter()"
+          >
+            <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngIf="hasActiveDateFilter()" class="active-filter-info">
+        <ion-col size="12">
+          <p class="filter-info-text">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            Filter aktif: {{ formatDateRange() }}
+          </p>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+
   <!-- Table Section -->
   <div>
-    <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
-      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
+    <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges">
       <div table-actions>
         <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
           <ion-icon slot="start" name="add"></ion-icon>

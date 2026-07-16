@@ -60,25 +60,55 @@
   <!-- Amount Display -->
   <ion-card class="amount-card">
     <ion-card-content>
-      @if (isMultiMonthPayment()) {
-      <div class="amount-row multi-month">
-        <div class="multi-month-badge">
-          <ion-icon name="layers-outline"></ion-icon>
-          <span>Pembayaran Multi-Bulan</span>
+      @if (isMultiMonthPayment() || hasKegiatanPayment()) {
+      <div class="enhanced-amount-summary">
+        @if (isMultiMonthPayment()) {
+        <div class="amount-row multi-month">
+          <div class="multi-month-badge">
+            <ion-icon name="layers-outline"></ion-icon>
+            <span>Pembayaran Multi-Bulan</span>
+          </div>
         </div>
-      </div>
-      <div class="amount-row">
-        <span>IPL per Bulan</span>
-        <span class="amount-value-sub">{{ formatCurrency(payment.calculatedAmount) }}</span>
-      </div>
-      <div class="amount-row">
-        <span>Jumlah Bulan</span>
-        <span class="amount-value-sub">{{ getMonthCount() }} bulan</span>
-      </div>
-      <div class="amount-divider"></div>
-      <div class="amount-row total">
-        <span>Total Pembayaran</span>
-        <span class="amount-value">{{ formatCurrency(getTotalAmount()) }}</span>
+        <div class="amount-row">
+          <span>IPL per Bulan</span>
+          <span class="amount-value-sub">{{ formatCurrency(payment.calculatedAmount) }}</span>
+        </div>
+        <div class="amount-row">
+          <span>Jumlah Bulan</span>
+          <span class="amount-value-sub">{{ getMonthCount() }} bulan</span>
+        </div>
+        <div class="amount-row">
+          <span>Total IPL ({{ getMonthCount() }} bulan)</span>
+          <span class="amount-value-sub">{{ formatCurrency(getTotalIplAmount()) }}</span>
+        </div>
+        } @else {
+        <div class="amount-row">
+          <span>Total IPL</span>
+          <span class="amount-value-sub">{{ formatCurrency(getTotalIplAmount()) }}</span>
+        </div>
+        }
+        @if (hasKegiatanPayment()) {
+        <div class="amount-divider"></div>
+        <div class="amount-row kegiatan">
+          <div class="kegiatan-badge">
+            <ion-icon name="cash-outline"></ion-icon>
+            <span>Iuran Kegiatan Warga</span>
+          </div>
+        </div>
+        <div class="amount-row">
+          <span>Nominal Iuran</span>
+          <span class="amount-value-sub">{{ formatCurrency(getKegiatanAmount()) }}</span>
+        </div>
+        <div class="amount-row">
+          <span>No. Pembayaran</span>
+          <span class="amount-value-sub">{{ getKegiatanPaymentNumber() }}</span>
+        </div>
+        }
+        <div class="amount-divider"></div>
+        <div class="amount-row total">
+          <span>Total Pembayaran</span>
+          <span class="amount-value">{{ formatCurrency(getGrandTotal()) }}</span>
+        </div>
       </div>
       } @else {
       <div class="amount-row">
@@ -394,6 +424,36 @@
         </div>
       </div>
       }
+    </ion-card-content>
+  </ion-card>
+  }
+
+  <!-- Kwitansi Iuran Kegiatan (separate receipt for the warga iuran) -->
+  @if (hasKegiatanPayment() && isApproved()) {
+  <ion-card class="info-card receipt-card">
+    <ion-card-header>
+      <ion-card-title>Kwitansi Iuran Kegiatan</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="receipt-preview">
+        <div class="receipt-header">
+          <ion-icon name="document-text-outline" class="receipt-icon"></ion-icon>
+          <div class="receipt-info">
+            <h3>Kwitansi Iuran Kegiatan Warga</h3>
+            <p>{{ getKegiatanPaymentNumber() }}</p>
+          </div>
+          <ion-button fill="outline" size="small" (click)="viewKegiatanReceipt()" [disabled]="!hasKegiatanReceipt()">
+            <ion-icon slot="start" name="open-outline"></ion-icon>
+            Lihat
+          </ion-button>
+        </div>
+        @if (!hasKegiatanReceipt()) {
+        <p class="kegiatan-receipt-note">
+          <ion-icon name="time-outline"></ion-icon>
+          Kwitansi sedang dibuat, coba beberapa saat lagi.
+        </p>
+        }
+      </div>
     </ion-card-content>
   </ion-card>
   }

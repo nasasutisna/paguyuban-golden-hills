@@ -217,8 +217,8 @@ export const routes: Routes = [
       {
         path: 'resident-payments/:id',
         loadComponent: () =>
-          import('./features/admin/resident-payments/resident-payments.page').then(
-            (m) => m.ResidentPaymentsPage
+          import('./features/admin/resident-payment-detail/resident-payment-detail.page').then(
+            (m) => m.ResidentPaymentDetailPage
           )
       },
       // IPL Periods Routes
@@ -277,6 +277,43 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/ipl-payments/ipl-payment-form/ipl-payment-form.page').then(
             (m) => m.IplPaymentFormPage
+          )
+      },
+      // Cash Transactions Routes
+      {
+        path: 'cash-transactions',
+        loadComponent: () =>
+          import('./features/admin/cash-transactions/cash-transactions.page').then(
+            (m) => m.CashTransactionsPage
+          )
+      },
+      {
+        path: 'cash-transactions/create',
+        loadComponent: () =>
+          import('./features/admin/cash-transactions/cash-transaction-form/cash-transaction-form.page').then(
+            (m) => m.CashTransactionFormPage
+          )
+      },
+      {
+        path: 'cash-transactions/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/cash-transactions/cash-transaction-form/cash-transaction-form.page').then(
+            (m) => m.CashTransactionFormPage
+          )
+      },
+      // Cash Transaction Reports Routes
+      {
+        path: 'cash-transactions/reports/ipl',
+        loadComponent: () =>
+          import('./features/admin/cash-transactions/cash-transaction-reports/ipl-report.page').then(
+            (m) => m.IplReportPage
+          )
+      },
+      {
+        path: 'cash-transactions/reports/kegiatan',
+        loadComponent: () =>
+          import('./features/admin/cash-transactions/cash-transaction-reports/kegiatan-report.page').then(
+            (m) => m.KegiatanReportPage
           )
       }
     ]

@@ -15,15 +15,13 @@
         <ion-card-subtitle>Informasi Transaksi</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <app-form-input
-          label="Tanggal Transaksi"
-          type="date"
-          formControlName="transactionDate"
-          placeholder="Pilih tanggal"
-          [required]="true"
-          [showError]="isFieldInvalid('transactionDate')"
-          [errorMessage]="getErrorMessage('transactionDate')"
-        ></app-form-input>
+        <ion-item>
+          <ion-label position="stacked">Tanggal Transaksi *</ion-label>
+          <ion-datetime
+            formControlName="transactionDate"
+            presentation="date"
+          ></ion-datetime>
+        </ion-item>
 
         <app-form-select
           label="Jenis Transaksi"
@@ -75,15 +73,16 @@
         <ion-card-subtitle>Informasi Referensi (Opsional)</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <app-form-input
+        <app-form-select
           label="Tipe Referensi"
           formControlName="referenceType"
-          placeholder="contoh: ResidentPayment"
-          [maxlength]="50"
+          placeholder="Pilih tipe referensi"
+          [options]="referenceTypeOptions"
           [showError]="isFieldInvalid('referenceType')"
           [errorMessage]="getErrorMessage('referenceType')"
           helperText="Tipe entitas yang terkait dengan transaksi ini"
-        ></app-form-input>
+          (ionChange)="onReferenceTypeChange()"
+        ></app-form-select>
 
         <app-form-input
           label="ID Referensi"

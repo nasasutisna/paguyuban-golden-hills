@@ -1,0 +1,118 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/cash-transactions"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Laporan Kegiatan</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refresh()">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Date Range Filter -->
+  <ion-card class="filter-card">
+    <ion-card-header>
+      <ion-card-subtitle>Filter Periode</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <form [formGroup]="dateForm">
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">Tanggal Mulai</ion-label>
+              <ion-datetime
+                formControlName="startDate"
+                presentation="date"
+                [max]="dateForm.get('endDate')?.value"
+              ></ion-datetime>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">Tanggal Akhir</ion-label>
+              <ion-datetime
+                formControlName="endDate"
+                presentation="date"
+                [min]="dateForm.get('startDate')?.value"
+              ></ion-datetime>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </form>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Memuat data...</p>
+  </div>
+
+  <!-- Report Content -->
+  <ng-container *ngIf="!isLoading && hasData()">
+    <!-- Summary Cards -->
+    <ion-row class="summary-row">
+      <ion-col size="12" size-md="4">
+        <ion-card class="stat-card income">
+          <ion-card-content>
+            <div class="stat-label">Total Pemasukan</div>
+            <div class="stat-value">{{ formatCurrency(reportData!.totalIncome) }}</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="12" size-md="4">
+        <ion-card class="stat-card expense">
+          <ion-card-content>
+            <div class="stat-label">Total Pengeluaran</div>
+            <div class="stat-value">{{ formatCurrency(reportData!.totalExpense) }}</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="12" size-md="4">
+        <ion-card class="stat-card balance" [ngClass]="{ negative: reportData!.balance < 0 }">
+          <ion-card-content>
+            <div class="stat-label">Saldo</div>
+            <div class="stat-value">{{ formatCurrency(reportData!.balance) }}</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Category Breakdown -->
+    <ion-card *ngIf="reportData!.breakdownByCategory && reportData!.breakdownByCategory.length > 0">
+      <ion-card-header>
+        <ion-card-subtitle>Breakdown per Kategori</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let category of reportData!.breakdownByCategory" class="category-item">
+            <ion-label>
+              <h3>{{ category.categoryName }}</h3>
+              <p class="category-code">{{ category.categoryCode }}</p>
+            </ion-label>
+            <div class="category-amount" slot="end">
+              <div class="amount">{{ formatCurrency(category.totalAmount) }}</div>
+              <div class="percentage">{{ getCategoryPercentage(category) | number: '1.2-2' }}%</div>
+            </div>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Export Button -->
+    <ion-button expand="block" (click)="export()" class="export-btn">
+      <ion-icon name="download-outline" slot="start"></ion-icon>
+      Export Laporan
+    </ion-button>
+  </ng-container>
+
+  <!-- No Data State -->
+  <div *ngIf="!isLoading && !hasData()" class="no-data">
+    <ion-icon name="document-text-outline" class="no-data-icon"></ion-icon>
+    <p>Tidak ada data untuk periode yang dipilih</p>
+  </div>
+</ion-content>

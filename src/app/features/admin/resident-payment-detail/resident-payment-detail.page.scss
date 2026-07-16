@@ -105,9 +105,8 @@
         color: rgba(255, 255, 255, 0.95);
       }
 
-      &.multi-month {
-        justify-content: center;
-        margin-bottom: 12px;
+      &.sub {
+        margin-top: 8px;
       }
     }
 
@@ -116,98 +115,6 @@
       background: rgba(255, 255, 255, 0.3);
       margin: 12px 0;
     }
-
-    .amount-row.total {
-      margin-top: 8px;
-
-      span {
-        font-size: 16px;
-        font-weight: 600;
-      }
-
-      .amount-value {
-        font-size: 28px;
-      }
-    }
-
-    .multi-month-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-      backdrop-filter: blur(10px);
-
-      ion-icon {
-        font-size: 20px;
-        color: white;
-      }
-
-      span {
-        font-size: 14px;
-        font-weight: 600;
-        color: white;
-      }
-    }
-
-    .kegiatan-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: rgba(var(--ion-color-success-rgb), 0.3);
-      border-radius: 20px;
-      backdrop-filter: blur(10px);
-
-      ion-icon {
-        font-size: 20px;
-        color: white;
-      }
-
-      span {
-        font-size: 14px;
-        font-weight: 600;
-        color: white;
-      }
-    }
-
-    .amount-row.kegiatan {
-      justify-content: center;
-      margin: 8px 0;
-    }
-
-    .enhanced-amount-summary {
-      .amount-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 8px 0;
-
-        &:first-child {
-          margin-top: 0;
-        }
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-    }
-  }
-}
-
-// Actions Row
-.actions-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-
-  ion-button {
-    flex-shrink: 0;
-    --border-radius: 8px;
-    height: 36px;
   }
 }
 
@@ -263,44 +170,37 @@
               height: 24px;
               font-size: 12px;
             }
-
-            span {
-              color: var(--ion-color-medium);
-            }
           }
         }
       }
-
-      .total-item {
-        --background: rgba(var(--ion-color-primary-rgb), 0.08);
-
-        ion-label {
-          h2 {
-            color: var(--ion-color-primary);
-            font-weight: 600;
-          }
-
-          .total-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--ion-color-primary);
-          }
-        }
-      }
-    }
-
-    .notes-text {
-      font-size: 15px;
-      color: var(--ion-color-dark);
-      line-height: 1.6;
-      white-space: pre-wrap;
-      margin: 0;
-      padding: 16px;
     }
   }
 }
 
-// File Items
+// Metadata
+.metadata {
+  text-align: center;
+  padding: 20px;
+  color: var(--ion-color-medium);
+
+  p {
+    margin: 4px 0;
+    font-size: 12px;
+  }
+}
+
+// Actions Row
+.actions-row {
+  margin: 0 0 20px 0;
+
+  ion-button {
+    --border-radius: 12px;
+    height: 48px;
+    font-weight: 600;
+  }
+}
+
+// File Items (bukti pembayaran)
 .files-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -376,69 +276,6 @@
     font-size: 11px;
     color: var(--ion-color-medium);
     margin: 2px 0 0 0;
-  }
-}
-
-// History Items
-.history-item {
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --min-height: auto;
-
-  ion-label {
-    h3 {
-      margin: 0 0 4px 0;
-      font-size: 14px;
-      font-weight: 500;
-
-      .history-action {
-        color: var(--ion-color-dark);
-      }
-
-      .history-status {
-        color: var(--ion-color-primary);
-        margin-left: 8px;
-      }
-    }
-
-    p {
-      font-size: 13px;
-      color: var(--ion-color-medium);
-      margin: 2px 0;
-    }
-
-    .history-comments {
-      font-size: 14px;
-      color: var(--ion-color-dark);
-      margin-top: 8px;
-      padding: 8px 12px;
-      background: rgba(var(--ion-color-medium-rgb), 0.1);
-      border-radius: 8px;
-    }
-  }
-}
-
-// Rejection Reason
-.rejection-reason {
-  color: var(--ion-color-danger) !important;
-  font-weight: 500;
-}
-
-// Overdue Text
-.overdue-text {
-  color: var(--ion-color-danger) !important;
-  font-weight: 600;
-}
-
-// Metadata
-.metadata {
-  text-align: center;
-  padding: 20px;
-  color: var(--ion-color-medium);
-
-  p {
-    margin: 4px 0;
-    font-size: 12px;
   }
 }
 
@@ -520,8 +357,6 @@
 
     ion-button {
       --border-radius: 8px;
-      width: 40px;
-      height: 40px;
     }
   }
 
@@ -539,23 +374,5 @@
       border: none;
       display: block;
     }
-  }
-}
-
-// Kegiatan receipt pending note
-.kegiatan-receipt-note {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  padding: 10px 12px;
-  background: rgba(var(--ion-color-medium-rgb), 0.1);
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--ion-color-medium);
-
-  ion-icon {
-    font-size: 16px;
-    flex-shrink: 0;
   }
 }

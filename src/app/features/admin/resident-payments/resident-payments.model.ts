@@ -64,6 +64,35 @@ export const PAYMENT_STATUS_COLORS: Record<PaymentStatus, string> = {
 };
 
 /**
+ * File attachment (bukti transfer / kwitansi) linked polymorphically to a payment.
+ * Fetched via /file-attachments/entity/ResidentPayment/:id (not embedded in payment).
+ */
+export interface FileAttachment {
+  id: string;
+  fileName: string;
+  filePath: string;
+  fileSize: number;
+  mimeType: string;
+  category?: string | null;
+  createdAt?: string;
+}
+
+/**
+ * Receipt (kwitansi) info returned by /resident-payments/:id/receipt
+ */
+export interface ReceiptInfo {
+  id: string;
+  fileName: string;
+  filePath: string;
+  url: string;
+  fileSize: number;
+  mimeType: string;
+  category: string;
+  paymentNumber: string;
+  paymentId: string;
+}
+
+/**
  * Resident reference (included in payment data)
  */
 export interface ResidentReference {
@@ -99,7 +128,7 @@ export interface ResidentPayment {
   paymentNumber: string;
   residentId: string;
   resident?: ResidentReference;
-  invoiceId: string;
+  invoiceId?: string | null;
   invoice?: InvoiceReference;
   paymentDate: string;
   paymentMethod: PaymentMethod;
@@ -110,6 +139,9 @@ export interface ResidentPayment {
   accountNumber?: string;
   status: PaymentStatus;
   notes?: string;
+  verifiedBy?: string | null;
+  verifiedAt?: string | null;
+  files?: FileAttachment[];
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
@@ -117,10 +149,12 @@ export interface ResidentPayment {
 
 /**
  * Create Resident Payment DTO
+ * invoiceId is optional (payment may be recorded without a tagihan).
+ * proofFile (bukti transfer) is required for TRANSFER/E_WALLET/CARD, optional for CASH.
  */
 export interface CreateResidentPaymentDto {
   residentId: string;
-  invoiceId: string;
+  invoiceId?: string;
   paymentDate: string;
   paymentMethod: PaymentMethod;
   paymentChannel?: string;
@@ -129,6 +163,7 @@ export interface CreateResidentPaymentDto {
   bankName?: string;
   accountNumber?: string;
   notes?: string;
+  proofFile?: File;
 }
 
 /**

@@ -54,7 +54,18 @@ import {
   pieChartOutline,
   codeOutline,
   calendarClearOutline,
-  calendarNumberOutline
+  calendarNumberOutline,
+  trendingDown,
+  chevronDownOutline,
+  chevronUpOutline,
+  filterOutline,
+  informationCircleOutline,
+  cloudOutline,
+  cloudUploadOutline,
+  timeOutline,
+  checkmarkDoneOutline,
+  lockClosedOutline,
+  lockOpenOutline
 } from 'ionicons/icons';
 import { AuthService } from '@core/auth/auth.service';
 import { User } from '@models/auth.model';
@@ -115,7 +126,7 @@ export class AppComponent implements OnInit, OnDestroy {
     { title: 'Jenis Iuran', url: '/admin/fee-types', icon: 'funnel', description: 'Kelola Jenis Iuran & IPL' },
     { title: 'Tagihan Warga', url: '/admin/resident-invoices', icon: 'document', description: 'Daftar Tagihan Warga' },
     { title: 'Pembayaran', url: '/admin/resident-payments', icon: 'card-outline', description: 'Riwayat Pembayaran' },
-    { title: 'Transaksi', url: '/admin/transactions', icon: 'swap-horizontal', description: 'Catatan Keuangan' },
+    { title: 'Transaksi', url: '/admin/cash-transactions', icon: 'swap-horizontal', description: 'Catatan Keuangan' },
   ];
 
   // IPL Menu Items
@@ -128,6 +139,8 @@ export class AppComponent implements OnInit, OnDestroy {
   reportsMenuItems: MenuItem[] = [
     { title: 'Laporan Keuangan', url: '/admin/reports/financial', icon: 'trending-up', description: 'Pemasukan & Pengeluaran' },
     { title: 'Laporan Bulanan', url: '/admin/reports/monthly', icon: 'calendar', description: 'Ringkasan Bulanan' },
+    { title: 'Laporan IPL', url: '/admin/cash-transactions/reports/ipl', icon: 'document-text-outline', description: 'Laporan Pembayaran IPL' },
+    { title: 'Laporan Kegiatan', url: '/admin/cash-transactions/reports/kegiatan', icon: 'calendar-outline', description: 'Laporan Transaksi Kegiatan' },
     { title: 'Log Aktivitas', url: '/admin/reports/activity', icon: 'receipt', description: 'Aktivitas Sistem' },
   ];
 
@@ -153,7 +166,9 @@ export class AppComponent implements OnInit, OnDestroy {
       layersOutline, resizeOutline, star, warningOutline, buildOutline, expandOutline,
       medicalOutline, stopCircle, playCircle, swapHorizontalOutline, alertCircle, alertCircleOutline, saveOutline, time,
       walletOutline, cardOutline, cashOutline, newspaperOutline, pricetagOutline, textOutline, locationOutline,
-      pieChartOutline, codeOutline, calendarClearOutline, calendarNumberOutline
+      pieChartOutline, codeOutline, calendarClearOutline, calendarNumberOutline, trendingDown,
+      chevronDownOutline, chevronUpOutline, filterOutline, informationCircleOutline, cloudOutline, cloudUploadOutline,
+      timeOutline, checkmarkDoneOutline, lockClosedOutline, lockOpenOutline
     });
   }
 
@@ -241,6 +256,8 @@ export class AppComponent implements OnInit, OnDestroy {
       '/admin/transactions': { title: 'Transaksi', icon: 'swap-horizontal' },
       '/admin/ipl-periods': { title: 'Periode IPL', icon: 'calendar' },
       '/admin/ipl-payments': { title: 'Pembayaran IPL', icon: 'wallet-outline' },
+      '/admin/cash-transactions/reports/ipl': { title: 'Laporan IPL', icon: 'document-text-outline' },
+      '/admin/cash-transactions/reports/kegiatan': { title: 'Laporan Kegiatan', icon: 'calendar-outline' },
     };
 
     // Find matching page

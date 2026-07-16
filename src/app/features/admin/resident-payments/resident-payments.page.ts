@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { TableComponent } from '@shared/ui/table/table.component';
+import { TableAction, TableConfig, TableDataSource } from '@shared/ui/table/table.model';
 import { ResidentPaymentsService } from './resident-payments.service';
 import {
   ResidentPayment,
@@ -12,75 +14,151 @@ import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
   PAYMENT_METHOD_COLORS,
-  PAYMENT_STATUS_COLORS
+  PAYMENT_STATUS_COLORS,
+  ResidentPaymentQueryParams
 } from './resident-payments.model';
 import { LoadingService } from '@services/loading.service';
 import { ToastService } from '@services/toast.service';
 
 /**
  * Resident Payments Page
- * Lists all resident payments (pembayaran warga)
+ * Lists all resident payments (pembayaran warga) in a table view
  */
 @Component({
   selector: 'app-resident-payments',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, TableComponent],
   templateUrl: './resident-payments.page.html',
   styleUrls: ['./resident-payments.page.scss']
 })
-export class ResidentPaymentsPage implements OnInit {
+export class ResidentPaymentsPage implements OnInit, OnDestroy {
   private router = inject(Router);
   private residentPaymentsService = inject(ResidentPaymentsService);
   private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
 
   payments: ResidentPayment[] = [];
-  loading = true;
-  error: string | null = null;
-  page = 1;
-  limit = 10;
+  currentPage = 1;
+  pageSize = 10;
   total = 0;
   totalPages = 0;
-  searchQuery = '';
+
+  // Table data source
+  dataSource: TableDataSource<ResidentPayment> = {
+    data: [],
+    loading: false
+  };
+
+  // Table configuration
+  tableConfig!: TableConfig;
+
+  // Status badges for table
+  statusBadges = [
+    { value: PaymentStatus.PENDING, label: 'Menunggu', color: 'warning', icon: 'time-outline' },
+    { value: PaymentStatus.COMPLETED, label: 'Selesai', color: 'success', icon: 'checkmark-circle' },
+    { value: PaymentStatus.FAILED, label: 'Gagal', color: 'danger', icon: 'close-circle' },
+    { value: PaymentStatus.CANCELLED, label: 'Dibatalkan', color: 'medium' },
+    { value: PaymentMethod.CASH, label: 'Tunai', color: 'success' },
+    { value: PaymentMethod.TRANSFER, label: 'Transfer', color: 'primary' },
+    { value: PaymentMethod.CARD, label: 'Kartu', color: 'tertiary' },
+    { value: PaymentMethod.E_WALLET, label: 'E-Wallet', color: 'warning' }
+  ];
 
   // Display labels
   readonly PAYMENT_METHOD_LABELS = PAYMENT_METHOD_LABELS;
   readonly PAYMENT_STATUS_LABELS = PAYMENT_STATUS_LABELS;
   readonly PAYMENT_METHOD_COLORS = PAYMENT_METHOD_COLORS;
   readonly PAYMENT_STATUS_COLORS = PAYMENT_STATUS_COLORS;
+  readonly PaymentStatus = PaymentStatus;
 
   private subscriptions: Subscription[] = [];
 
   ngOnInit(): void {
+    // Initialize table config here to ensure proper binding
+    this.tableConfig = {
+      columns: [
+        { key: 'paymentNumber', header: 'No. Pembayaran', type: 'text', sortable: true },
+        { key: 'residentName', header: 'Warga', type: 'text' },
+        { key: 'unitNumber', header: 'Unit', type: 'text' },
+        { key: 'invoiceNumber', header: 'Tagihan', type: 'text' },
+        { key: 'paymentDate', header: 'Tanggal Bayar', type: 'date', sortable: true },
+        { key: 'paymentMethod', header: 'Metode', type: 'text' },
+        { key: 'amount', header: 'Jumlah', type: 'currency', align: 'right' },
+        { key: 'status', header: 'Status', type: 'status', sortable: true }
+      ],
+      actions: [
+        {
+          id: 'view',
+          label: 'Lihat',
+          icon: 'eye-outline',
+          color: 'medium',
+          handler: (item) => this.navigateToDetail(item.id)
+        }
+      ],
+      sortable: false,
+      filterable: true,
+      pagination: true,
+      pageSize: this.pageSize,
+      pageSizeOptions: [10, 25, 50],
+      showHeader: true,
+      showFooter: true,
+      striped: true,
+      hoverable: true,
+      emptyMessage: 'Belum ada pembayaran warga',
+      loadingMessage: 'Memuat data...'
+    };
+
     this.loadPayments();
   }
 
   /**
-   * Load payments
+   * Load payments with current filters
    */
   loadPayments(): void {
-    this.loading = true;
-    this.error = null;
+    this.dataSource.loading = true;
+
+    const params: ResidentPaymentQueryParams = {
+      page: this.currentPage,
+      limit: this.pageSize
+    };
 
     this.subscriptions.push(
-      this.residentPaymentsService.getAll({
-        page: this.page,
-        limit: this.limit,
-        search: this.searchQuery || undefined
-      }).subscribe({
+      this.residentPaymentsService.getAll(params).subscribe({
         next: (response) => {
           this.payments = response.data;
-          this.total = response.total;
-          this.totalPages = response.totalPages;
-          this.loading = false;
+          const transformedData = this.transformDataWithResidentInfo(response.data);
+          this.dataSource = {
+            data: transformedData,
+            loading: false,
+            total: response.total,
+            totalPages: response.totalPages
+          };
+          this.total = response.total || 0;
+          this.totalPages = response.totalPages || 0;
         },
         error: (error) => {
-          this.error = 'Gagal memuat pembayaran';
-          this.loading = false;
+          this.toastService.error('Gagal memuat pembayaran');
+          this.dataSource = {
+            data: [],
+            loading: false,
+            total: 0
+          };
           console.error('Error loading payments:', error);
         }
       })
     );
+  }
+
+  /**
+   * Transform payments data to include resident info for table display
+   */
+  private transformDataWithResidentInfo(payments: ResidentPayment[]): any[] {
+    return payments.map(payment => ({
+      ...payment,
+      residentName: this.getResidentName(payment),
+      unitNumber: payment.resident?.unitNumber || '-',
+      invoiceNumber: this.getInvoiceNumber(payment)
+    }));
   }
 
   /**
@@ -104,68 +182,77 @@ export class ResidentPaymentsPage implements OnInit {
   }
 
   /**
-   * Search payments
+   * Handle table action click
    */
-  onSearch(event: any): void {
-    this.searchQuery = event.target.value;
-    this.page = 1;
+  onAction(event: { action: TableAction; item: ResidentPayment }): void {
+    if (event.action.handler) {
+      event.action.handler(event.item);
+    }
+  }
+
+  /**
+   * Handle search/filter change
+   */
+  onFilterChange(filters: any[]): void {
+    const searchFilter = filters.find((f) => f.column === 'search');
+    if (searchFilter) {
+      this.handleSearch(searchFilter.value);
+    }
+  }
+
+  /**
+   * Handle search
+   */
+  private handleSearch(query: string): void {
+    this.dataSource.loading = true;
+
+    const params: ResidentPaymentQueryParams = {
+      page: 1,
+      limit: this.pageSize,
+      search: query?.trim() || undefined
+    };
+
+    this.subscriptions.push(
+      this.residentPaymentsService.getAll(params).subscribe({
+        next: (response) => {
+          this.payments = response.data;
+          const transformedData = this.transformDataWithResidentInfo(response.data);
+          this.dataSource = {
+            data: transformedData,
+            loading: false,
+            total: response.total,
+            totalPages: response.totalPages
+          };
+          this.total = response.total || 0;
+          this.totalPages = response.totalPages || 0;
+          this.currentPage = 1;
+        },
+        error: (error) => {
+          console.error('Error searching payments:', error);
+          this.dataSource = {
+            data: [],
+            loading: false,
+            total: 0,
+            totalPages: 0
+          };
+        }
+      })
+    );
+  }
+
+  /**
+   * Handle pagination change
+   */
+  onPageChange(page: number): void {
+    this.currentPage = page;
     this.loadPayments();
   }
 
   /**
-   * Load next page
+   * Get completed payments count
    */
-  loadNext(): void {
-    if (this.page < this.totalPages) {
-      this.page++;
-      this.loadPayments();
-    }
-  }
-
-  /**
-   * Load previous page
-   */
-  loadPrevious(): void {
-    if (this.page > 1) {
-      this.page--;
-      this.loadPayments();
-    }
-  }
-
-  /**
-   * Format currency
-   */
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  }
-
-  /**
-   * Format date
-   */
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  }
-
-  /**
-   * Get payment method color
-   */
-  getPaymentMethodColor(method: PaymentMethod): string {
-    return this.PAYMENT_METHOD_COLORS[method] || 'medium';
-  }
-
-  /**
-   * Get payment status color
-   */
-  getPaymentStatusColor(status: PaymentStatus): string {
-    return this.PAYMENT_STATUS_COLORS[status] || 'medium';
+  get completedCount(): number {
+    return this.payments.filter(p => p.status === PaymentStatus.COMPLETED).length;
   }
 
   /**
@@ -177,28 +264,11 @@ export class ResidentPaymentsPage implements OnInit {
   }
 
   /**
-   * Get resident address
-   */
-  getResidentAddress(payment: ResidentPayment): string {
-    if (!payment.resident) return '-';
-    const block = payment.resident.houseBlock;
-    const blockName = block ? block.blockName : '-';
-    return `${blockName} - ${payment.resident.unitNumber}`;
-  }
-
-  /**
    * Get invoice number
    */
   getInvoiceNumber(payment: ResidentPayment): string {
     if (!payment.invoice) return '-';
     return payment.invoice.invoiceNumber;
-  }
-
-  /**
-   * Get completed payments count
-   */
-  get completedCount(): number {
-    return this.payments.filter(p => p.status === PaymentStatus.COMPLETED).length;
   }
 
   /**

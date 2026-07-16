@@ -4,7 +4,12 @@
       "Bash(rm -rf .git)",
       "Bash(git init *)",
       "Bash(git branch *)",
-      "Bash(pkill -f \"ionic serve\")"
+      "Bash(pkill -f \"ionic serve\")",
+      "Bash(curl 'http://localhost:3000/api/v1/cash-transactions?page=1&limit=10' -H 'Accept: application/json' -s)",
+      "Bash(curl 'http://localhost:3000/api/v1/cash-transactions?page=1&limit=10' -H 'Accept: application/json, text/plain, */*' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiOWYzZmUyMy00OTJmLTQxYjAtODE0Yy03NzVkYzJkOTY4ZDMiLCJ1c2VybmFtZSI6ImFkbWluIiwiZW1haWwiOiJhZG1pbkBnb2xkZW5oaWxscy5jb20iLCJyb2xlSWQiOiI0MmJhMDY4Yi0zMDdkLTRhNDUtYTBiMy01NzE4ODA3Yjc1MGYiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzg0MDY2MTY0LCJleHAiOjE4MTU2MDIxNjR9.cyV3QpixgijonB0KOqT_7bl-lqIW3i-XYlp-FwO2TZ0' -s)"
+    ],
+    "additionalDirectories": [
+      "/Users/nasasutisna/project/nestjs/golden-hills-finance/src/cash-transactions"
     ]
   }
 }

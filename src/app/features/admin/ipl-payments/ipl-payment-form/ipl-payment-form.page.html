@@ -145,12 +145,23 @@
           [errorMessage]="getErrorMessage('paymentMethod')"
         ></app-form-select>
 
-        <app-form-input
-          label="Nomor Referensi"
-          formControlName="referenceNumber"
-          placeholder="Contoh: REF123456789"
-          helperText="Nomor referensi dari bukti transfer"
-        ></app-form-input>
+        <!-- Iuran Kegiatan Warga (Optional) -->
+        <div class="kegiatan-section">
+          <div class="kegiatan-header">
+            <ion-icon name="cash-outline"></ion-icon>
+            <span>Iuran Kegiatan Warga (Opsional)</span>
+          </div>
+          <app-form-input
+            formControlName="kegiatanAmount"
+            type="number"
+            placeholder="0"
+            label="Nominal"
+            helperText="Masukkan nominal iuran kegiatan warga (jika ada)"
+          ></app-form-input>
+          <div class="kegiatan-preview" *ngIf="getKegiatanAmount() > 0">
+            <span>+ Iuran Kegiatan: {{ formatCurrency(getKegiatanAmount()) }}</span>
+          </div>
+        </div>
       </ion-card-content>
     </ion-card>
 
@@ -584,5 +595,109 @@
 
 .month-count-helper ion-icon {
   font-size: 14px;
+}
+
+/* Kegiatan Section Styles */
+.kegiatan-section {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(var(--ion-color-success-rgb, 16, 220, 96), 0.05);
+  border: 1px solid var(--ion-color-success);
+  border-radius: 12px;
+}
+
+.kegiatan-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--ion-color-success);
+  margin-bottom: 12px;
+}
+
+.kegiatan-header ion-icon {
+  font-size: 20px;
+}
+
+.kegiatan-preview {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--ion-color-success);
+  color: white;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Success Modal Styles */
+.success-modal-alert .alert-wrapper {
+  max-width: 500px;
+}
+
+.success-modal-content {
+  padding: 8px 0;
+}
+
+.reference-section {
+  background: linear-gradient(135deg, rgba(56, 128, 255, 0.1) 0%, rgba(56, 128, 255, 0.05) 100%);
+  border: 2px solid var(--ion-color-primary);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.reference-label {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.reference-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+.payment-summary {
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.payment-summary .summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin: 8px 0;
+  color: var(--ion-color-medium-shade);
+}
+
+.payment-summary .summary-row strong {
+  color: var(--ion-color-dark);
+}
+
+.payment-summary .summary-divider {
+  margin: 8px 0;
+  border-top: 1px dashed var(--ion-color-medium);
+}
+
+.payment-summary .summary-row.total {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ion-color-light-shade);
+}
+
+.payment-summary .summary-row.total span,
+.payment-summary .summary-row.total strong {
+  font-size: 16px;
+  color: var(--ion-color-success);
+  font-weight: 600;
 }
 </style>

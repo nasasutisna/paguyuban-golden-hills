@@ -72,6 +72,31 @@ export class ApiService {
   }
 
   /**
+   * Perform a GET request and return the response body as a Blob.
+   * Use this for binary/file downloads (e.g. Excel exports). The response is
+   * NOT parsed as JSON, and authentication is still applied by the JWT
+   * interceptor (which clones the request regardless of responseType).
+   * @param endpoint - API endpoint path
+   * @param options - Request options
+   */
+  getBlob(endpoint: string, options?: ApiRequestOptions): Observable<Blob> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const timeoutValue = options?.timeout ?? this.defaultTimeout;
+
+    return this.http
+      .get(url, {
+        headers: options?.headers,
+        params: options?.params,
+        withCredentials: options?.withCredentials,
+        responseType: 'blob',
+      })
+      .pipe(
+        timeout(timeoutValue),
+        catchError((error) => this.handleError(error))
+      );
+  }
+
+  /**
    * Perform a POST request
    * @param endpoint - API endpoint path
    * @param body - Request body data

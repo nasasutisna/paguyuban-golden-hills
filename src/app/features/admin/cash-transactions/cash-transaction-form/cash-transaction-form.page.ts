@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { Subscription, switchMap } from 'rxjs';
+import { Subscription, switchMap, EMPTY } from 'rxjs';
 import { CashTransactionsService } from '../cash-transactions.service';
 import {
   CashTransaction,
@@ -22,7 +22,9 @@ import {
   PaymentMethod as PayMethod,
   TransactionCategory,
   TRANSACTION_TYPE_LABELS,
-  PAYMENT_METHOD_LABELS
+  PAYMENT_METHOD_LABELS,
+  REFERENCE_TYPE_LABELS,
+  getReferenceTypeOptions
 } from '../cash-transactions.model';
 import { ToastService } from '@services/toast.service';
 import { LoadingService } from '@services/loading.service';
@@ -86,6 +88,12 @@ export class CashTransactionFormPage implements OnInit, OnDestroy {
   // Category options
   categoryOptions: SelectOption[] = [];
 
+  // Reference type options (dynamically filtered by transaction type)
+  referenceTypeOptions: SelectOption[] = getReferenceTypeOptions('ALL');
+
+  // Date formatting for ion-datetime
+  dateSelected = true;
+
   private subscriptions: Subscription[] = [];
 
   constructor() {
@@ -95,6 +103,16 @@ export class CashTransactionFormPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Load categories for dropdown
     this.loadCategories();
+
+    // Update reference type options when transaction type changes
+    const transactionTypeControl = this.cashTransactionForm.get('transactionType');
+    if (transactionTypeControl) {
+      this.subscriptions.push(
+        transactionTypeControl.valueChanges.subscribe((transactionType) => {
+          this.updateReferenceTypeOptions(transactionType);
+        })
+      );
+    }
 
     // Check if we're in edit mode by checking for :id parameter
     this.subscriptions.push(
@@ -107,6 +125,32 @@ export class CashTransactionFormPage implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  /**
+   * Update reference type options based on transaction type
+   */
+  private updateReferenceTypeOptions(transactionType: TransactionType): void {
+    this.referenceTypeOptions = getReferenceTypeOptions(transactionType);
+
+    // If current referenceType is not in the filtered options, clear it
+    const currentReferenceType = this.cashTransactionForm.get('referenceType')?.value;
+    if (currentReferenceType) {
+      const isValidOption = this.referenceTypeOptions.some(opt => opt.value === currentReferenceType);
+      if (!isValidOption) {
+        this.cashTransactionForm.get('referenceType')?.setValue('');
+      }
+    }
+  }
+
+  /**
+   * Handle reference type change
+   * Can be used to auto-fill or validate related fields
+   */
+  onReferenceTypeChange(): void {
+    const referenceType = this.cashTransactionForm.get('referenceType')?.value;
+    // You can add logic here to auto-fill referenceId or show related fields
+    console.log('Reference type changed:', referenceType);
   }
 
   /**
@@ -138,7 +182,7 @@ export class CashTransactionFormPage implements OnInit, OnDestroy {
    * Initialize form with validators
    */
   private initializeForm(): FormGroup {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString(); // Full ISO format for ion-datetime
 
     return this.fb.group({
       transactionDate: [
@@ -205,7 +249,7 @@ export class CashTransactionFormPage implements OnInit, OnDestroy {
    */
   private populateForm(cashTransaction: CashTransaction): void {
     this.cashTransactionForm.patchValue({
-      transactionDate: cashTransaction.transactionDate.split('T')[0],
+      transactionDate: cashTransaction.transactionDate, // Keep full ISO for ion-datetime
       transactionType: cashTransaction.transactionType,
       categoryId: cashTransaction.categoryId,
       amount: cashTransaction.amount,
