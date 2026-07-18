@@ -41,6 +41,17 @@
 /* @import '@ionic/angular/css/palettes/dark.system.css'; */
 
 /**
+ * Forced Light Mode
+ * -----------------------------------------------------
+ * The app is locked to light mode. `color-scheme: light` makes the UA
+ * render native controls/scrollbars in light, and component stylesheets
+ * no longer contain `prefers-color-scheme: dark` overrides.
+ */
+:root {
+  color-scheme: light;
+}
+
+/**
  * Global Button Styles
  * -----------------------------------------------------
  * Apply consistent border-radius to all buttons

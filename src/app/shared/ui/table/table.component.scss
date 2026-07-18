@@ -174,6 +174,122 @@
   }
 }
 
+// Mobile Card View
+// Shown in place of <table> on mobile (see `useCardView` in the template).
+// Reuses .status-chip and .row-actions styles for chips and action buttons.
+.card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #ffffff;
+}
+
+.card-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      border-color: #4caf50;
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+    }
+  }
+}
+
+.card-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.card-item-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  word-break: break-word;
+  flex: 1;
+}
+
+.card-item-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.card-item-label {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+.card-item-value {
+  font-size: 14px;
+  color: #374151;
+  text-align: right;
+  word-break: break-word;
+
+  // Keep currency/number values visually consistent with the desktop table.
+  :where(.cell-currency, .cell-number) {
+    font-weight: 600;
+  }
+}
+
+// Layered on top of .row-actions (template applies both classes) so the
+// existing per-color ion-button rules apply; this only adjusts card layout.
+.card-item-actions {
+  justify-content: flex-end;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 12px;
+  margin-top: 8px;
+}
+
+// Compact card overrides (matches the existing .app-table-container.compact pattern).
+.app-table-container.compact {
+  .card-grid {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .card-item {
+    padding: 12px;
+  }
+
+  .card-item-title {
+    font-size: 14px;
+  }
+
+  .card-item-label {
+    font-size: 11px;
+  }
+
+  .card-item-value {
+    font-size: 13px;
+  }
+}
+
 // Table Wrapper
 .table-wrapper {
   margin: 0;
@@ -636,100 +752,6 @@
 }
 
 // Dark Mode Support
-@media (prefers-color-scheme: dark) {
-  .app-table-container {
-    background: transparent;
-    box-shadow: none;
-  }
-
-  .table-header {
-    background: white;
-  }
-
-  .table-title h2 {
-    color: #f9fafb;
-  }
-
-  .search-box {
-    background: #f4f4f4;
-
-    &:focus-within {
-      border-color: #4caf50;
-    }
-  }
-
-  .app-table {
-    thead {
-      background: #efefef;
-
-      th {
-        color: #f9fafb;
-        border-bottom-color: rgba(255, 255, 255, 0.1);
-      }
-    }
-
-    tbody tr {
-      border-bottom-color: #374151;
-      color: #e5e7eb;
-
-      &.clickable:hover {
-        background: $bg-color;
-      }
-
-      td .cell-currency {
-        color: #81c784;
-      }
-
-      td.cell-danger {
-        .cell-currency,
-        .cell-number,
-        .cell-text {
-          color: #f87171;
-        }
-      }
-
-      .cell-date {
-        color: #9ca3af;
-      }
-
-      .status-chip {
-        --color: #e5e7eb;
-
-        &[color="success"] {
-          --color: #81c784;
-          background: rgba(129, 199, 132, 0.15);
-        }
-
-        &[color="warning"] {
-          --color: #fbbf24;
-          background: rgba(251, 191, 36, 0.15);
-        }
-
-        &[color="danger"] {
-          --color: #f87171;
-          background: rgba(248, 113, 113, 0.15);
-        }
-
-        &[color="medium"] {
-          --color: #9ca3af;
-          background: rgba(156, 163, 175, 0.15);
-        }
-      }
-    }
-  }
-
-  .table-striped tbody tr:nth-child(even) {
-    background: $bg-color;
-  }
-
-  .table-hoverable tbody tr:hover {
-    background: $bg-color;
-  }
-
-  .table-footer {
-    background: #efefef;
-  }
-}
 
 // Responsive
 @media (max-width: 640px) {

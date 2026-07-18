@@ -206,6 +206,54 @@ export class TableComponent<T = any> implements OnInit, OnDestroy, OnChanges {
   }
 
   /**
+   * Card view (mobile) helpers.
+   * The table switches to a card layout on mobile (see `useCardView`).
+   * These getters resolve which columns play which role in each card.
+   */
+
+  /** Column shown prominently as the card title in the header. */
+  get cardTitleColumn(): TableColumn | null {
+    return this.columns.find(c => c.cardTitle) ?? null;
+  }
+
+  /**
+   * Column pinned to the status-chip slot in the card header.
+   * An explicit `cardStatus` flag wins; otherwise the first status
+   * column is used only when a `cardTitle` is also present. Without a
+   * title, no status is promoted (all status columns render in the body).
+   */
+  get cardStatusColumn(): TableColumn | null {
+    const explicit = this.columns.find(c => c.cardStatus);
+    if (explicit) return explicit;
+    return this.cardTitleColumn
+      ? this.columns.find(c => c.type === 'status') ?? null
+      : null;
+  }
+
+  /** Columns rendered as `label : value` rows in the card body. */
+  get cardBodyColumns(): TableColumn[] {
+    const titleKey = this.cardTitleColumn?.key;
+    const statusKey = this.cardStatusColumn?.key;
+    return this.columns.filter(
+      c =>
+        c.type !== 'action' &&
+        !c.cardHidden &&
+        c.key !== titleKey &&
+        c.key !== statusKey
+    );
+  }
+
+  /** Whether to render cards instead of a table (mobile, unless opted out). */
+  get useCardView(): boolean {
+    return this.isMobile && this.config.cardViewOnMobile !== false;
+  }
+
+  /** Whether a body column should render as a status chip. */
+  isStatusColumn(col: TableColumn): boolean {
+    return col.type === 'status';
+  }
+
+  /**
    * Check if table is loading
    */
   get isLoading(): boolean {

@@ -18,6 +18,12 @@ export interface TableColumn<T = any> {
   class?: string;
   headerClass?: string;
   cellClass?: string | ((item: T) => string);
+  /** Shown prominently as the title in mobile card view. */
+  cardTitle?: boolean;
+  /** Pinned to the status-chip slot in the mobile card header. */
+  cardStatus?: boolean;
+  /** Hidden entirely in mobile card view. */
+  cardHidden?: boolean;
 }
 
 /**
@@ -98,6 +104,8 @@ export interface TableConfig {
   rowClickable?: boolean;
   title?: string;
   subtitle?: string;
+  /** Render rows as cards on mobile (<= 768px). Defaults to true. */
+  cardViewOnMobile?: boolean;
 }
 
 /**

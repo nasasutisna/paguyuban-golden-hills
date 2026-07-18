@@ -27,159 +27,234 @@
 
   <!-- Table Content -->
   <div [class]="getTableWrapperClass()">
-    <div class="table-responsive">
-      <table class="app-table">
-        <!-- Table Header -->
-        <thead>
-          <tr>
-            <th
-              *ngFor="let column of columns"
-              [style.width]="column.width"
-              [class]="getAlignClass(column)"
-              [class.sortable]="column.sortable && config.sortable"
-              (click)="onSort(column)"
-            >
-              <div class="th-content">
-                <span class="th-label">{{ column.header }}</span>
-                <ion-icon
-                  *ngIf="column.sortable && config.sortable"
-                  class="sort-icon"
-                  [name]="getSortIcon(column)"
-                ></ion-icon>
-              </div>
-            </th>
-            <th class="actions-column" *ngIf="actions.length > 0"></th>
-          </tr>
-        </thead>
-
-        <!-- Table Body -->
-        <tbody>
-          <!-- Loading State in Body -->
-          <tr *ngIf="isLoading">
-            <td [attr.colspan]="columns.length + (actions.length > 0 ? 1 : 0)" class="loading-cell">
-              <div class="table-loading">
-                <ion-spinner name="crescent"></ion-spinner>
-                <p>{{ config.loadingMessage }}</p>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Empty State in Body -->
-          <tr *ngIf="isEmpty">
-            <td [attr.colspan]="columns.length + (actions.length > 0 ? 1 : 0)" class="empty-cell">
-              <div class="table-empty">
-                <ion-icon name="file-tray-outline"></ion-icon>
-                <p>{{ config.emptyMessage }}</p>
-                <ng-content select="[table-empty-actions]"></ng-content>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Data Rows -->
-          <tr
-            *ngFor="let item of displayedData; trackBy: trackByFn"
-            (click)="onRowClick(item)"
+    @if (isLoading) {
+      <!-- Loading State -->
+      <div class="table-loading">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>{{ config.loadingMessage }}</p>
+      </div>
+    } @else if (isEmpty) {
+      <!-- Empty State -->
+      <div class="table-empty">
+        <ion-icon name="file-tray-outline"></ion-icon>
+        <p>{{ config.emptyMessage }}</p>
+        <ng-content select="[table-empty-actions]"></ng-content>
+      </div>
+    } @else if (useCardView) {
+      <!-- Mobile Card View -->
+      <div class="card-grid">
+        @for (item of displayedData; track trackByFn($index, item)) {
+          <div
+            class="card-item"
             [class.clickable]="config.rowClickable"
+            (click)="onRowClick(item)"
           >
-            <td
-              *ngFor="let column of columns"
-              [class]="getCellClasses(column, item)"
-            >
-              <!-- Text Column -->
-              <ng-container [ngSwitch]="column.type">
-                <!-- Regular Text -->
-                <ng-container *ngSwitchCase="'text'">
-                  <span class="cell-text">
-                    {{ getNestedValue(item, column.key) ?? '-' }}
-                  </span>
-                </ng-container>
-
-                <!-- Number Column -->
-                <ng-container *ngSwitchCase="'number'">
-                  <span class="cell-number">
-                    {{ formatValue(item, column) }}
-                  </span>
-                </ng-container>
-
-                <!-- Currency Column -->
-                <ng-container *ngSwitchCase="'currency'">
-                  <span class="cell-currency">
-                    {{ formatValue(item, column) }}
-                  </span>
-                </ng-container>
-
-                <!-- Date Column -->
-                <ng-container *ngSwitchCase="'date'">
-                  <span class="cell-date">
-                    {{ formatValue(item, column) }}
-                  </span>
-                </ng-container>
-
-                <!-- Status Column -->
-                <ng-container *ngSwitchCase="'status'">
+            <!-- Card Header: title + status chip -->
+            @if (cardTitleColumn) {
+              <div class="card-item-header">
+                <div class="card-item-title">
+                  {{ getNestedValue(item, cardTitleColumn.key) ?? '-' }}
+                </div>
+                @if (cardStatusColumn) {
                   <ion-chip
                     class="status-chip"
-                    [color]="getStatusColor(getNestedValue(item, column.key))"
+                    [color]="getStatusColor(getNestedValue(item, cardStatusColumn.key))"
                   >
-                    <ion-icon
-                      *ngIf="getStatusIcon(getNestedValue(item, column.key))"
-                      [name]="getStatusIcon(getNestedValue(item, column.key))"
-                    ></ion-icon>
-                    <span>{{ formatValue(item, column) }}</span>
+                    @if (getStatusIcon(getNestedValue(item, cardStatusColumn.key)); as headerStatusIcon) {
+                      <ion-icon [name]="headerStatusIcon"></ion-icon>
+                    }
+                    <span>{{ formatValue(item, cardStatusColumn) }}</span>
                   </ion-chip>
-                </ng-container>
+                }
+              </div>
+            }
 
-                <!-- Action Column -->
-                <ng-container *ngSwitchCase="'action'">
-                  <div class="cell-actions">
-                    <!-- Custom template slot -->
-                    <ng-content
-                      select="[cell-template]"
-                    ></ng-content>
+            <!-- Card Body: label : value rows -->
+            @if (cardBodyColumns.length > 0) {
+              <div class="card-item-body">
+                @for (col of cardBodyColumns; track col.key) {
+                  <div class="card-item-row">
+                    <span class="card-item-label">{{ col.header }}</span>
+                    <span class="card-item-value">
+                      @if (isStatusColumn(col)) {
+                        <ion-chip
+                          class="status-chip"
+                          [color]="getStatusColor(getNestedValue(item, col.key))"
+                        >
+                          @if (getStatusIcon(getNestedValue(item, col.key)); as bodyStatusIcon) {
+                            <ion-icon [name]="bodyStatusIcon"></ion-icon>
+                          }
+                          <span>{{ formatValue(item, col) }}</span>
+                        </ion-chip>
+                      } @else {
+                        {{ formatValue(item, col) }}
+                      }
+                    </span>
                   </div>
-                </ng-container>
+                }
+              </div>
+            }
 
-                <!-- Default (text) -->
-                <ng-container *ngSwitchDefault>
-                  <span class="cell-text">
-                    {{ getNestedValue(item, column.key) ?? '-' }}
-                  </span>
-                </ng-container>
-              </ng-container>
-            </td>
+            <!-- Card Actions -->
+            @if (actions.length > 0) {
+              <div class="card-item-actions row-actions">
+                @for (action of actions; track action.id) {
+                  @if (shouldShowAction(action, item)) {
+                    <ion-button
+                      size="small"
+                      fill="clear"
+                      [color]="action.color"
+                      [disabled]="isActionDisabled(action, item)"
+                      (click)="onActionClick(action, item, $event)"
+                    >
+                      @if (action.icon) {
+                        <ion-icon slot="icon-only" [name]="action.icon"></ion-icon>
+                      } @else {
+                        {{ action.label }}
+                      }
+                    </ion-button>
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Desktop/Tablet Table View -->
+      <div class="table-responsive">
+        <table class="app-table">
+          <!-- Table Header -->
+          <thead>
+            <tr>
+              <th
+                *ngFor="let column of columns"
+                [style.width]="column.width"
+                [class]="getAlignClass(column)"
+                [class.sortable]="column.sortable && config.sortable"
+                (click)="onSort(column)"
+              >
+                <div class="th-content">
+                  <span class="th-label">{{ column.header }}</span>
+                  <ion-icon
+                    *ngIf="column.sortable && config.sortable"
+                    class="sort-icon"
+                    [name]="getSortIcon(column)"
+                  ></ion-icon>
+                </div>
+              </th>
+              <th class="actions-column" *ngIf="actions.length > 0"></th>
+            </tr>
+          </thead>
 
-            <!-- Row Actions -->
-            <td class="actions-column" *ngIf="actions.length > 0">
-              <div class="row-actions">
-                @for(action of actions; track action.id) {
-                @if(shouldShowAction(action, item)) {
-                <ion-button
-                  size="small"
-                  fill="clear"
-                  [color]="action.color"
-                  [disabled]="isActionDisabled(action, item)"
-                  (click)="onActionClick(action, item, $event)"
-                >
-                @if(action.icon) {
+          <!-- Table Body -->
+          <tbody>
+            <!-- Data Rows -->
+            <tr
+              *ngFor="let item of displayedData; trackBy: trackByFn"
+              (click)="onRowClick(item)"
+              [class.clickable]="config.rowClickable"
+            >
+              <td
+                *ngFor="let column of columns"
+                [class]="getCellClasses(column, item)"
+              >
+                <!-- Text Column -->
+                <ng-container [ngSwitch]="column.type">
+                  <!-- Regular Text -->
+                  <ng-container *ngSwitchCase="'text'">
+                    <span class="cell-text">
+                      {{ getNestedValue(item, column.key) ?? '-' }}
+                    </span>
+                  </ng-container>
+
+                  <!-- Number Column -->
+                  <ng-container *ngSwitchCase="'number'">
+                    <span class="cell-number">
+                      {{ formatValue(item, column) }}
+                    </span>
+                  </ng-container>
+
+                  <!-- Currency Column -->
+                  <ng-container *ngSwitchCase="'currency'">
+                    <span class="cell-currency">
+                      {{ formatValue(item, column) }}
+                    </span>
+                  </ng-container>
+
+                  <!-- Date Column -->
+                  <ng-container *ngSwitchCase="'date'">
+                    <span class="cell-date">
+                      {{ formatValue(item, column) }}
+                    </span>
+                  </ng-container>
+
+                  <!-- Status Column -->
+                  <ng-container *ngSwitchCase="'status'">
+                    <ion-chip
+                      class="status-chip"
+                      [color]="getStatusColor(getNestedValue(item, column.key))"
+                    >
+                      <ion-icon
+                        *ngIf="getStatusIcon(getNestedValue(item, column.key))"
+                        [name]="getStatusIcon(getNestedValue(item, column.key))"
+                      ></ion-icon>
+                      <span>{{ formatValue(item, column) }}</span>
+                    </ion-chip>
+                  </ng-container>
+
+                  <!-- Action Column -->
+                  <ng-container *ngSwitchCase="'action'">
+                    <div class="cell-actions">
+                      <!-- Custom template slot -->
+                      <ng-content
+                        select="[cell-template]"
+                      ></ng-content>
+                    </div>
+                  </ng-container>
+
+                  <!-- Default (text) -->
+                  <ng-container *ngSwitchDefault>
+                    <span class="cell-text">
+                      {{ getNestedValue(item, column.key) ?? '-' }}
+                    </span>
+                  </ng-container>
+                </ng-container>
+              </td>
+
+              <!-- Row Actions -->
+              <td class="actions-column" *ngIf="actions.length > 0">
+                <div class="row-actions">
+                  @for(action of actions; track action.id) {
+                  @if(shouldShowAction(action, item)) {
+                  <ion-button
+                    size="small"
+                    fill="clear"
+                    [color]="action.color"
+                    [disabled]="isActionDisabled(action, item)"
+                    (click)="onActionClick(action, item, $event)"
+                  >
+                  @if(action.icon) {
                   <ion-icon
                     slot="icon-only"
                     [name]="action.icon"
                   ></ion-icon>
-                } @else {
+                  } @else {
                   {{ action.label }}
-                }
-                </ion-button>
-                } @else {
-                <!-- Hidden action -->
-                }
-                }
+                  }
+                  </ion-button>
+                  } @else {
+                  <!-- Hidden action -->
+                  }
+                  }
 
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
 
   <!-- Table Footer with Pagination -->

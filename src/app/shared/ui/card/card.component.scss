@@ -387,32 +387,3 @@
 }
 
 // Dark Mode
-@media (prefers-color-scheme: dark) {
-  .app-card {
-    background: #1f2937;
-
-    &:not(.card-primary):not(.card-success):not(.card-warning):not(.card-danger):not(.card-info):not(.card-gradient):not(.card-nature) {
-      .card-title,
-      .card-value {
-        color: #f9fafb;
-      }
-
-      .card-icon {
-        background: rgba(76, 175, 80, 0.2);
-        color: #81c784;
-      }
-
-      .card-subtitle {
-        color: #9ca3af;
-      }
-    }
-
-    &.card-bordered {
-      border-color: #374151;
-    }
-
-    .card-footer {
-      border-top-color: #374151;
-    }
-  }
-}

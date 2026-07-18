@@ -386,18 +386,3 @@ ion-card-subtitle {
 }
 
 // Dark mode support
-@media (prefers-color-scheme: dark) {
-  .form-card,
-  .invoice-info-card,
-  .summary-card {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .resident-info {
-    background: var(--ion-color-dark-shade);
-  }
-
-  .info-row strong {
-    color: var(--ion-color-light);
-  }
-}

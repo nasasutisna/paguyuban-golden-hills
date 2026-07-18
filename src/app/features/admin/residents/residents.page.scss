@@ -169,23 +169,3 @@
 }
 
 // Dark mode support
-@media (prefers-color-scheme: dark) {
-  .stats-skeleton {
-    ion-skeleton-text {
-      --background: #3a3a3a;
-    }
-  }
-
-  .stat-card {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .table-card {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-
-    ::ng-deep .table-header {
-      background: rgba(var(--ion-color-dark-rgb), 0.5);
-      border-bottom-color: var(--ion-color-dark-shade);
-    }
-  }
-}
