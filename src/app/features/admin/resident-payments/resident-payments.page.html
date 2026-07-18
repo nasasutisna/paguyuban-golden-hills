@@ -55,7 +55,7 @@
   <!-- Table Section -->
   <div>
     <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
-      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
+      (actionClick)="onAction($event)" (pageSizeChange)="onPageSizeChange($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
       <div table-actions>
         <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
           <ion-icon slot="start" name="cash-outline"></ion-icon>

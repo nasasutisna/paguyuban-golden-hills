@@ -1,16 +1,19 @@
 <ion-content class="ion-padding">
   <!-- Statistics Cards -->
-  <div class="stats-container" *ngIf="hasStats() || statsLoading">
+  @if (hasStats() || statsLoading) {
+  <div class="stats-container">
     <!-- Loading skeleton -->
-    <div class="stats-skeleton" *ngIf="statsLoading">
+    @if (statsLoading) {
+    <div class="stats-skeleton">
       <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
       <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
       <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
-      <ion-skeleton-text animated style="width: 100%; height: 80px;"></ion-skeleton-text>
     </div>
+    }
 
     <!-- Stats Cards -->
-    <div class="stats-grid" *ngIf="!statsLoading && summary">
+    @if (!statsLoading && summary) {
+    <div class="stats-grid">
       <!-- Total Income -->
       <ion-card class="stat-card success">
         <ion-card-content>
@@ -57,7 +60,8 @@
       </ion-card>
 
       <!-- Pending Approval -->
-      <ion-card class="stat-card warning" *ngIf="summary.pendingApproval > 0">
+      @if (summary.pendingApproval > 0) {
+      <ion-card class="stat-card warning">
         <ion-card-content>
           <div class="stat-content">
             <div class="stat-icon">
@@ -70,8 +74,11 @@
           </div>
         </ion-card-content>
       </ion-card>
+      }
     </div>
+    }
   </div>
+  }
 
   <!-- Date Range Filter (Collapsible, below summary) -->
   <ion-card class="filter-card ion-margin-top">
@@ -81,87 +88,70 @@
           <ion-icon name="filter-outline"></ion-icon>
         </div>
         <div class="filter-header-titles">
-          <span class="filter-header-title">Filter Tanggal</span>
-          <span class="filter-header-subtitle" *ngIf="hasActiveDateFilter()">
-            {{ formatDateRange() }}
-          </span>
-          <span class="filter-header-subtitle muted" *ngIf="!hasActiveDateFilter()">
-            Semua tanggal
-          </span>
+          <span class="filter-header-title">Filter</span>
+
+          <div class="filter-content">
+            @if(selectedCategoryName) {
+            <span class="filter-header-subtitle">
+              {{ selectedCategoryName }}@if(hasActiveDateFilter()){,}
+            </span>
+
+            }
+
+            @if (hasActiveDateFilter()) {
+            <span class="filter-header-subtitle">
+              {{ formatDateRange() }}
+            </span>
+            }
+
+          </div>
         </div>
       </div>
-      <ion-icon
-        class="filter-toggle-icon"
-        [name]="showFilter ? 'chevron-up-outline' : 'chevron-down-outline'"
-      ></ion-icon>
+      <ion-icon class="filter-toggle-icon"
+        [name]="showFilter ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
     </div>
 
-    <ion-card-content *ngIf="showFilter">
-      <ion-row>
-        <ion-col size="12" size-md="5">
-          <ion-item lines="none" class="date-input-item">
-            <ion-label position="stacked">Dari Tanggal</ion-label>
-            <ion-datetime-button datetime="start-date"></ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="start-date"
-                  presentation="date"
-                  [value]="startDate"
-                  (ionChange)="onStartDateChange($event)"
-                  [max]="endDate || undefined"
-                ></ion-datetime>
-              </ng-template>
-            </ion-modal>
-          </ion-item>
+    @if (showFilter) {
+    <ion-card-content class="filter-card-content">
+      <ion-col>
+        <app-form-select label="Kategori" placeholder="Semua Kategori" [options]="categoryOptions"
+          [(ngModel)]="selectedCategoryId" (ngModelChange)="onCategoryChange($event)"></app-form-select>
+      </ion-col>
+      <ion-row class="filter-date">
+        <ion-col>
+          <app-form-date-picker label="Dari Tanggal" placeholder="Pilih tanggal awal" [ngModel]="pendingStartDate"
+            (ngModelChange)="onStartDateChange($event)" [maxDate]="pendingEndDate || undefined" presentation="date"
+            [clearable]="true"></app-form-date-picker>
         </ion-col>
-        <ion-col size="12" size-md="5">
-          <ion-item lines="none" class="date-input-item">
-            <ion-label position="stacked">Sampai Tanggal</ion-label>
-            <ion-datetime-button datetime="end-date"></ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="end-date"
-                  presentation="date"
-                  [value]="endDate"
-                  (ionChange)="onEndDateChange($event)"
-                  [min]="startDate || undefined"
-                ></ion-datetime>
-              </ng-template>
-            </ion-modal>
-          </ion-item>
-        </ion-col>
-        <ion-col size="12" size-md="2" class="filter-actions">
-          <ion-button expand="block" fill="solid" color="primary" (click)="applyDateFilter()">
-            <ion-icon slot="start" name="filter-outline"></ion-icon>
-            Terapkan
-          </ion-button>
-          <ion-button
-            expand="block"
-            fill="clear"
-            color="medium"
-            (click)="clearDateFilter()"
-            *ngIf="hasActiveDateFilter()"
-          >
-            <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
-          </ion-button>
+        <ion-col>
+          <app-form-date-picker label="Sampai Tanggal" placeholder="Pilih tanggal akhir" [ngModel]="pendingEndDate"
+            (ngModelChange)="onEndDateChange($event)" [minDate]="pendingStartDate || undefined" presentation="date"
+            [clearable]="true"></app-form-date-picker>
         </ion-col>
       </ion-row>
-      <ion-row *ngIf="hasActiveDateFilter()" class="active-filter-info">
-        <ion-col size="12">
-          <p class="filter-info-text">
-            <ion-icon name="information-circle-outline"></ion-icon>
-            Filter aktif: {{ formatDateRange() }}
-          </p>
-        </ion-col>
-      </ion-row>
+
+      <ion-col class="filter-actions">
+        @if (hasActiveDateFilter()) {
+        <ion-button expand="block" fill="clear" color="danger" (click)="clearDateFilter()">
+          Reset Filter
+        </ion-button>
+        }
+
+        <ion-button expand="block" fill="solid" color="primary" (click)="applyDateFilter()">
+          <ion-icon slot="start" name="filter-outline"></ion-icon>
+          Terapkan
+        </ion-button>
+
+      </ion-col>
     </ion-card-content>
+    }
   </ion-card>
 
   <!-- Table Section -->
   <div>
-    <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges">
+    <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges"
+      [currentPage]="currentPage" (actionClick)="onAction($event)" (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
       <div table-actions>
         <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
           <ion-icon slot="start" name="add"></ion-icon>

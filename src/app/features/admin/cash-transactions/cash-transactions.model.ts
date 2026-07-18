@@ -130,6 +130,12 @@ export interface CashTransaction {
     firstName: string;
     lastName: string;
   };
+  approver?: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+  };
 }
 
 /**

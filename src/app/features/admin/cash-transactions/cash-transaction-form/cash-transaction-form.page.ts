@@ -8,7 +8,7 @@ import {
   AbstractControl,
   FormControl
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { Subscription, switchMap, EMPTY } from 'rxjs';
 import { CashTransactionsService } from '../cash-transactions.service';
@@ -114,17 +114,29 @@ export class CashTransactionFormPage implements OnInit, OnDestroy {
       );
     }
 
-    // Check if we're in edit mode by checking for :id parameter
-    this.subscriptions.push(
-      this.route.paramMap.subscribe((params) => {
-        const id = params.get('id');
-        if (id) {
-          this.isEditMode = true;
-          this.cashTransactionId = id;
-          this.loadCashTransaction(id);
-        }
-      })
-    );
+    // Edit mode: the form is mounted at `cash-transactions/:idcash/edit`
+    // (a componentless :idcash wrapper), so the param lives on the parent route
+    // and must be walked up to.
+    const editId = this.resolveCashTxId();
+    if (editId) {
+      this.isEditMode = true;
+      this.cashTransactionId = editId;
+      this.loadCashTransaction(editId);
+    }
+  }
+
+  /**
+   * Walk up the activated-route chain to find the `:idcash` param
+   * (declared on the componentless parent wrapper).
+   */
+  private resolveCashTxId(): string | null {
+    let snap: ActivatedRouteSnapshot | null = this.route.snapshot;
+    while (snap) {
+      const v = snap.paramMap.get('idcash');
+      if (v) return v;
+      snap = snap.parent;
+    }
+    return null;
   }
 
   /**

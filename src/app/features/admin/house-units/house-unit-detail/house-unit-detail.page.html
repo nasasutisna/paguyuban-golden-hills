@@ -74,11 +74,11 @@
 
     <!-- Actions -->
     <div class="actions-row">
-      <ion-button size="small" fill="outline" (click)="navigateToEdit()">
+      <ion-button color="primary" size="small" fill="outline" (click)="navigateToEdit()">
         <ion-icon slot="start" name="create-outline"></ion-icon>
         Edit
       </ion-button>
-      <ion-button size="small" fill="outline" (click)="changeOccupancyStatus()">
+      <ion-button color="primary" size="small" fill="outline" (click)="changeOccupancyStatus()">
         <ion-icon slot="start" name="people-outline"></ion-icon>
         Status Huni
       </ion-button>
@@ -182,13 +182,13 @@
               <ion-label>{{ formatIplPercentage() }}</ion-label>
             </ion-chip>
           </ion-item>
-          <ion-item [color]="houseUnit.isBankBuyback ? 'dark' : 'medium'">
+           <ion-item>
             <ion-label>
-              <h2>Status Bank Buyback</h2>
+              <h2>Bank Buyback</h2>
               <p>{{ houseUnit.isBankBuyback ? 'Ya' : 'Tidak' }}</p>
             </ion-label>
-            <ion-icon [name]="houseUnit.isBankBuyback ? 'business' : 'business-outline'" slot="end"></ion-icon>
           </ion-item>
+
           <ion-item *ngIf="houseUnit.buybackDate">
             <ion-label>
               <h2>Tanggal Buyback</h2>

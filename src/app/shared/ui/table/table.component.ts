@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController } from '@ionic/angular';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import {
   TableConfig,
   TableColumn,
@@ -17,6 +17,7 @@ import {
   DateFormatOptions
 } from './table.model';
 import { ADMIN_COLORS } from '../admin-theme.config';
+import { LayoutService } from '../../../core/services/layout.service';
 
 /**
  * Reusable Table Component
@@ -29,8 +30,9 @@ import { ADMIN_COLORS } from '../admin-theme.config';
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss']
 })
-export class TableComponent<T = any> implements OnInit, OnChanges {
+export class TableComponent<T = any> implements OnInit, OnDestroy, OnChanges {
   private alertController = inject(AlertController);
+  private layoutService = inject(LayoutService);
 
   // Inputs
   @Input() config: TableConfig = {
@@ -64,6 +66,7 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
   @Output() sortChange = new EventEmitter<TableSort>();
   @Output() filterChange = new EventEmitter<TableFilter[]>();
   @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
   @Output() rowClick = new EventEmitter<T>();
   @Output() actionClick = new EventEmitter<{ action: TableAction; item: T }>();
 
@@ -79,7 +82,13 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
     totalPages: 0
   };
 
+  // Responsive state (driven by LayoutService)
+  isMobile = this.layoutService.isMobile;
+  isDesktop = this.layoutService.isDesktop;
+  layoutMode = this.layoutService.mode;
+
   private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
   // Default options
   private defaultCurrencyOptions: CurrencyFormatOptions = {
@@ -102,6 +111,25 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
       });
 
     this.initializePagination();
+
+    // Keep the responsive flags in sync with the viewport so the template
+    // can react (e.g. table-actions mobile layout).
+    this.layoutService.isMobile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => (this.isMobile = value));
+
+    this.layoutService.isDesktop$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => (this.isDesktop = value));
+
+    this.layoutService.mode$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => (this.layoutMode = value));
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -313,6 +341,7 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
     this.pagination.page = 1;
     this.updateDisplayedData();
     this.updatePagination();
+    this.pageSizeChange.emit(this.pagination.pageSize);
   }
 
   /**
@@ -475,6 +504,21 @@ export class TableComponent<T = any> implements OnInit, OnChanges {
    */
   getAlignClass(column: TableColumn): string {
     return `text-${column.align || 'left'}`;
+  }
+
+  /**
+   * Resolve the per-cell class list for a cell (alignment + optional cellClass).
+   * cellClass may be a static string or a function evaluated per row item,
+   * so a column can style individual cells based on their data
+   * (e.g. negative/danger amounts).
+   */
+  getCellClasses(column: TableColumn, item: T): string {
+    const classes = [this.getAlignClass(column)];
+    const cellClass = column.cellClass;
+    if (cellClass) {
+      classes.push(typeof cellClass === 'function' ? cellClass(item) : cellClass);
+    }
+    return classes.filter(Boolean).join(' ');
   }
 
   /**

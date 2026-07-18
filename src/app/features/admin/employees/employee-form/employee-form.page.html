@@ -1,0 +1,270 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/employees"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+    <!-- Basic Information -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Dasar</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        @if (isEditMode) {
+          <app-form-input
+            label="Kode Karyawan"
+            formControlName="employeeCode"
+            placeholder="contoh: EMP001"
+            [maxlength]="20"
+            [showError]="isFieldInvalid('employeeCode')"
+            [errorMessage]="getErrorMessage('employeeCode')"
+          ></app-form-input>
+        }
+
+        <app-form-input
+          label="Nama Depan"
+          formControlName="firstName"
+          placeholder="contoh: Budi"
+          [maxlength]="100"
+          [required]="true"
+          [showError]="isFieldInvalid('firstName')"
+          [errorMessage]="getErrorMessage('firstName')"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nama Belakang"
+          formControlName="lastName"
+          placeholder="contoh: Santoso"
+          [maxlength]="100"
+          [required]="true"
+          [showError]="isFieldInvalid('lastName')"
+          [errorMessage]="getErrorMessage('lastName')"
+        ></app-form-input>
+
+        <app-form-input
+          label="Email"
+          type="email"
+          formControlName="email"
+          placeholder="contoh: budi.santoso@email.com"
+          [showError]="isFieldInvalid('email')"
+          [errorMessage]="getErrorMessage('email')"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nomor Telepon"
+          type="tel"
+          formControlName="phoneNumber"
+          placeholder="contoh: +6281234567890"
+        ></app-form-input>
+
+        <app-form-input
+          label="Telepon Alternatif"
+          type="tel"
+          formControlName="alternatePhone"
+          placeholder="contoh: +6281234567891"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nomor Identitas (KTP/Paspor)"
+          formControlName="identityNumber"
+          placeholder="contoh: 1234567890123456"
+        ></app-form-input>
+
+        <ion-item class="date-item">
+          <ion-label position="stacked">Tanggal Lahir</ion-label>
+          <ion-datetime
+            formControlName="dateOfBirth"
+            presentation="date"
+            placeholder="Pilih tanggal lahir"
+          ></ion-datetime>
+        </ion-item>
+
+        <app-form-select
+          label="Jenis Kelamin"
+          formControlName="gender"
+          placeholder="Pilih jenis kelamin"
+          [options]="genderOptions"
+        ></app-form-select>
+
+        <app-form-select
+          label="Status Perkawinan"
+          formControlName="maritalStatus"
+          placeholder="Pilih status perkawinan"
+          [options]="maritalStatusOptions"
+        ></app-form-select>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Employment Information -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Kepegawaian</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-select
+          label="Jabatan"
+          formControlName="positionId"
+          placeholder="Pilih jabatan"
+          [options]="positionOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('positionId')"
+          [errorMessage]="getErrorMessage('positionId')"
+        ></app-form-select>
+
+        <ion-item class="date-item">
+          <ion-label position="stacked">Tanggal Masuk</ion-label>
+          <ion-datetime
+            formControlName="hireDate"
+            presentation="date"
+            placeholder="Pilih tanggal masuk"
+          ></ion-datetime>
+        </ion-item>
+
+        <ion-item class="date-item">
+          <ion-label position="stacked">Akhir Masa Percobaan</ion-label>
+          <ion-datetime
+            formControlName="probationEndDate"
+            presentation="date"
+            placeholder="Pilih akhir masa percobaan"
+          ></ion-datetime>
+        </ion-item>
+
+        <app-form-select
+          label="Status Kepegawaian"
+          formControlName="employmentStatus"
+          placeholder="Pilih status kepegawaian"
+          [options]="employmentStatusOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('employmentStatus')"
+          [errorMessage]="getErrorMessage('employmentStatus')"
+        ></app-form-select>
+
+        <ion-item class="toggle-item">
+          <ion-label>Status Aktif</ion-label>
+          <ion-toggle formControlName="isActive"></ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Address & Emergency Contact -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Alamat & Kontak Darurat</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-textarea
+          label="Alamat"
+          formControlName="address"
+          placeholder="contoh: Jalan Golden Hills No. 123"
+          [rows]="3"
+          [maxlength]="255"
+        ></app-form-textarea>
+
+        <app-form-input
+          label="Kota"
+          formControlName="city"
+          placeholder="contoh: Bandung"
+        ></app-form-input>
+
+        <app-form-input
+          label="Provinsi"
+          formControlName="province"
+          placeholder="contoh: Jawa Barat"
+        ></app-form-input>
+
+        <app-form-input
+          label="Kode Pos"
+          formControlName="postalCode"
+          placeholder="contoh: 40123"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nama Kontak Darurat"
+          formControlName="emergencyContact"
+          placeholder="contoh: Ahmad Santoso"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nomor Telepon Darurat"
+          type="tel"
+          formControlName="emergencyPhone"
+          placeholder="contoh: +6281234567892"
+        ></app-form-input>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Banking & Tax Information -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Bank & Pajak</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-input
+          label="Nama Bank"
+          formControlName="bankName"
+          placeholder="contoh: Bank BCA"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nomor Rekening"
+          formControlName="bankAccountNumber"
+          placeholder="contoh: 1234567890"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nama Pemilik Rekening"
+          formControlName="bankAccountName"
+          placeholder="contoh: Budi Santoso"
+        ></app-form-input>
+
+        <app-form-input
+          label="NPWP"
+          formControlName="taxId"
+          placeholder="contoh: 12.345.678.9-012.000"
+        ></app-form-input>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Additional Information -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Tambahan</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-textarea
+          label="Catatan"
+          formControlName="notes"
+          placeholder="Catatan tambahan tentang karyawan ini..."
+          [rows]="4"
+        ></app-form-textarea>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        expand="block"
+        (click)="goBack()"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="save-outline"
+        iconSlot="start"
+        variant="solid"
+        color="primary"
+        type="submit"
+        expand="block"
+        [disabled]="!isFormValid()"
+        [loading]="isSubmitting"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>

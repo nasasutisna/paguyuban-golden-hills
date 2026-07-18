@@ -31,7 +31,8 @@ import {
   FormSelectComponent,
   FormTextareaComponent,
   FormButtonComponent,
-  SelectOption
+  SelectOption,
+  FormDatePickerComponent
 } from '@shared/ui/form-controls';
 
 /**
@@ -48,7 +49,8 @@ import {
     FormInputComponent,
     FormSelectComponent,
     FormTextareaComponent,
-    FormButtonComponent
+    FormButtonComponent,
+    FormDatePickerComponent
   ],
   templateUrl: './resident-form.page.html',
   styleUrls: ['./resident-form.page.scss']
@@ -126,7 +128,7 @@ export class ResidentFormPage implements OnInit, OnDestroy {
     return this.fb.group({
       residentCode: [
         '',
-        [Validators.required, Validators.maxLength(20)]
+        [Validators.maxLength(20)]
       ],
       firstName: [
         '',
@@ -384,7 +386,6 @@ export class ResidentFormPage implements OnInit, OnDestroy {
    */
   private buildDto(formValue: any): CreateResidentDto | UpdateResidentDto {
     const dto: any = {
-      residentCode: formValue.residentCode?.trim(),
       firstName: formValue.firstName?.trim(),
       lastName: formValue.lastName?.trim(),
       houseBlockId: formValue.houseBlockId,
@@ -394,6 +395,10 @@ export class ResidentFormPage implements OnInit, OnDestroy {
     };
 
     // Optional fields
+    // Kode warga hanya dikirim saat edit (di-generate backend saat create)
+    if (this.isEditMode && formValue.residentCode?.trim()) {
+      dto.residentCode = formValue.residentCode.trim();
+    }
     if (formValue.email?.trim()) {
       dto.email = formValue.email.trim();
     }

@@ -1,6 +1,16 @@
 // Date Filter Card
 .filter-card {
-  margin-bottom: 16px;
+  margin: 0px;
+  border-radius: 8px;
+
+  .filter-card-content ion-col {
+    padding: 0px !important;
+  }
+
+  .filter-date {
+    display: flex;
+    gap: 12px;
+  }
 
   .filter-header {
     display: flex;
@@ -39,6 +49,12 @@
       flex-direction: column;
       min-width: 0;
 
+      .filter-content {
+        display: flex;
+        flex-direction: row;
+        gap: 6px;
+      }
+
       .filter-header-title {
         font-size: 14px;
         font-weight: 600;
@@ -71,27 +87,15 @@
   }
 
   ion-card-content {
-    padding-top: 8px;
-  }
-
-  .date-input-item {
-    --padding-start: 0;
-    --padding-end: 0;
-    --inner-padding-end: 0;
-
-    ion-label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ion-color-medium-shade);
-      margin-bottom: 8px;
-    }
+    padding-top: 0px;
   }
 
   .filter-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-top: 26px;
+    display: flex !important;
+    align-items: center;
+    margin-top: 8px;
+    width: 100%;
+    justify-content: end;
 
     ion-button {
       --border-radius: 12px;
@@ -99,6 +103,7 @@
       --padding-bottom: 12px;
       font-weight: 600;
       height: 48px;
+      width: 160px;
     }
   }
 
@@ -130,7 +135,7 @@
 
 .stats-skeleton {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 12px;
 }
 

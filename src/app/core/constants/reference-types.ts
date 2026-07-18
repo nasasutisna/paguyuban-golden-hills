@@ -20,6 +20,9 @@ export const REFERENCE_TYPES = {
   OPERATIONAL: 'OPERATIONAL',
   SALARY: 'SALARY',
   EMPLOYEE_CASH_ADVANCE: 'EMPLOYEE_CASH_ADVANCE',
+  // System-generated: set by backend when a CashTransaction is auto-posted
+  // from an approved ExpenseRequest (referenceId = ExpenseRequest.id).
+  EXPENSE_REQUEST: 'EXPENSE_REQUEST',
 } as const;
 
 /**
@@ -41,6 +44,7 @@ export const REFERENCE_TYPE_LABELS: Record<ReferenceType, string> = {
   [REFERENCE_TYPES.OPERATIONAL]: 'Operasional',
   [REFERENCE_TYPES.SALARY]: 'Gaji Karyawan',
   [REFERENCE_TYPES.EMPLOYEE_CASH_ADVANCE]: 'Uang Muka Karyawan',
+  [REFERENCE_TYPES.EXPENSE_REQUEST]: 'Pengajuan Pengeluaran',
 };
 
 /**
@@ -60,6 +64,7 @@ export const EXPENSE_REFERENCE_TYPES: ReferenceType[] = [
   REFERENCE_TYPES.OPERATIONAL,
   REFERENCE_TYPES.SALARY,
   REFERENCE_TYPES.EMPLOYEE_CASH_ADVANCE,
+  REFERENCE_TYPES.EXPENSE_REQUEST,
 ];
 
 /**

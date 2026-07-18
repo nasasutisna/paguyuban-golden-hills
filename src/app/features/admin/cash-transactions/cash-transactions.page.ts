@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
@@ -11,6 +12,7 @@ import {
   TransactionType,
   PaymentMethod,
   ApprovalStatus,
+  TransactionCategory,
   TRANSACTION_TYPE_LABELS,
   PAYMENT_METHOD_LABELS,
   APPROVAL_STATUS_LABELS
@@ -18,7 +20,10 @@ import {
 
 // Table component and types
 import { TableComponent } from '@shared/ui/table/table.component';
-import { TableConfig, TableDataSource } from '@shared/ui/table/table.model';
+import { TableConfig, TableDataSource, TableAction } from '@shared/ui/table/table.model';
+import { FormDatePickerComponent } from '@shared/ui/form-controls/form-date-picker/form-date-picker.component';
+import { FormSelectComponent } from '@shared/ui/form-controls/form-select/form-select.component';
+import { SelectOption } from '@shared/ui/form-controls/form.model';
 
 /**
  * Cash Transactions List Page
@@ -29,8 +34,11 @@ import { TableConfig, TableDataSource } from '@shared/ui/table/table.model';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     IonicModule,
-    TableComponent
+    TableComponent,
+    FormDatePickerComponent,
+    FormSelectComponent
   ],
   templateUrl: './cash-transactions.page.html',
   styleUrls: ['./cash-transactions.page.scss']
@@ -47,6 +55,15 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
 
   // Filter panel visibility (collapsed by default)
   showFilter = false;
+
+  // Category filter state (null = 'Semua Kategori')
+  categories: TransactionCategory[] = [];
+  selectedCategoryId: string | null = null;
+  selectedCategoryName: string | null | undefined = null;
+
+  // Pagination state (server-side)
+  currentPage = 1;
+  pageSize = 10;
 
   // Quick date presets
   datePresets: { key: string; label: string }[] = [
@@ -89,12 +106,22 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
   readonly PAYMENT_METHOD_LABELS = PAYMENT_METHOD_LABELS;
   readonly APPROVAL_STATUS_LABELS = APPROVAL_STATUS_LABELS;
 
+  /**
+   * Build category dropdown options, with 'Semua Kategori' (null) as the
+   * always-present default so the filter can be cleared inline.
+   */
+  get categoryOptions(): SelectOption[] {
+    return [
+      { value: null, label: 'Semua Kategori' },
+      ...this.categories.map((c) => ({ value: c.id, label: c.categoryName }))
+    ];
+  }
+
   private subscriptions: Subscription[] = [];
 
   ngOnInit(): void {
-    console.log('[CashTransactionsPage] ngOnInit called');
     this.initializeTableConfig();
-    console.log('[CashTransactionsPage] tableConfig:', this.tableConfig);
+    this.loadCategories();
     this.loadSummary();
     this.loadTransactions();
   }
@@ -112,7 +139,15 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
         { key: 'transactionDate', header: 'Tanggal', type: 'date', sortable: true },
         { key: 'description', header: 'Deskripsi', type: 'text', sortable: true },
         { key: 'category.categoryName', header: 'Kategori', type: 'text' },
-        { key: 'amount', header: 'Nominal', type: 'currency', sortable: true },
+        {
+          key: 'amount',
+          header: 'Nominal',
+          type: 'currency',
+          sortable: true,
+          // Highlight expense amounts in red, income stays default green
+          cellClass: (item: CashTransaction) =>
+            item.transactionType === TransactionType.EXPENSE ? 'cell-danger' : ''
+        },
         { key: 'paymentMethod', header: 'Metode', type: 'status' },
         { key: 'approvalStatus', header: 'Status', type: 'status', sortable: true }
       ],
@@ -158,8 +193,10 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
         }
       ],
       pageSize: 10,
+      pageSizeOptions: [10, 25, 50],
       sortable: true,
-      pagination: true
+      pagination: true,
+      showFooter: true
     };
   }
 
@@ -170,7 +207,13 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
     this.statsLoading = true;
 
     this.subscriptions.push(
-      this.cashTransactionsService.getSummary(this.startDate || undefined, this.endDate || undefined).subscribe({
+      this.cashTransactionsService
+        .getSummary(
+          this.startDate || undefined,
+          this.endDate || undefined,
+          this.selectedCategoryId || undefined,
+        )
+        .subscribe({
         next: (summary) => {
           this.summary = summary;
           this.statsLoading = false;
@@ -185,25 +228,47 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Load transaction categories for the filter dropdown
+   */
+  private loadCategories(): void {
+    this.subscriptions.push(
+      this.cashTransactionsService.getCategories().subscribe({
+        next: (categories) => {
+          this.categories = categories;
+        },
+        error: (error) => {
+          console.error('Error loading categories:', error);
+          this.categories = [];
+        }
+      })
+    );
+  }
+
+  /**
+   * Handle category filter change — applies immediately and reloads the list
+   * and summary so the stat cards reflect the selected category.
+   */
+  onCategoryChange(value: string | null): void {
+    this.selectedCategoryId = value;
+    this.currentPage = 1;
+    this.selectedCategoryName = this.categoryOptions.find(fi => fi.value === value)?.label;
+  }
+
+  /**
    * Load transactions
    */
   private loadTransactions(): void {
-    console.log('[CashTransactionsPage] loadTransactions called');
     this.dataSource.loading = true;
-    console.log('[CashTransactionsPage] dataSource set to loading:', this.dataSource);
 
     this.subscriptions.push(
       this.cashTransactionsService.getAll({
-        page: 1,
-        limit: 10,
+        page: this.currentPage,
+        limit: this.pageSize,
+        categoryId: this.selectedCategoryId || undefined,
         startDate: this.startDate || undefined,
         endDate: this.endDate || undefined
       }).subscribe({
         next: (response: CashTransactionsResponse) => {
-          console.log('[CashTransactionsPage] Response received:', response);
-          console.log('[CashTransactionsPage] Data length:', response?.data?.length);
-          console.log('[CashTransactionsPage] First item:', response?.data?.[0]);
-
           // Create a new object to trigger ngOnChanges in table component
           this.dataSource = {
             data: response.data,
@@ -211,13 +276,8 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
             totalPages: response.totalPages,
             loading: false
           };
-
-          console.log('[CashTransactionsPage] dataSource after update:', this.dataSource);
-          console.log('[CashTransactionsPage] dataSource.data:', this.dataSource.data);
-          console.log('[CashTransactionsPage] dataSource.loading:', this.dataSource.loading);
         },
         error: (error) => {
-          console.error('[CashTransactionsPage] Error loading transactions:', error);
           this.dataSource = {
             data: [],
             total: 0,
@@ -343,20 +403,47 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle start date change
+   * Handle start date change (from form-date-picker ngModelChange)
    */
-  onStartDateChange(event: CustomEvent): void {
-    this.pendingStartDate = event.detail.value;
+  onStartDateChange(value: string | null): void {
+    this.pendingStartDate = value;
     // Manual edit breaks any active preset match
     this.activePreset = null;
   }
 
   /**
-   * Handle end date change
+   * Handle end date change (from form-date-picker ngModelChange)
    */
-  onEndDateChange(event: CustomEvent): void {
-    this.pendingEndDate = event.detail.value;
+  onEndDateChange(value: string | null): void {
+    this.pendingEndDate = value;
     this.activePreset = null;
+  }
+
+  /**
+   * Handle table page change (server-side pagination)
+   */
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadTransactions();
+  }
+
+  /**
+   * Handle table page size change (server-side pagination)
+   */
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 1;
+    this.loadTransactions();
+  }
+
+  /**
+   * Handle table action click (view/edit/approve/reject/delete).
+   * The table only emits the event; the configured handler is invoked here.
+   */
+  onAction(event: { action: TableAction; item: CashTransaction }): void {
+    if (event.action.handler) {
+      event.action.handler(event.item);
+    }
   }
 
   /**
@@ -373,6 +460,7 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
     this.pendingStartDate = range.start;
     this.pendingEndDate = range.end;
     this.activePreset = key;
+    this.currentPage = 1;
 
     this.loadTransactions();
     this.loadSummary();
@@ -464,17 +552,10 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
    * Apply date filter to both table and summary
    */
   applyDateFilter(): void {
-    if (this.pendingStartDate) {
-      this.startDate = this.pendingStartDate;
-    }
-    if (this.pendingEndDate) {
-      this.endDate = this.pendingEndDate;
-    }
-
-    console.log('[CashTransactionsPage] Applying date filter:', {
-      startDate: this.startDate,
-      endDate: this.endDate
-    });
+    // Sync pending selections to applied filter (null clears the bound side)
+    this.startDate = this.pendingStartDate;
+    this.endDate = this.pendingEndDate;
+    this.currentPage = 1;
 
     // Reload both transactions and summary with date filter
     this.loadTransactions();
@@ -489,10 +570,10 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
     this.endDate = null;
     this.pendingStartDate = null;
     this.pendingEndDate = null;
+    this.selectedCategoryId = null;
+    this.selectedCategoryName = null;
     this.activePreset = null;
-
-    console.log('[CashTransactionsPage] Clearing date filter');
-
+    this.currentPage = 1;
     // Reload both transactions and summary without filter
     this.loadTransactions();
     this.loadSummary();

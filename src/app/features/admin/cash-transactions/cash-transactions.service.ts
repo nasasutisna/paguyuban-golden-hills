@@ -45,34 +45,7 @@ export class CashTransactionsService {
         console.log('[CashTransactionsService] First raw item:', paginatedData[0]);
 
         // Map API response to match model
-        const data = paginatedData.map((item: any) => {
-          const mapped = {
-            id: item.id,
-            transactionNumber: item.transactionNumber,
-            transactionDate: item.transactionDate,
-            transactionType: item.transactionType,
-            category: item.category,
-            categoryId: item.categoryId,
-            amount: typeof item.amount === 'string' ? parseFloat(item.amount) : item.amount,
-            paymentMethod: item.paymentMethod || 'CASH', // Default to CASH if not provided
-            referenceType: item.referenceType,
-            referenceId: item.referenceId,
-            referenceNumber: item.referenceNumber,
-            description: item.description,
-            notes: item.notes,
-            // Map 'status' from API to 'approvalStatus' in model
-            approvalStatus: item.status || item.approvalStatus,
-            requiresApproval: item.requiresApproval !== undefined ? item.requiresApproval : false,
-            approvedBy: item.approvedBy,
-            approvedAt: item.approvedAt,
-            ipAddress: item.ipAddress,
-            userAgent: item.userAgent,
-            createdBy: item.createdBy,
-            createdAt: item.createdAt,
-            updatedAt: item.updatedAt
-          };
-          return mapped;
-        });
+        const data = paginatedData.map((item: any) => this.normalizeTransaction(item));
 
         const result = {
           data: data,
@@ -126,11 +99,51 @@ export class CashTransactionsService {
   }
 
   /**
+   * Normalize a raw API transaction object into the CashTransaction model.
+   * Shared by getAll() and getById() so the list and detail views render
+   * consistently (e.g. API returns `status`, model expects `approvalStatus`;
+   * API may return `amount` as a string).
+   */
+  private normalizeTransaction(item: any): CashTransaction {
+    return {
+      id: item.id,
+      transactionNumber: item.transactionNumber,
+      transactionDate: item.transactionDate,
+      transactionType: item.transactionType,
+      category: item.category,
+      categoryId: item.categoryId,
+      amount: typeof item.amount === 'string' ? parseFloat(item.amount) : item.amount,
+      paymentMethod: item.paymentMethod || 'CASH', // Default to CASH if not provided
+      referenceType: item.referenceType,
+      referenceId: item.referenceId,
+      referenceNumber: item.referenceNumber,
+      description: item.description,
+      notes: item.notes,
+      // Map 'status' from API to 'approvalStatus' in model
+      approvalStatus: item.status || item.approvalStatus,
+      requiresApproval: item.requiresApproval !== undefined ? item.requiresApproval : false,
+      approvedBy: item.approvedBy,
+      approvedAt: item.approvedAt,
+      ipAddress: item.ipAddress,
+      userAgent: item.userAgent,
+      createdBy: item.createdBy,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      deletedAt: item.deletedAt ?? null,
+      creator: item.creator,
+      approver: item.approver
+    };
+  }
+
+  /**
    * Get single cash transaction by ID
    */
   getById(id: string): Observable<CashTransaction | null> {
-    return this.apiService.get<CashTransaction>(`${this.cashTransactionsPath}/${id}`).pipe(
-      map((response) => response.data || null),
+    return this.apiService.get<any>(`${this.cashTransactionsPath}/${id}`).pipe(
+      map((response) => {
+        const item = response?.data;
+        return item ? this.normalizeTransaction(item) : null;
+      }),
       catchError((error) => {
         console.error('Error fetching cash transaction:', error);
         return of(null);
@@ -206,10 +219,11 @@ export class CashTransactionsService {
   /**
    * Get transaction summary
    */
-  getSummary(startDate?: string, endDate?: string): Observable<TransactionSummary> {
+  getSummary(startDate?: string, endDate?: string, categoryId?: string): Observable<TransactionSummary> {
     const queryParams = new URLSearchParams();
     if (startDate) queryParams.append('startDate', startDate);
     if (endDate) queryParams.append('endDate', endDate);
+    if (categoryId) queryParams.append('categoryId', categoryId);
 
     const queryString = queryParams.toString();
     const endpoint = queryString ? `${this.cashTransactionsPath}/summary?${queryString}` : `${this.cashTransactionsPath}/summary`;

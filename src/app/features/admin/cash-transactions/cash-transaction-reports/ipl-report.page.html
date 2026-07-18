@@ -47,13 +47,15 @@
   </ion-card>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-container">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Memuat data...</p>
-  </div>
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Memuat data...</p>
+    </div>
+  }
 
   <!-- Report Content -->
-  <ng-container *ngIf="!isLoading && hasData()">
+  @if (!isLoading && hasData()) {
     <!-- Summary Cards -->
     <ion-row class="summary-row">
       <ion-col size="12" size-md="4">
@@ -83,36 +85,42 @@
     </ion-row>
 
     <!-- Category Breakdown -->
-    <ion-card *ngIf="reportData!.breakdownByCategory && reportData!.breakdownByCategory.length > 0">
-      <ion-card-header>
-        <ion-card-subtitle>Breakdown per Kategori</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list>
-          <ion-item *ngFor="let category of reportData!.breakdownByCategory" class="category-item">
-            <ion-label>
-              <h3>{{ category.categoryName }}</h3>
-              <p class="category-code">{{ category.categoryCode }}</p>
-            </ion-label>
-            <div class="category-amount" slot="end">
-              <div class="amount">{{ formatCurrency(category.totalAmount) }}</div>
-              <div class="percentage">{{ getCategoryPercentage(category) | number: '1.2-2' }}%</div>
-            </div>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
+    @if (reportData!.breakdownByCategory && reportData!.breakdownByCategory.length > 0) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Breakdown per Kategori</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            @for (category of reportData!.breakdownByCategory; track category.categoryId) {
+              <ion-item class="category-item">
+                <ion-label>
+                  <h3>{{ category.categoryName }}</h3>
+                  <p class="category-code">{{ category.categoryCode }}</p>
+                </ion-label>
+                <div class="category-amount" slot="end">
+                  <div class="amount">{{ formatCurrency(category.totalAmount) }}</div>
+                  <div class="percentage">{{ getCategoryPercentage(category) | number: '1.2-2' }}%</div>
+                </div>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    }
 
     <!-- Export Button -->
     <ion-button expand="block" (click)="export()" class="export-btn">
       <ion-icon name="download-outline" slot="start"></ion-icon>
       Export Laporan
     </ion-button>
-  </ng-container>
+  }
 
   <!-- No Data State -->
-  <div *ngIf="!isLoading && !hasData()" class="no-data">
-    <ion-icon name="document-text-outline" class="no-data-icon"></ion-icon>
-    <p>Tidak ada data untuk periode yang dipilih</p>
-  </div>
+  @if (!isLoading && !hasData()) {
+    <div class="no-data">
+      <ion-icon name="document-text-outline" class="no-data-icon"></ion-icon>
+      <p>Tidak ada data untuk periode yang dipilih</p>
+    </div>
+  }
 </ion-content>

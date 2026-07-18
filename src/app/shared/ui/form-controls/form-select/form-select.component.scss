@@ -1,13 +1,12 @@
 .form-control-wrapper {
   width: 100%;
-  margin-bottom: 16px;
 
   // Label styling
   ion-label {
     display: block;
-    font-size: 0.95rem;
+    font-size: 1.2rem;
     font-weight: 500;
-    margin-bottom: 6px;
+    margin-bottom: 12px;
     color: #222428 !important;
 
     &.required::after {
@@ -34,6 +33,8 @@
     }
 
     ion-select {
+      display: block;
+      width: 100%;
       --padding-start: 16px;
       --padding-end: 16px;
       --padding-top: 12px;
@@ -54,6 +55,27 @@
       // Force hide the highlight bar element
       ::ng-deep .select-bottom {
         display: none !important;
+      }
+
+      ::ng-deep .select-wrapper-inner {
+        display: none !important;
+      }
+      
+      &::part(inner) {
+        width: 100%;
+      }
+     
+      &::part(container) {
+        width: 100%;
+      }
+
+      // Make the native chevron look like our form's arrow
+      ::ng-deep .select-icon {
+        color: #92949e;
+
+        .select-icon-inner {
+          opacity: 1;
+        }
       }
     }
   }

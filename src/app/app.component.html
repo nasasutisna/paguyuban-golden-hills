@@ -1,294 +1,360 @@
 <ion-app>
   @if (isAuthenticated) {
-    <!-- Modern Admin Layout (only when authenticated) -->
-    <ion-split-pane contentId="main-content" when="lg" class="admin-split-pane">
-      <!-- Modern Admin Sidebar Menu -->
-      <ion-menu side="start" menuId="admin-menu" contentId="main-content" class="admin-sidebar">
-        <ion-header class="sidebar-header">
-          <div class="brand-container">
-            <div class="brand-logo">
-              <ion-icon name="leaf"></ion-icon>
-            </div>
-            <div class="brand-info">
-              <h1 class="brand-name">Golden Hills</h1>
-              <p class="brand-subtitle">Admin Panel</p>
-            </div>
+  <!-- Modern Admin Layout (only when authenticated) -->
+  <ion-split-pane contentId="main-content" when="lg" class="admin-split-pane">
+    <!-- Modern Admin Sidebar Menu -->
+    <ion-menu side="start" menuId="admin-menu" contentId="main-content" class="admin-sidebar">
+      <ion-header class="sidebar-header">
+        <div class="brand-container">
+          <div class="brand-logo">
+            <ion-icon name="leaf"></ion-icon>
           </div>
-        </ion-header>
+          <div class="brand-info">
+            <h1 class="brand-name">Golden Hills</h1>
+            <p class="brand-subtitle">Admin Panel</p>
+          </div>
+        </div>
+      </ion-header>
 
-        <ion-content class="sidebar-content">
-          <!-- User Profile Card -->
-          @if (currentUser) {
-            <div class="user-profile-card">
-              <div class="user-avatar">
-                <ion-icon name="person-circle"></ion-icon>
-              </div>
-              <div class="user-info">
-                <h3 class="user-name">{{ userDisplayName }}</h3>
-                <p class="user-role">{{ userRoleDisplay }}</p>
-              </div>
+      <ion-content class="sidebar-content">
+        <ion-list class="menu-list">
+          <!-- Main Navigation -->
+          <ion-list-header class="menu-section-header">
+            <div class="section-header-content">
+              <ion-icon name="grid"></ion-icon>
+              <span>Menu Utama</span>
             </div>
-          }
+          </ion-list-header>
 
-          <ion-list class="menu-list">
-            <!-- Main Navigation -->
-            <ion-list-header class="menu-section-header">
-              <div class="section-header-content">
-                <ion-icon name="grid"></ion-icon>
-                <span>Menu Utama</span>
-              </div>
-            </ion-list-header>
-
-            @for (item of mainMenuItems; track item.url) {
-              <ion-menu-toggle auto-hide="false">
-                <ion-item
-                  class="menu-item"
-                  (click)="navigateWithSetRoot(item.url)"
-                  lines="none"
-                  detail="false"
-                  [class.active]="isActiveMenu(item.url)"
-                  [class.has-badge]="item.badge"
-                >
-                  <div class="menu-item-icon" slot="start">
-                    <ion-icon [name]="item.icon"></ion-icon>
-                  </div>
-                  <ion-label>
-                    <span class="menu-label">{{ item.title }}</span>
-                    @if (item.description) {
-                      <span class="menu-description">{{ item.description }}</span>
-                    }
-                  </ion-label>
-                  @if (item.badge) {
-                    <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
-                  }
-                  @if (item.external) {
-                    <ion-icon slot="end" name="open-outline" class="external-link-icon"></ion-icon>
-                  }
-                </ion-item>
-              </ion-menu-toggle>
-            }
-
-            <!-- Management Section -->
-            <ion-list-header class="menu-section-header">
-              <div class="section-header-content">
-                <ion-icon name="cog"></ion-icon>
-                <span>Manajemen</span>
-              </div>
-            </ion-list-header>
-
-            @for (item of managementMenuItems; track item.url) {
-              <ion-menu-toggle auto-hide="false">
-                <ion-item
-                  class="menu-item"
-                  (click)="navigateWithSetRoot(item.url)"
-                  lines="none"
-                  detail="false"
-                  [class.active]="isActiveMenu(item.url)"
-                >
-                  <div class="menu-item-icon" slot="start">
-                    <ion-icon [name]="item.icon"></ion-icon>
-                  </div>
-                  <ion-label>
-                    <span class="menu-label">{{ item.title }}</span>
-                    @if (item.description) {
-                      <span class="menu-description">{{ item.description }}</span>
-                    }
-                  </ion-label>
-                  @if (item.badge) {
-                    <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
-                  }
-                </ion-item>
-              </ion-menu-toggle>
-            }
-
-            <!-- Keuangan Section -->
-            <ion-list-header class="menu-section-header">
-              <div class="section-header-content">
-                <ion-icon name="wallet-outline"></ion-icon>
-                <span>Keuangan</span>
-              </div>
-            </ion-list-header>
-
-            @for (item of keuanganMenuItems; track item.url) {
-              <ion-menu-toggle auto-hide="false">
-                <ion-item
-                  class="menu-item"
-                  (click)="navigateWithSetRoot(item.url)"
-                  lines="none"
-                  detail="false"
-                  [class.active]="isActiveMenu(item.url)"
-                >
-                  <div class="menu-item-icon" slot="start">
-                    <ion-icon [name]="item.icon"></ion-icon>
-                  </div>
-                  <ion-label>
-                    <span class="menu-label">{{ item.title }}</span>
-                    @if (item.description) {
-                      <span class="menu-description">{{ item.description }}</span>
-                    }
-                  </ion-label>
-                  @if (item.badge) {
-                    <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
-                  }
-                </ion-item>
-              </ion-menu-toggle>
-            }
-
-            <!-- IPL Section -->
-            <ion-list-header class="menu-section-header">
-              <div class="section-header-content">
-                <ion-icon name="wallet"></ion-icon>
-                <span>IPL</span>
-              </div>
-            </ion-list-header>
-
-            @for (item of iplMenuItems; track item.url) {
-              <ion-menu-toggle auto-hide="false">
-                <ion-item
-                  class="menu-item"
-                  (click)="navigateWithSetRoot(item.url)"
-                  lines="none"
-                  detail="false"
-                  [class.active]="isActiveMenu(item.url)"
-                >
-                  <div class="menu-item-icon" slot="start">
-                    <ion-icon [name]="item.icon"></ion-icon>
-                  </div>
-                  <ion-label>
-                    <span class="menu-label">{{ item.title }}</span>
-                    @if (item.description) {
-                      <span class="menu-description">{{ item.description }}</span>
-                    }
-                  </ion-label>
-                  @if (item.badge) {
-                    <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
-                  }
-                </ion-item>
-              </ion-menu-toggle>
-            }
-
-            <!-- Reports Section -->
-            <ion-list-header class="menu-section-header">
-              <div class="section-header-content">
-                <ion-icon name="bar-chart"></ion-icon>
-                <span>Laporan &amp; Analitik</span>
-              </div>
-            </ion-list-header>
-
-            @for (item of reportsMenuItems; track item.url) {
-              <ion-menu-toggle auto-hide="false">
-                <ion-item
-                  class="menu-item"
-                  (click)="navigateWithSetRoot(item.url)"
-                  lines="none"
-                  detail="false"
-                  [class.active]="isActiveMenu(item.url)"
-                >
-                  <div class="menu-item-icon" slot="start">
-                    <ion-icon [name]="item.icon"></ion-icon>
-                  </div>
-                  <ion-label>
-                    <span class="menu-label">{{ item.title }}</span>
-                    @if (item.description) {
-                      <span class="menu-description">{{ item.description }}</span>
-                    }
-                  </ion-label>
-                </ion-item>
-              </ion-menu-toggle>
-            }
-
-            <!-- Settings Section -->
-            <ion-list-header class="menu-section-header">
-              <div class="section-header-content">
-                <ion-icon name="settings"></ion-icon>
-                <span>Pengaturan</span>
-              </div>
-            </ion-list-header>
-
-            @for (item of settingsMenuItems; track item.url) {
-              <ion-menu-toggle auto-hide="false">
-                <ion-item
-                  class="menu-item"
-                  (click)="navigateWithSetRoot(item.url)"
-                  lines="none"
-                  detail="false"
-                  [class.active]="isActiveMenu(item.url)"
-                >
-                  <div class="menu-item-icon" slot="start">
-                    <ion-icon [name]="item.icon"></ion-icon>
-                  </div>
-                  <ion-label>
-                    <span class="menu-label">{{ item.title }}</span>
-                    @if (item.description) {
-                      <span class="menu-description">{{ item.description }}</span>
-                    }
-                  </ion-label>
-                </ion-item>
-              </ion-menu-toggle>
-            }
-          </ion-list>
-
-          <!-- Logout Button -->
-          <div class="sidebar-footer">
-            <ion-item class="menu-item logout-item" (click)="onLogout()" lines="none" detail="false">
+          @for (item of mainMenuItems; track item.url) {
+          <ion-menu-toggle auto-hide="false">
+            <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
+              [class.active]="isActiveMenu(item.url)" [class.has-badge]="item.badge">
               <div class="menu-item-icon" slot="start">
-                <ion-icon name="log-out"></ion-icon>
+                <ion-icon [name]="item.icon"></ion-icon>
               </div>
               <ion-label>
-                <span class="menu-label">Keluar</span>
+                <span class="menu-label">{{ item.title }}</span>
+                @if (item.description) {
+                <span class="menu-description">{{ item.description }}</span>
+                }
+              </ion-label>
+              @if (item.badge) {
+              <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
+              }
+              @if (item.external) {
+              <ion-icon slot="end" name="open-outline" class="external-link-icon"></ion-icon>
+              }
+            </ion-item>
+          </ion-menu-toggle>
+          }
+
+          <!-- IPL Section -->
+          <ion-list-header class="menu-section-header">
+            <div class="section-header-content">
+              <ion-icon name="wallet"></ion-icon>
+              <span>Pembayaran</span>
+            </div>
+          </ion-list-header>
+
+          @for (item of iplMenuItems; track item.url) {
+          <ion-menu-toggle auto-hide="false">
+            <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
+              [class.active]="isActiveMenu(item.url)">
+              <div class="menu-item-icon" slot="start">
+                <ion-icon [name]="item.icon"></ion-icon>
+              </div>
+              <ion-label>
+                <span class="menu-label">{{ item.title }}</span>
+                @if (item.description) {
+                <span class="menu-description">{{ item.description }}</span>
+                }
+              </ion-label>
+              @if (item.badge) {
+              <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
+              }
+            </ion-item>
+          </ion-menu-toggle>
+          }
+
+          <!-- Pengajuan Section -->
+          @if (canSeeExpenseRequests()) {
+          <ion-list-header class="menu-section-header">
+            <div class="section-header-content">
+              <ion-icon name="receipt-outline"></ion-icon>
+              <span>Pengajuan</span>
+            </div>
+          </ion-list-header>
+
+          @for (item of expenseMenuItems; track item.url) {
+          <ion-menu-toggle auto-hide="false">
+            <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
+              [class.active]="isActiveMenu(item.url)">
+              <div class="menu-item-icon" slot="start">
+                <ion-icon [name]="item.icon"></ion-icon>
+              </div>
+              <ion-label>
+                <span class="menu-label">{{ item.title }}</span>
+                @if (item.description) {
+                <span class="menu-description">{{ item.description }}</span>
+                }
               </ion-label>
             </ion-item>
-          </div>
-        </ion-content>
-      </ion-menu>
+          </ion-menu-toggle>
+          }
+          }
 
-      <!-- Main Content Area -->
-      <div class="main-content-wrapper" id="main-content">
-        <!-- Top Header -->
-        <ion-header class="admin-header">
-          <ion-toolbar>
-            <div class="header-toolbar-content">
-              <div class="header-left">
-                <ion-menu-button menu="admin-menu" class="menu-toggle-btn">
-                  <ion-icon name="menu"></ion-icon>
-                </ion-menu-button>
-                <div class="header-title">
-                  <ion-icon [name]="currentPageIcon"></ion-icon>
-                  <h2>{{ currentPageTitle }}</h2>
-                </div>
+          <!-- Keuangan Section -->
+          <ion-list-header class="menu-section-header">
+            <div class="section-header-content">
+              <ion-icon name="wallet-outline"></ion-icon>
+              <span>Keuangan</span>
+            </div>
+          </ion-list-header>
+
+          @for (item of keuanganMenuItems; track item.url) {
+          <ion-menu-toggle auto-hide="false">
+            <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
+              [class.active]="isActiveMenu(item.url)">
+              <div class="menu-item-icon" slot="start">
+                <ion-icon [name]="item.icon"></ion-icon>
               </div>
+              <ion-label>
+                <span class="menu-label">{{ item.title }}</span>
+                @if (item.description) {
+                <span class="menu-description">{{ item.description }}</span>
+                }
+              </ion-label>
+              @if (item.badge) {
+              <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
+              }
+            </ion-item>
+          </ion-menu-toggle>
+          }
 
-              <div class="header-right">
-                <!-- Search -->
-                <div class="header-search">
-                  <ion-icon name="search"></ion-icon>
-                  <input type="text" placeholder="Cari..." />
-                </div>
+          <!-- Reports Section -->
+          <ion-list-header class="menu-section-header">
+            <div class="section-header-content">
+              <ion-icon name="bar-chart"></ion-icon>
+              <span>Laporan &amp; Analitik</span>
+            </div>
+          </ion-list-header>
 
-                <!-- Notifications -->
-                <ion-button class="header-action-btn" fill="clear" id="notifications-trigger">
-                  <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
-                  <ion-badge class="notification-badge" color="danger">3</ion-badge>
-                </ion-button>
+          @for (item of reportsMenuItems; track item.url) {
+          <ion-menu-toggle auto-hide="false">
+            <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
+              [class.active]="isActiveMenu(item.url)">
+              <div class="menu-item-icon" slot="start">
+                <ion-icon [name]="item.icon"></ion-icon>
+              </div>
+              <ion-label>
+                <span class="menu-label">{{ item.title }}</span>
+                @if (item.description) {
+                <span class="menu-description">{{ item.description }}</span>
+                }
+              </ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+          }
 
-                <!-- Profile -->
-                <ion-button class="header-action-btn" fill="clear" (click)="navigateWithSetRoot('/profile')">
-                  <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
-                </ion-button>
+          <!-- Management Section -->
+          <ion-list-header class="menu-section-header">
+            <div class="section-header-content">
+              <ion-icon name="cog"></ion-icon>
+              <span>Master Data</span>
+            </div>
+          </ion-list-header>
+
+          @for (item of managementMenuItems; track item.url) {
+          <ion-menu-toggle auto-hide="false">
+            <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
+              [class.active]="isActiveMenu(item.url)">
+              <div class="menu-item-icon" slot="start">
+                <ion-icon [name]="item.icon"></ion-icon>
+              </div>
+              <ion-label>
+                <span class="menu-label">{{ item.title }}</span>
+                @if (item.description) {
+                <span class="menu-description">{{ item.description }}</span>
+                }
+              </ion-label>
+              @if (item.badge) {
+              <ion-badge slot="end" color="danger">{{ item.badge }}</ion-badge>
+              }
+            </ion-item>
+          </ion-menu-toggle>
+          }
+
+          <!-- Settings Section -->
+          <ion-list-header class="menu-section-header">
+            <div class="section-header-content">
+              <ion-icon name="settings"></ion-icon>
+              <span>Pengaturan</span>
+            </div>
+          </ion-list-header>
+
+          @for (item of settingsMenuItems; track item.url) {
+          <ion-menu-toggle auto-hide="false">
+            <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
+              [class.active]="isActiveMenu(item.url)">
+              <div class="menu-item-icon" slot="start">
+                <ion-icon [name]="item.icon"></ion-icon>
+              </div>
+              <ion-label>
+                <span class="menu-label">{{ item.title }}</span>
+                @if (item.description) {
+                <span class="menu-description">{{ item.description }}</span>
+                }
+              </ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+          }
+        </ion-list>
+      </ion-content>
+    </ion-menu>
+
+    <!-- Main Content Area -->
+    <div class="main-content-wrapper" id="main-content">
+      <!-- Top Header -->
+      <ion-header class="admin-header">
+        <ion-toolbar>
+          <div class="header-toolbar-content">
+            <div class="header-left">
+              <ion-menu-button menu="admin-menu" class="menu-toggle-btn">
+                <ion-icon name="menu"></ion-icon>
+              </ion-menu-button>
+              <div class="header-title">
+                <ion-icon [name]="currentPageIcon"></ion-icon>
+                <h2>{{ currentPageTitle }}</h2>
               </div>
             </div>
-          </ion-toolbar>
-        </ion-header>
 
-        <!-- Breadcrumb Navigation -->
-        <app-breadcrumb></app-breadcrumb>
+            <div class="header-right">
+              <!-- Search -->
+              <div class="header-search">
+                <ion-icon name="search"></ion-icon>
+                <input type="text" placeholder="Cari..." />
+              </div>
 
-        <!-- Router Outlet -->
-        <ion-router-outlet id="main-router-outlet" class="main-router-outlet"></ion-router-outlet>
-      </div>
-    </ion-split-pane>
+              <!-- Notifications -->
+              <ion-button class="header-action-btn" fill="clear" id="notifications-trigger">
+                <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+                @if (pendingCount > 0) {
+                <ion-badge class="notification-badge" color="danger">{{ pendingCount }}</ion-badge>
+                }
+              </ion-button>
+
+              <ion-popover #notificationsPopover trigger="notifications-trigger" [showBackdrop]="true" side="bottom"
+                alignment="end" class="notifications-popover">
+                <ng-template>
+                  <div class="notifications-dropdown">
+                    <div class="notifications-header">
+                      <span class="notifications-title">Notifikasi</span>
+                      @if (pendingCount > 0) {
+                      <span class="notifications-count">{{ pendingCount }} menunggu approval</span>
+                      }
+                    </div>
+
+                    <div class="notifications-body">
+                      @if (loadingApprovals) {
+                      <div class="notifications-loading">
+                        <ion-spinner name="crescent"></ion-spinner>
+                        <span>Memuat notifikasi...</span>
+                      </div>
+                      } @else if (pendingApprovals.length === 0) {
+                      <div class="notifications-empty">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                        <p class="empty-title">Tidak ada notifikasi</p>
+                        <p class="empty-subtitle">Semua iuran &amp; IPL sudah di-approve</p>
+                      </div>
+                      } @else {
+                      <div class="notifications-list">
+                        @for (item of pendingApprovals; track item.id) {
+                        <button type="button" class="notification-item"
+                          (click)="notificationsPopover.dismiss(); navigateToApproval(item.route)">
+                          <div class="notification-icon" [class.is-ipl]="item.type === 'ipl'">
+                            <ion-icon [name]="item.type === 'ipl' ? 'wallet-outline' : 'cash-outline'"></ion-icon>
+                          </div>
+                          <div class="notification-content">
+                            <div class="notification-top">
+                              <span class="notification-type">{{ item.typeLabel }}</span>
+                              <span class="notification-date">{{ item.date | date:'dd MMM' }}</span>
+                            </div>
+                            <span class="notification-name">{{ item.title }}</span>
+                            <div class="notification-bottom">
+                              <span class="notification-subtitle">{{ item.subtitle }}</span>
+                              <span class="notification-amount">{{ formatCurrency(item.amount) }}</span>
+                            </div>
+                          </div>
+                        </button>
+                        }
+                      </div>
+
+                      <button type="button" class="notifications-footer"
+                        (click)="notificationsPopover.dismiss(); navigateWithSetRoot('/admin/ipl-payments')">
+                        Lihat semua
+                      </button>
+                      }
+                    </div>
+                  </div>
+                </ng-template>
+              </ion-popover>
+
+              <!-- Profile Dropdown -->
+              <div class="header-profile">
+                <ion-button class="profile-btn" fill="clear" id="profile-trigger">
+                  <div class="profile-btn-content">
+                    <ion-icon name="person-circle" class="profile-avatar"></ion-icon>
+                    <div class="profile-text">
+                      <span class="profile-name">{{ userDisplayName }}</span>
+                      <span class="profile-role">{{ userRoleDisplay }}</span>
+                    </div>
+                    <ion-icon name="chevron-down-outline" class="profile-chevron"></ion-icon>
+                  </div>
+                </ion-button>
+
+                <ion-popover #profilePopover trigger="profile-trigger" [showBackdrop]="true" side="bottom"
+                  alignment="end" class="profile-popover">
+                  <ng-template>
+                    <div class="profile-dropdown">
+                      <div class="dropdown-user">
+                        <ion-icon name="person-circle" class="dropdown-avatar"></ion-icon>
+                        <div class="dropdown-user-info">
+                          <span class="dropdown-name">{{ userDisplayName }}</span>
+                          <span class="dropdown-role">{{ userRoleDisplay }}</span>
+                        </div>
+                      </div>
+                      <div class="dropdown-divider"></div>
+                      <div class="dropdown-actions">
+                        <button type="button" class="dropdown-action"
+                          (click)="profilePopover.dismiss(); navigateWithSetRoot('/profile')">
+                          <ion-icon name="person-circle-outline"></ion-icon>
+                          <span>Profil Saya</span>
+                        </button>
+                        <button type="button" class="dropdown-action logout"
+                          (click)="profilePopover.dismiss(); onLogout()">
+                          <ion-icon name="log-out"></ion-icon>
+                          <span>Keluar</span>
+                        </button>
+                      </div>
+                    </div>
+                  </ng-template>
+                </ion-popover>
+              </div>
+            </div>
+          </div>
+        </ion-toolbar>
+      </ion-header>
+
+      <!-- Breadcrumb Navigation -->
+      <app-breadcrumb></app-breadcrumb>
+
+      <!-- Router Outlet -->
+      <ion-router-outlet id="main-router-outlet" class="main-router-outlet"></ion-router-outlet>
+    </div>
+  </ion-split-pane>
   } @else {
-    <!-- Login Page Layout (no sidebar/header) -->
-    <ion-router-outlet id="main-router-outlet" class="main-router-outlet-logi"></ion-router-outlet>
+  <!-- Login Page Layout (no sidebar/header) -->
+  <ion-router-outlet id="main-router-outlet" class="main-router-outlet-logi"></ion-router-outlet>
   }
 </ion-app>

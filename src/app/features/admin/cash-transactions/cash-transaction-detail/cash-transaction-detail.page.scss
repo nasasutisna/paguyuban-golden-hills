@@ -1,0 +1,226 @@
+:host {
+  --background: #f5f5f5;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 20px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-medium);
+  }
+
+  h2 {
+    margin: 0;
+    color: var(--ion-color-dark);
+  }
+}
+
+// Header Section
+.header-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 20px;
+  background: white;
+  margin: -16px -16px 20px -16px;
+  text-align: center;
+
+  .transaction-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--ion-color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+
+    ion-icon {
+      font-size: 36px;
+      color: white;
+    }
+
+    &.income {
+      background: var(--ion-color-success);
+    }
+
+    &.expense {
+      background: var(--ion-color-danger);
+    }
+  }
+
+  h2 {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+  }
+
+  .code {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+
+    ion-chip {
+      height: 28px;
+      font-size: 13px;
+    }
+  }
+}
+
+// Amount Card
+.amount-card {
+  margin: 0 0 20px 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+
+  &.income {
+    background: linear-gradient(135deg, var(--ion-color-success) 0%, var(--ion-color-success-shade) 100%);
+  }
+
+  &.expense {
+    background: linear-gradient(135deg, var(--ion-color-danger) 0%, var(--ion-color-danger-shade) 100%);
+  }
+
+  ion-card-content {
+    padding: 20px;
+
+    .amount-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      span {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .amount-value {
+        font-size: 26px;
+        font-weight: 700;
+        color: white;
+      }
+    }
+  }
+}
+
+// Actions Row
+.actions-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+
+  ion-button {
+    flex-shrink: 0;
+    --border-radius: 8px;
+    height: 36px;
+  }
+}
+
+// Info Cards
+.info-card {
+  margin: 0 0 16px 0;
+  border-radius: 16px;
+
+  ion-card-header {
+    padding-bottom: 8px;
+
+    ion-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      margin: 0;
+    }
+  }
+
+  ion-card-content {
+    padding: 0;
+
+    .info-list {
+      ion-item {
+        --padding-start: 16px;
+        --padding-end: 16px;
+        --min-height: 56px;
+
+        &:last-child {
+          --border-width: 0;
+        }
+
+        ion-icon {
+          color: var(--ion-color-primary);
+          margin-right: 16px;
+        }
+
+        ion-label {
+          h2 {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ion-color-medium);
+            margin: 0 0 4px 0;
+          }
+
+          p {
+            font-size: 15px;
+            color: var(--ion-color-dark);
+            margin: 0;
+
+            ion-chip {
+              margin: 0;
+              height: 24px;
+              font-size: 12px;
+            }
+
+            span {
+              color: var(--ion-color-medium);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Related Transaction Card
+.related-card {
+  .info-list {
+    ion-item {
+      cursor: pointer;
+
+      ion-icon {
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+}
+
+// Metadata
+.metadata {
+  text-align: center;
+  padding: 20px;
+  color: var(--ion-color-medium);
+
+  p {
+    margin: 4px 0;
+    font-size: 12px;
+  }
+}

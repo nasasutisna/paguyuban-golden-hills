@@ -1,0 +1,260 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/cash-transactions"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detail Transaksi Kas</ion-title>
+    <ion-buttons slot="end">
+      @if (transaction && canEdit()) {
+        <ion-button (click)="navigateToEdit()">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-state">
+      <ion-skeleton-text animated style="width: 60px; height: 60px; border-radius: 50%;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 150px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100px;"></ion-skeleton-text>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error && !loading) {
+    <div class="error-state">
+      <ion-icon name="warning-outline"></ion-icon>
+      <h2>{{ error }}</h2>
+      <ion-button (click)="navigateBack()">Kembali</ion-button>
+    </div>
+  }
+
+  <!-- Detail Content -->
+  @if (transaction && !loading) {
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="transaction-avatar" [class.income]="isIncome()" [class.expense]="isExpense()">
+        <ion-icon [name]="isExpense() ? 'trending-down' : 'trending-up'"></ion-icon>
+      </div>
+      <h2>{{ transaction.transactionNumber || 'Tanpa Nomor' }}</h2>
+      <p class="code">{{ transaction.description || '-' }}</p>
+      <div class="badges">
+        <ion-chip [color]="getTypeColor()">
+          <ion-label>{{ getTypeLabel() }}</ion-label>
+        </ion-chip>
+        <ion-chip [color]="getStatusColor()">
+          <ion-label>{{ getStatusLabel() }}</ion-label>
+        </ion-chip>
+        <ion-chip [color]="getMethodColor()">
+          <ion-label>{{ getMethodLabel() }}</ion-label>
+        </ion-chip>
+      </div>
+    </div>
+
+    <!-- Amount Display -->
+    <ion-card class="amount-card" [class.income]="isIncome()" [class.expense]="isExpense()">
+      <ion-card-content>
+        <div class="amount-row">
+          <span>{{ isIncome() ? 'Pemasukan' : 'Pengeluaran' }}</span>
+          <span class="amount-value">{{ formatCurrency(transaction.amount) }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Actions -->
+    <div class="actions-row">
+      @if (canEdit()) {
+        <ion-button size="small" fill="outline" (click)="navigateToEdit()">
+          <ion-icon slot="start" name="create-outline"></ion-icon>
+          Edit
+        </ion-button>
+      }
+      @if (canApprove()) {
+        <ion-button size="small" fill="solid" color="success" (click)="approveTransaction()">
+          <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+          Setujui
+        </ion-button>
+        <ion-button size="small" fill="solid" color="danger" (click)="rejectTransaction()">
+          <ion-icon slot="start" name="close-outline"></ion-icon>
+          Tolak
+        </ion-button>
+      }
+      @if (canDelete()) {
+        <ion-button size="small" fill="outline" color="danger" (click)="confirmDelete()">
+          <ion-icon slot="start" name="trash-outline"></ion-icon>
+          Hapus
+        </ion-button>
+      }
+    </div>
+
+    <!-- Transaction Information -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Informasi Transaksi</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="info-list">
+          <ion-item>
+            <ion-icon name="receipt-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Nomor Transaksi</h2>
+              <p>{{ transaction.transactionNumber || '-' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Tanggal Transaksi</h2>
+              <p>{{ formatDate(transaction.transactionDate) }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="swap-vertical-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Tipe Transaksi</h2>
+              <p>
+                <ion-chip [color]="getTypeColor()">
+                  <ion-label>{{ getTypeLabel() }}</ion-label>
+                </ion-chip>
+              </p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="pricetag-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Kategori</h2>
+              <p>{{ getCategoryName() }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="card-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Metode Pembayaran</h2>
+              <p>
+                <ion-chip [color]="getMethodColor()">
+                  <ion-label>{{ getMethodLabel() }}</ion-label>
+                </ion-chip>
+              </p>
+            </ion-label>
+          </ion-item>
+          @if (transaction.referenceType) {
+            <ion-item>
+              <ion-icon name="link-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Tipe Referensi</h2>
+                <p>{{ getReferenceTypeLabel() }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (transaction.referenceNumber) {
+            <ion-item>
+              <ion-icon name="barcode-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Nomor Referensi</h2>
+                <p>{{ transaction.referenceNumber }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (transaction.description) {
+            <ion-item>
+              <ion-icon name="document-text-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Deskripsi</h2>
+                <p>{{ transaction.description }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (transaction.notes) {
+            <ion-item>
+              <ion-icon name="text-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Catatan</h2>
+                <p>{{ transaction.notes }}</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Related Transaction Link -->
+    @if (getRelatedLink(); as link) {
+      <ion-card class="info-card related-card">
+        <ion-card-header>
+          <ion-card-title>Transaksi Terkait</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="full" class="info-list">
+            <ion-item button="true" detail="true" (click)="navigateToRelated()">
+              <ion-icon [name]="link.icon" slot="start"></ion-icon>
+              <ion-label>
+                <h2>{{ link.title }}</h2>
+                <p>{{ link.subtitle }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Approval Information -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Status Persetujuan</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="info-list">
+          <ion-item>
+            <ion-icon name="shield-checkmark-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Membutuhkan Persetujuan</h2>
+              <p>{{ transaction.requiresApproval ? 'Ya' : 'Tidak' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Dibuat Oleh</h2>
+              <p>{{ getCreatorName() }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="calendar-number-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Tanggal Dibuat</h2>
+              <p>{{ formatDateTime(transaction.createdAt) }}</p>
+            </ion-label>
+          </ion-item>
+          @if (isApproved() && transaction.approvedBy) {
+            <ion-item>
+              <ion-icon name="checkmark-circle-outline" slot="start" color="success"></ion-icon>
+              <ion-label>
+                <h2>Disetujui Oleh</h2>
+                <p>{{ getApproverName() }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (isApproved() && transaction.approvedAt) {
+            <ion-item>
+              <ion-icon name="calendar-number-outline" slot="start" color="success"></ion-icon>
+              <ion-label>
+                <h2>Tanggal Persetujuan</h2>
+                <p>{{ formatDateTime(transaction.approvedAt) }}</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Metadata -->
+    <div class="metadata">
+      <p>Dibuat: {{ formatDateTime(transaction.createdAt) }}</p>
+      <p>Terakhir Diperbarui: {{ formatDateTime(transaction.updatedAt) }}</p>
+    </div>
+  }
+</ion-content>

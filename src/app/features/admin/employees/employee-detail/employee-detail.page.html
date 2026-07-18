@@ -1,0 +1,327 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/employees"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detail Karyawan</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="navigateToEdit()">
+        <ion-icon slot="icon-only" name="create"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-state">
+      <ion-skeleton-text animated style="width: 60px; height: 60px; border-radius: 50%;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 150px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100px;"></ion-skeleton-text>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error && !loading) {
+    <div class="error-state">
+      <ion-icon name="warning-outline"></ion-icon>
+      <h2>{{ error }}</h2>
+      <ion-button (click)="navigateBack()">Kembali</ion-button>
+    </div>
+  }
+
+  <!-- Detail Content -->
+  @if (employee && !loading) {
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="employee-avatar">
+        <ion-icon name="person"></ion-icon>
+      </div>
+      <h2>{{ employee.firstName }} {{ employee.lastName }}</h2>
+      <p class="code">{{ employee.employeeCode }}</p>
+      <div class="badges">
+        <ion-chip [color]="getStatusColor()">
+          <ion-label>{{ getStatusText() }}</ion-label>
+        </ion-chip>
+        <ion-chip [color]="getEmploymentStatusColor()">
+          <ion-label>{{ EMPLOYMENT_STATUS_LABELS[employee.employmentStatus] }}</ion-label>
+        </ion-chip>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-row">
+      <ion-button size="small" fill="outline" (click)="navigateToEdit()">
+        <ion-icon slot="start" name="create-outline"></ion-icon>
+        Edit
+      </ion-button>
+      <ion-button
+        size="small"
+        fill="outline"
+        [color]="employee.isActive ? 'warning' : 'success'"
+        (click)="toggleActiveStatus()">
+        <ion-icon slot="start" name="swap-horizontal-outline"></ion-icon>
+        {{ employee.isActive ? 'Nonaktifkan' : 'Aktifkan' }}
+      </ion-button>
+      <ion-button size="small" fill="outline" color="danger" (click)="confirmDelete()">
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        Hapus
+      </ion-button>
+    </div>
+
+    <!-- Employment Info -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Informasi Kepegawaian</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="info-list">
+          <ion-item>
+            <ion-icon name="briefcase-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Jabatan</h2>
+              <p>@if (employee.position) {
+                {{ employee.position.positionName }}
+                @if (employee.position.department) { ({{ employee.position.department }}) }
+              } @else {
+                -
+              }</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="barcode-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Kode Jabatan</h2>
+              <p>{{ employee.position?.positionCode || '-' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>Tanggal Masuk</h2>
+              <p>{{ formatDate(employee.hireDate) }}</p>
+            </ion-label>
+          </ion-item>
+          @if (employee.probationEndDate) {
+            <ion-item>
+              <ion-icon name="hourglass-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Akhir Masa Percobaan</h2>
+                <p>{{ formatDate(employee.probationEndDate) }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (employee.terminationDate) {
+            <ion-item>
+              <ion-icon name="calendar-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Tanggal Berhenti</h2>
+                <p>{{ formatDate(employee.terminationDate) }}</p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Personal Info -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Informasi Pribadi</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="info-list">
+          <ion-item>
+            <ion-label>
+              <h2>Jenis Kelamin</h2>
+              <p>@if (employee.gender) {
+                <ion-chip [color]="getGenderColor()">
+                  <ion-label>{{ GENDER_LABELS[employee.gender] }}</ion-label>
+                </ion-chip>
+              } @else {
+                <span>-</span>
+              }</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h2>Tanggal Lahir</h2>
+              <p>{{ formatDate(employee.dateOfBirth) }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h2>Status Perkawinan</h2>
+              <p>@if (employee.maritalStatus) {
+                <ion-chip [color]="getMaritalStatusColor()">
+                  <ion-label>{{ MARITAL_STATUS_LABELS[employee.maritalStatus] }}</ion-label>
+                </ion-chip>
+              } @else {
+                <span>-</span>
+              }</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h2>Nomor Identitas</h2>
+              <p>{{ employee.identityNumber || '-' }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Contact Info -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Informasi Kontak</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="info-list">
+          @if (employee.email) {
+            <ion-item>
+              <ion-icon name="mail-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Email</h2>
+                <p>{{ employee.email }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (employee.phoneNumber) {
+            <ion-item>
+              <ion-icon name="call-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Telepon</h2>
+                <p>{{ employee.phoneNumber }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (employee.alternatePhone) {
+            <ion-item>
+              <ion-icon name="call-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Telepon Alternatif</h2>
+                <p>{{ employee.alternatePhone }}</p>
+              </ion-label>
+            </ion-item>
+          }
+          @if (employee.address) {
+            <ion-item>
+              <ion-icon name="location-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Alamat</h2>
+                <p>
+                  {{ employee.address }}
+                  @if (employee.city || employee.province || employee.postalCode) {
+                    <br />
+                    {{ joinLocation(employee.city, employee.province) }}
+                    @if (employee.postalCode) { {{ employee.postalCode }} }
+                  }
+                </p>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Emergency Contact -->
+    @if (employee.emergencyContact || employee.emergencyPhone) {
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Kontak Darurat</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="full" class="info-list">
+            @if (employee.emergencyContact) {
+              <ion-item>
+                <ion-icon name="person-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>Nama Kontak</h2>
+                  <p>{{ employee.emergencyContact }}</p>
+                </ion-label>
+              </ion-item>
+            }
+            @if (employee.emergencyPhone) {
+              <ion-item>
+                <ion-icon name="call-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>Telepon Kontak</h2>
+                  <p>{{ employee.emergencyPhone }}</p>
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Banking & Tax Info -->
+    @if (employee.bankName || employee.bankAccountNumber || employee.taxId) {
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Informasi Bank & Pajak</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="full" class="info-list">
+            @if (employee.bankName) {
+              <ion-item>
+                <ion-icon name="business-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>Bank</h2>
+                  <p>{{ employee.bankName }}</p>
+                </ion-label>
+              </ion-item>
+            }
+            @if (employee.bankAccountNumber) {
+              <ion-item>
+                <ion-icon name="card-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>Nomor Rekening</h2>
+                  <p>{{ employee.bankAccountNumber }}</p>
+                </ion-label>
+              </ion-item>
+            }
+            @if (employee.bankAccountName) {
+              <ion-item>
+                <ion-icon name="person-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>Nama Pemilik Rekening</h2>
+                  <p>{{ employee.bankAccountName }}</p>
+                </ion-label>
+              </ion-item>
+            }
+            @if (employee.taxId) {
+              <ion-item>
+                <ion-icon name="document-text-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>NPWP</h2>
+                  <p>{{ employee.taxId }}</p>
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Notes -->
+    @if (employee.notes) {
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Catatan</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p class="notes-text">{{ employee.notes }}</p>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Metadata -->
+    <div class="metadata">
+      <p>Dibuat: {{ formatDate(employee.createdAt) }}</p>
+      <p>Terakhir Diperbarui: {{ formatDate(employee.updatedAt) }}</p>
+    </div>
+  }
+</ion-content>

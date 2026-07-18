@@ -79,8 +79,8 @@
   <!-- Table Section -->
   <div>
     <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
-      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
-      <div table-actions>
+      (actionClick)="onAction($event)" (pageSizeChange)="onPageSizeChange($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
+      <div table-actions class="btn-actions">
         <ion-button fill="outline" color="medium" (click)="searchByReference()">
           <ion-icon slot="start" name="search-outline"></ion-icon>
           Cari Referensi

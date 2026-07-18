@@ -17,7 +17,7 @@ export interface TableColumn<T = any> {
   format?: string;
   class?: string;
   headerClass?: string;
-  cellClass?: string;
+  cellClass?: string | ((item: T) => string);
 }
 
 /**

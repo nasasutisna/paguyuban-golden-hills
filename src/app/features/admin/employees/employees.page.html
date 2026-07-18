@@ -1,0 +1,102 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Karyawan</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="navigateToCreate()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Statistics Cards -->
+  <div class="stats-container ion-margin-top" *ngIf="hasStats() || statsLoading">
+    <!-- Loading skeleton -->
+    <div class="stats-skeleton" *ngIf="statsLoading">
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px;"></ion-skeleton-text>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" *ngIf="!statsLoading && employeeStats">
+      <!-- Total Employees -->
+      <ion-card class="stat-card primary">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="people"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ employeeStats.totalEmployees }}</div>
+              <div class="stat-label">Total Karyawan</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Active Employees -->
+      <ion-card class="stat-card success">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="checkmark-circle"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ employeeStats.activeEmployees }}</div>
+              <div class="stat-label">Aktif</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Probation -->
+      <ion-card class="stat-card warning">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="hourglass"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ employeeStats.probationEmployees }}</div>
+              <div class="stat-label">Percobaan</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Inactive (Resigned + Terminated) -->
+      <ion-card class="stat-card tertiary">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="person-remove"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ inactiveCount }}</div>
+              <div class="stat-label">Tidak Aktif</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div>
+    <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
+      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
+      <div table-actions>
+        <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Tambah Baru
+        </ion-button>
+      </div>
+    </app-table>
+  </div>
+</ion-content>

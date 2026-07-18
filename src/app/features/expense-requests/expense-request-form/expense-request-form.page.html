@@ -1,0 +1,151 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/expense-requests"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <!-- Detail Pengeluaran -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Detail Pengeluaran</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-input
+          label="Judul"
+          formControlName="title"
+          placeholder="Mis. Beli lampu taman"
+          [required]="true"
+          [maxlength]="200"
+          [showError]="isFieldInvalid('title')"
+          [errorMessage]="getErrorMessage('title')"
+        ></app-form-input>
+
+        <app-form-textarea
+          label="Keterangan"
+          formControlName="description"
+          placeholder="Jelaskan keperluan pengeluaran (opsional)..."
+          [rows]="3"
+        ></app-form-textarea>
+
+        <app-form-input
+          label="Jumlah (Rp)"
+          formControlName="amount"
+          type="number"
+          placeholder="0"
+          [required]="true"
+          [min]="0.01"
+          [step]="0.01"
+          prefix="Rp "
+          [showError]="isFieldInvalid('amount')"
+          [errorMessage]="getErrorMessage('amount')"
+        ></app-form-input>
+
+        <app-form-date-picker
+          label="Tanggal Pengeluaran"
+          formControlName="transactionDate"
+          placeholder="Pilih tanggal"
+          [required]="true"
+          [showError]="isFieldInvalid('transactionDate')"
+          [errorMessage]="getErrorMessage('transactionDate')"
+        ></app-form-date-picker>
+
+        <app-form-select
+          label="Metode Pembayaran"
+          formControlName="paymentMethod"
+          placeholder="Pilih metode pembayaran"
+          [options]="paymentMethodOptions"
+        ></app-form-select>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Upload Foto Bukti (multi) -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Foto Bukti</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="file-upload-area">
+          <input
+            type="file"
+            id="proofPhotos"
+            multiple
+            [disabled]="loading"
+            accept="image/jpeg,image/png,image/jpg,application/pdf"
+            (change)="onFileSelect($event)"
+            class="hidden-file-input"
+          />
+
+          <label for="proofPhotos" class="file-upload-label" [class.has-file]="selectedFiles.length > 0">
+            <div class="upload-icon">
+              <ion-icon name="cloud-upload-outline"></ion-icon>
+            </div>
+            <div class="upload-text">
+              <p>Klik untuk upload foto bukti</p>
+              <span class="file-formats">JPG, PNG, PDF (Max 5MB / file, maks {{ maxFiles }} file)</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Selected files preview grid -->
+        @if (selectedFiles.length > 0) {
+        <div class="files-preview-grid">
+          @for (entry of selectedFiles; track entry.file.name; let i = $index) {
+          <div class="preview-item">
+            @if (entry.preview) {
+            <div class="preview-thumb">
+              <img [src]="entry.preview" [alt]="entry.file.name" />
+            </div>
+            } @else {
+            <div class="preview-icon">
+              <ion-icon name="document-text-outline"></ion-icon>
+            </div>
+            }
+            <div class="preview-info">
+              <p class="preview-name">{{ entry.file.name }}</p>
+              <p class="preview-size">{{ formatFileSize(entry.file.size) }}</p>
+            </div>
+            <ion-button
+              size="small"
+              fill="clear"
+              color="danger"
+              (click)="removeFile(i)"
+              class="remove-btn"
+            >
+              <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+          }
+        </div>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        expand="block"
+        (click)="navigateBack()"
+        [disabled]="loading"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="send-outline"
+        iconSlot="start"
+        variant="solid"
+        color="primary"
+        type="submit"
+        expand="block"
+        [disabled]="loading || !isFormValid()"
+        [loading]="loading"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>

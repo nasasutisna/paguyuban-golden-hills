@@ -71,11 +71,11 @@
 
      <ion-footer>
       <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-button (click)="dismissModal()">Batal</ion-button>
+        <ion-buttons slot="start" class="ion-padding-start">
+          <ion-button color="danger" (click)="dismissModal()">Batal</ion-button>
         </ion-buttons>
-        <ion-buttons slot="end">
-          <ion-button (click)="confirmDate()">Pilih</ion-button>
+        <ion-buttons slot="end" class="ion-padding-end">
+          <ion-button class="primary" (click)="confirmDate()">Pilih</ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-footer>

@@ -15,15 +15,15 @@
         <ion-card-subtitle>Informasi Dasar</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <app-form-input
-          label="Kode Warga"
-          formControlName="residentCode"
-          placeholder="contoh: RES001"
-          [maxlength]="20"
-          [required]="true"
-          [showError]="isFieldInvalid('residentCode')"
-          [errorMessage]="getErrorMessage('residentCode')"
-        ></app-form-input>
+        @if (isEditMode) {
+          <app-form-input
+            label="Kode Warga"
+            formControlName="residentCode"
+            [maxlength]="20"
+            [showError]="isFieldInvalid('residentCode')"
+            [errorMessage]="getErrorMessage('residentCode')"
+          ></app-form-input>
+        }
 
         <app-form-input
           label="Nama Depan"
@@ -74,14 +74,11 @@
           placeholder="contoh: 1234567890123456"
         ></app-form-input>
 
-        <ion-item class="date-item">
-          <ion-label position="stacked">Tanggal Lahir</ion-label>
-          <ion-datetime
-            formControlName="dateOfBirth"
-            presentation="date"
-            placeholder="Pilih tanggal lahir"
-          ></ion-datetime>
-        </ion-item>
+        <app-form-date-picker
+          label="Tanggal Lahir"
+          formControlName="dateOfBirth"
+          placeholder="Pilih tanggal lahir"
+        ></app-form-date-picker>
 
         <app-form-select
           label="Jenis Kelamin"
@@ -177,23 +174,19 @@
           [errorMessage]="getErrorMessage('ownershipType')"
         ></app-form-select>
 
-        <ion-item class="date-item">
-          <ion-label position="stacked">Tanggal Masuk</ion-label>
-          <ion-datetime
-            formControlName="moveInDate"
-            presentation="date"
-            placeholder="Pilih tanggal masuk"
-          ></ion-datetime>
-        </ion-item>
+        
+        <app-form-date-picker
+          label="Tanggal Masuk"
+          formControlName="moveInDate"
+          placeholder="Pilih tanggal masuk"
+        ></app-form-date-picker>
 
-        <ion-item class="date-item">
-          <ion-label position="stacked">Tanggal Keluar</ion-label>
-          <ion-datetime
-            formControlName="moveOutDate"
-            presentation="date"
-            placeholder="Pilih tanggal keluar"
-          ></ion-datetime>
-        </ion-item>
+        <app-form-date-picker
+          label="Tanggal Keluar"
+          formControlName="moveOutDate"
+          placeholder="Pilih tanggal keluar"
+        ></app-form-date-picker>
+
       </ion-card-content>
     </ion-card>
 

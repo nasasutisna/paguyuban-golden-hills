@@ -189,3 +189,12 @@
     }
   }
 }
+
+
+.btn-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  width: 100%;
+  gap: 8px;
+}

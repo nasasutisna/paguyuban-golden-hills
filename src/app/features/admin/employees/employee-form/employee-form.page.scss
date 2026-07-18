@@ -1,0 +1,79 @@
+.employee-form {
+  ion-content {
+    --background: #f8f9fa;
+  }
+}
+
+.form-card {
+  margin: 0 0 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  ion-card-header {
+    padding-bottom: 8px;
+
+    ion-card-subtitle {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.9rem;
+    }
+  }
+
+  ion-card-content {
+    padding: 16px;
+
+    // Add spacing between form control components
+    app-form-input,
+    app-form-select,
+    app-form-textarea {
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    app-form-input:last-child,
+    app-form-select:last-child,
+    app-form-textarea:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.toggle-item {
+  --padding-start: 0;
+  --min-height: 48px;
+
+  ion-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  ion-toggle {
+    margin-left: auto;
+  }
+}
+
+.date-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 16px;
+
+  ion-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  ion-datetime {
+    --padding-start: 0;
+    margin-top: 4px;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .form-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+}

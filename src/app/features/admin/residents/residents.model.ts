@@ -120,7 +120,7 @@ export interface HouseBlockReference {
  * Create Resident DTO
  */
 export interface CreateResidentDto {
-  residentCode: string;
+  residentCode?: string;
   firstName: string;
   lastName: string;
   email?: string;

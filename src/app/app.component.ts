@@ -1,11 +1,11 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router, NavigationEnd, RouterLink } from '@angular/router';
-import { filter, Subject, takeUntil } from 'rxjs';
+import { filter, Subject, takeUntil, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import {
   IonApp, IonMenu, IonHeader, IonToolbar, IonContent, IonList,
   IonListHeader, IonMenuToggle, IonItem, IonIcon, IonLabel,
-  IonRouterOutlet, IonButton, IonBadge, IonMenuButton, IonSplitPane, NavController
+  IonRouterOutlet, IonButton, IonBadge, IonMenuButton, IonSplitPane, IonPopover, IonSpinner, NavController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -65,11 +65,24 @@ import {
   timeOutline,
   checkmarkDoneOutline,
   lockClosedOutline,
-  lockOpenOutline
+  lockOpenOutline,
+  peopleCircle,
+  briefcaseOutline,
+  barcodeOutline,
+  location,
+  peopleOutline,
+  sendOutline,
+  linkOutline,
+  swapVerticalOutline,
+  shieldCheckmarkOutline
 } from 'ionicons/icons';
 import { AuthService } from '@core/auth/auth.service';
 import { User } from '@models/auth.model';
 import { BreadcrumbComponent } from '@shared/ui/breadcrumb/breadcrumb.component';
+import { IplPaymentsService } from '@features/admin/ipl-payments/ipl-payments.service';
+import { IplPayment } from '@features/admin/ipl-payments/ipl-payments.model';
+import { ResidentPaymentsService } from '@features/admin/resident-payments/resident-payments.service';
+import { PaymentStatus, ResidentPayment } from '@features/admin/resident-payments/resident-payments.model';
 
 interface MenuItem {
   title: string;
@@ -80,6 +93,20 @@ interface MenuItem {
   external?: boolean;
 }
 
+/**
+ * Unified approval item shown in the header notifications dropdown
+ */
+interface ApprovalItem {
+  id: string;
+  type: 'ipl' | 'resident_payment';
+  typeLabel: string;
+  title: string;
+  subtitle: string;
+  amount: number;
+  date: string;
+  route: string[];
+}
+
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -88,7 +115,7 @@ interface MenuItem {
     CommonModule,
     IonApp, IonMenu, IonHeader, IonToolbar, IonContent, IonList,
     IonListHeader, IonMenuToggle, IonItem, IonIcon, IonLabel,
-    IonRouterOutlet, IonButton, IonBadge, IonMenuButton, IonSplitPane,
+    IonRouterOutlet, IonButton, IonBadge, IonMenuButton, IonSplitPane, IonPopover, IonSpinner,
     BreadcrumbComponent
   ],
 })
@@ -96,11 +123,18 @@ export class AppComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private navController = inject(NavController);
   private authService = inject(AuthService);
+  private iplPaymentsService = inject(IplPaymentsService);
+  private residentPaymentsService = inject(ResidentPaymentsService);
   private destroy$ = new Subject<void>();
 
   // Authentication state
   isAuthenticated = false;
   currentUser: User | null = null;
+
+  // Pending approvals (header notifications)
+  pendingApprovals: ApprovalItem[] = [];
+  pendingCount = 0;
+  loadingApprovals = false;
 
   // Current page info
   currentPageTitle = 'Dashboard';
@@ -110,38 +144,44 @@ export class AppComponent implements OnInit, OnDestroy {
   // Main Menu Items
   mainMenuItems: MenuItem[] = [
     { title: 'Dasbor', url: '/dashboard', icon: 'grid', description: 'Ringkasan & Statistik' },
-    { title: 'Profil', url: '/profile', icon: 'person-circle', description: 'Pengaturan Akun' },
+  ];
+
+  // Expense Requests (Pengajuan) — multi-role: PENGURUS/COORDINATOR submit,
+  // ADMIN/ACCOUNTANT approve. Gated by canSeeExpenseRequests().
+  expenseMenuItems: MenuItem[] = [
+    { title: 'Request Pengeluaran', url: '/expense-requests', icon: 'receipt-outline', description: 'Ajukan Pengeluaran' },
   ];
 
   // Management Menu Items
   managementMenuItems: MenuItem[] = [
-    { title: 'Warga', url: '/admin/residents', icon: 'home', description: 'Kelola Warga' },
-    { title: 'Karyawan', url: '/admin/employees', icon: 'people', description: 'Manajemen Staf' },
+    { title: 'Warga', url: '/admin/residents', icon: 'people-circle', description: 'Kelola Warga' },
     { title: 'Unit Rumah', url: '/admin/house-units', icon: 'business-outline', description: 'Manajemen Unit Rumah' },
     { title: 'Blok', url: '/admin/house-blocks', icon: 'business', description: 'Manajemen Blok' },
+    { title: 'Karyawan', url: '/admin/employees', icon: 'people', description: 'Manajemen Staf' },
   ];
 
   // Keuangan Menu Items
   keuanganMenuItems: MenuItem[] = [
+    { title: 'Transaksi', url: '/admin/cash-transactions', icon: 'swap-horizontal', description: 'Catatan Keuangan' },
     { title: 'Jenis Iuran', url: '/admin/fee-types', icon: 'funnel', description: 'Kelola Jenis Iuran & IPL' },
     { title: 'Tagihan Warga', url: '/admin/resident-invoices', icon: 'document', description: 'Daftar Tagihan Warga' },
-    { title: 'Pembayaran', url: '/admin/resident-payments', icon: 'card-outline', description: 'Riwayat Pembayaran' },
-    { title: 'Transaksi', url: '/admin/cash-transactions', icon: 'swap-horizontal', description: 'Catatan Keuangan' },
+
   ];
 
   // IPL Menu Items
   iplMenuItems: MenuItem[] = [
-    { title: 'Periode IPL', url: '/admin/ipl-periods', icon: 'calendar', description: 'Kelola Periode IPL' },
     { title: 'Pembayaran IPL', url: '/admin/ipl-payments', icon: 'wallet-outline', description: 'Daftar Pembayaran IPL' },
+    { title: 'Iuran Warga', url: '/admin/resident-payments', icon: 'card-outline', description: 'Riwayat Pembayaran' },
+    { title: 'Periode IPL', url: '/admin/ipl-periods', icon: 'calendar', description: 'Kelola Periode IPL' },
   ];
 
   // Reports Menu Items
   reportsMenuItems: MenuItem[] = [
-    { title: 'Laporan Keuangan', url: '/admin/reports/financial', icon: 'trending-up', description: 'Pemasukan & Pengeluaran' },
-    { title: 'Laporan Bulanan', url: '/admin/reports/monthly', icon: 'calendar', description: 'Ringkasan Bulanan' },
+    // { title: 'Laporan Keuangan', url: '/admin/reports/financial', icon: 'trending-up', description: 'Pemasukan & Pengeluaran' },
+    // { title: 'Laporan Bulanan', url: '/admin/reports/monthly', icon: 'calendar', description: 'Ringkasan Bulanan' },
     { title: 'Laporan IPL', url: '/admin/cash-transactions/reports/ipl', icon: 'document-text-outline', description: 'Laporan Pembayaran IPL' },
     { title: 'Laporan Kegiatan', url: '/admin/cash-transactions/reports/kegiatan', icon: 'calendar-outline', description: 'Laporan Transaksi Kegiatan' },
-    { title: 'Log Aktivitas', url: '/admin/reports/activity', icon: 'receipt', description: 'Aktivitas Sistem' },
+    // { title: 'Log Aktivitas', url: '/admin/reports/activity', icon: 'receipt', description: 'Aktivitas Sistem' },
   ];
 
   // Settings Menu Items
@@ -168,7 +208,8 @@ export class AppComponent implements OnInit, OnDestroy {
       walletOutline, cardOutline, cashOutline, newspaperOutline, pricetagOutline, textOutline, locationOutline,
       pieChartOutline, codeOutline, calendarClearOutline, calendarNumberOutline, trendingDown,
       chevronDownOutline, chevronUpOutline, filterOutline, informationCircleOutline, cloudOutline, cloudUploadOutline,
-      timeOutline, checkmarkDoneOutline, lockClosedOutline, lockOpenOutline
+      timeOutline, checkmarkDoneOutline, lockClosedOutline, lockOpenOutline, peopleCircle, briefcaseOutline, barcodeOutline,
+      location, peopleOutline, sendOutline, linkOutline, swapVerticalOutline, shieldCheckmarkOutline
     });
   }
 
@@ -178,11 +219,8 @@ export class AppComponent implements OnInit, OnDestroy {
       this.isAuthenticated = state.isAuthenticated;
       this.currentUser = state.user;
 
-      // Redirect to login if not authenticated and not on auth pages
-      // const currentUrl = this.router.url;
-      // if (!state.isAuthenticated && !currentUrl.startsWith('/auth/')) {
-      //   this.router.navigate(['/auth/login']);
-      // }
+      // Load pending approvals for the notification bell
+      this.loadPendingApprovals();
     });
 
     // Initialize page info from current URL
@@ -245,6 +283,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const pageMap: { [key: string]: { title: string; icon: string } } = {
       '/dashboard': { title: 'Dasbor', icon: 'grid' },
+      '/expense-requests': { title: 'Request Pengeluaran', icon: 'receipt-outline' },
       '/profile': { title: 'Profil', icon: 'person-circle' },
       '/admin/residents': { title: 'Warga', icon: 'home' },
       '/admin/employees': { title: 'Karyawan', icon: 'people' },
@@ -291,6 +330,18 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Whether the current user may access the Expense Requests feature.
+   * Backend `/mine` is open to all authenticated roles; gate the menu to the
+   * known role set so unrelated users don't see a dead link.
+   */
+  canSeeExpenseRequests(): boolean {
+    const role = this.currentUser?.role?.name || '';
+    return [
+      'PENGURUS', 'COORDINATOR', 'ADMIN', 'ACCOUNTANT', 'MANAGER', 'SUPERADMIN', 'STAFF',
+    ].includes(role);
+  }
+
+  /**
    * Logout and clear auth data
    */
   onLogout() {
@@ -304,5 +355,96 @@ export class AppComponent implements OnInit, OnDestroy {
         this.router.navigate(['/auth/login'], { queryParams: { bypass: 'true' } });
       }
     });
+  }
+
+  /**
+   * Load pending approvals for IPL & resident payments (notification bell).
+   * IPL uses a dedicated pending endpoint; resident payments are filtered
+   * client-side because the service does not support status filtering.
+   */
+  loadPendingApprovals() {
+    if (!this.isAuthenticated) {
+      this.pendingApprovals = [];
+      this.pendingCount = 0;
+      return;
+    }
+
+    this.loadingApprovals = true;
+    forkJoin({
+      ipl: this.iplPaymentsService.getPending({ page: 1, limit: 50 }),
+      resident: this.residentPaymentsService.getAll({ page: 1, limit: 50 }),
+    }).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ ipl, resident }) => {
+          const iplItems = (ipl?.data || []).map(p => this.mapIplToApproval(p));
+          const residentItems = (resident?.data || [])
+            .filter(p => p.status === PaymentStatus.PENDING)
+            .map(p => this.mapResidentPaymentToApproval(p));
+
+          this.pendingApprovals = [...iplItems, ...residentItems]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          this.pendingCount = this.pendingApprovals.length;
+          this.loadingApprovals = false;
+        },
+        error: () => {
+          this.pendingApprovals = [];
+          this.pendingCount = 0;
+          this.loadingApprovals = false;
+        },
+      });
+  }
+
+  private mapIplToApproval(p: IplPayment): ApprovalItem {
+    const residentName = p.resident
+      ? `${p.resident.firstName} ${p.resident.lastName ?? ''}`.trim()
+      : p.paymentNumber;
+    const unit = p.resident?.unitNumber || p.houseUnit?.unitNumber || '';
+    const period = p.period?.periodName || '';
+    return {
+      id: p.id,
+      type: 'ipl',
+      typeLabel: 'IPL',
+      title: residentName,
+      subtitle: [unit, period].filter(Boolean).join(' • ') || '-',
+      amount: p.calculatedAmount,
+      date: p.paymentDate,
+      route: ['/admin/ipl-payments', p.id],
+    };
+  }
+
+  private mapResidentPaymentToApproval(p: ResidentPayment): ApprovalItem {
+    const residentName = p.resident
+      ? `${p.resident.firstName} ${p.resident.lastName ?? ''}`.trim()
+      : p.paymentNumber;
+    const unit = p.resident?.unitNumber || '';
+    const invoice = p.invoice?.invoiceNumber || '';
+    return {
+      id: p.id,
+      type: 'resident_payment',
+      typeLabel: 'Iuran Warga',
+      title: residentName,
+      subtitle: [unit, invoice].filter(Boolean).join(' • ') || '-',
+      amount: p.amount,
+      date: p.paymentDate,
+      route: ['/admin/resident-payments', p.id],
+    };
+  }
+
+  /**
+   * Navigate to an approval detail page
+   */
+  navigateToApproval(route: string[]) {
+    this.navController.navigateRoot(route);
+  }
+
+  /**
+   * Format amount to IDR currency (no decimals)
+   */
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount || 0);
   }
 }

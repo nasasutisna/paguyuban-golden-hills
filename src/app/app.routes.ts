@@ -148,6 +148,35 @@ export const routes: Routes = [
             (m) => m.ResidentFormPage
           )
       },
+      // Employees Routes
+      {
+        path: 'employees',
+        loadComponent: () =>
+          import('./features/admin/employees/employees.page').then(
+            (m) => m.EmployeesPage
+          )
+      },
+      {
+        path: 'employees/new',
+        loadComponent: () =>
+          import('./features/admin/employees/employee-form/employee-form.page').then(
+            (m) => m.EmployeeFormPage
+          )
+      },
+      {
+        path: 'employees/:id',
+        loadComponent: () =>
+          import('./features/admin/employees/employee-detail/employee-detail.page').then(
+            (m) => m.EmployeeDetailPage
+          )
+      },
+      {
+        path: 'employees/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/employees/employee-form/employee-form.page').then(
+            (m) => m.EmployeeFormPage
+          )
+      },
       // Fee Types Routes
       {
         path: 'fee-types',
@@ -280,40 +309,121 @@ export const routes: Routes = [
           )
       },
       // Cash Transactions Routes
+      // Nested via componentless wrappers so the breadcrumb keeps the cash-transaction
+      // context for the "Transaksi Terkait" detail pages and every level is clickable,
+      // while all pages still render in the shared ion-router-outlet (page-replace nav).
       {
         path: 'cash-transactions',
+        data: { breadcrumb: { label: 'Cash Transactions' } },
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            loadComponent: () =>
+              import('./features/admin/cash-transactions/cash-transactions.page').then(
+                (m) => m.CashTransactionsPage
+              )
+          },
+          {
+            path: 'create',
+            data: { breadcrumb: { label: 'Buat Transaksi' } },
+            loadComponent: () =>
+              import('./features/admin/cash-transactions/cash-transaction-form/cash-transaction-form.page').then(
+                (m) => m.CashTransactionFormPage
+              )
+          },
+          // Cash Transaction Reports Routes
+          {
+            path: 'reports/ipl',
+            loadComponent: () =>
+              import('./features/admin/cash-transactions/cash-transaction-reports/ipl-report.page').then(
+                (m) => m.IplReportPage
+              )
+          },
+          {
+            path: 'reports/kegiatan',
+            loadComponent: () =>
+              import('./features/admin/cash-transactions/cash-transaction-reports/kegiatan-report.page').then(
+                (m) => m.KegiatanReportPage
+              )
+          },
+          {
+            path: ':idcash',
+            data: { breadcrumb: { label: 'Detail Transaksi' } },
+            children: [
+              {
+                path: '',
+                pathMatch: 'full',
+                loadComponent: () =>
+                  import('./features/admin/cash-transactions/cash-transaction-detail/cash-transaction-detail.page').then(
+                    (m) => m.CashTransactionDetailPage
+                  )
+              },
+              {
+                path: 'edit',
+                data: { breadcrumb: { label: 'Edit Transaksi' } },
+                loadComponent: () =>
+                  import('./features/admin/cash-transactions/cash-transaction-form/cash-transaction-form.page').then(
+                    (m) => m.CashTransactionFormPage
+                  )
+              },
+              // "Transaksi Terkait" detail pages. referenceId is read as :id at this level.
+              {
+                path: 'ipl-payments/:id',
+                data: { breadcrumb: { label: 'Pembayaran IPL' } },
+                loadComponent: () =>
+                  import('./features/admin/ipl-payments/ipl-payment-detail/ipl-payment-detail.page').then(
+                    (m) => m.IplPaymentDetailPage
+                  )
+              },
+              {
+                path: 'resident-payments/:id',
+                data: { breadcrumb: { label: 'Iuran Warga' } },
+                loadComponent: () =>
+                  import('./features/admin/resident-payment-detail/resident-payment-detail.page').then(
+                    (m) => m.ResidentPaymentDetailPage
+                  )
+              },
+              {
+                path: 'expense-requests/:id',
+                data: { breadcrumb: { label: 'Pengajuan Pengeluaran' } },
+                loadComponent: () =>
+                  import('./features/expense-requests/expense-request-detail/expense-request-detail.page').then(
+                    (m) => m.ExpenseRequestDetailPage
+                  )
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  // Expense Requests Routes (authGuard only — multi-role: PENGURUS/COORDINATOR submit,
+  // ADMIN/ACCOUNTANT approve. Backend enforces per-endpoint authorization. Intentionally
+  // NOT under the `admin` parent because roleGuard currently hardcodes ADMIN.)
+  {
+    path: 'expense-requests',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
         loadComponent: () =>
-          import('./features/admin/cash-transactions/cash-transactions.page').then(
-            (m) => m.CashTransactionsPage
+          import('./features/expense-requests/expense-requests.page').then(
+            (m) => m.ExpenseRequestsPage
           )
       },
       {
-        path: 'cash-transactions/create',
+        path: 'new',
         loadComponent: () =>
-          import('./features/admin/cash-transactions/cash-transaction-form/cash-transaction-form.page').then(
-            (m) => m.CashTransactionFormPage
+          import('./features/expense-requests/expense-request-form/expense-request-form.page').then(
+            (m) => m.ExpenseRequestFormPage
           )
       },
       {
-        path: 'cash-transactions/:id/edit',
+        path: ':id',
         loadComponent: () =>
-          import('./features/admin/cash-transactions/cash-transaction-form/cash-transaction-form.page').then(
-            (m) => m.CashTransactionFormPage
-          )
-      },
-      // Cash Transaction Reports Routes
-      {
-        path: 'cash-transactions/reports/ipl',
-        loadComponent: () =>
-          import('./features/admin/cash-transactions/cash-transaction-reports/ipl-report.page').then(
-            (m) => m.IplReportPage
-          )
-      },
-      {
-        path: 'cash-transactions/reports/kegiatan',
-        loadComponent: () =>
-          import('./features/admin/cash-transactions/cash-transaction-reports/kegiatan-report.page').then(
-            (m) => m.KegiatanReportPage
+          import('./features/expense-requests/expense-request-detail/expense-request-detail.page').then(
+            (m) => m.ExpenseRequestDetailPage
           )
       }
     ]

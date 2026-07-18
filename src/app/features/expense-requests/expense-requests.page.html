@@ -1,0 +1,126 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Request Pengeluaran</ion-title>
+    <ion-buttons slot="end">
+      @if (canCreate) {
+      <ion-button (click)="navigateToCreate()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Stats Cards -->
+  <div class="stats-container ion-margin-top">
+    @if (dataSource.loading) {
+      <div class="stats-skeleton">
+        <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 100%; height: 80px;"></ion-skeleton-text>
+      </div>
+    } @else {
+      <div class="stats-grid">
+        <ion-card class="stat-card primary">
+          <ion-card-content>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <ion-icon name="receipt-outline"></ion-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ total }}</div>
+                <div class="stat-label">Total</div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="stat-card warning">
+          <ion-card-content>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <ion-icon name="time-outline"></ion-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ pendingCount }}</div>
+                <div class="stat-label">Menunggu</div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="stat-card success">
+          <ion-card-content>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <ion-icon name="checkmark-done-outline"></ion-icon>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value">{{ approvedCount }}</div>
+                <div class="stat-label">Disetujui</div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    }
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-row">
+    <ion-segment scrollable="true" [(ngModel)]="statusFilter" (ionChange)="onStatusFilterChange($event.detail.value || '')">
+      <ion-segment-button [value]="''">
+        <ion-label>Semua</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ExpenseRequestStatus.PENDING">
+        <ion-label>Menunggu</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ExpenseRequestStatus.APPROVED">
+        <ion-label>Disetujui</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ExpenseRequestStatus.REJECTED">
+        <ion-label>Ditolak</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ExpenseRequestStatus.CANCELLED">
+        <ion-label>Dibatalkan</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    @if (canViewAll) {
+    <ion-segment class="view-toggle" [(ngModel)]="viewMode" (ionChange)="onViewModeChange($event.detail.value)">
+      <ion-segment-button [value]="'all'">
+        <ion-label>Semua</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="'mine'">
+        <ion-label>Milik Saya</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+    }
+  </div>
+
+  <!-- Table -->
+  <div>
+    <app-table
+      [config]="tableConfig"
+      [dataSource]="dataSource"
+      [statusBadges]="statusBadges"
+      [currentPage]="currentPage"
+      (actionClick)="onAction($event)"
+      (filterChange)="onFilterChange($event)"
+      (pageChange)="onPageChange($event)"
+    >
+      <div table-actions>
+        @if (canCreate) {
+        <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          Ajukan Pengeluaran
+        </ion-button>
+        }
+      </div>
+    </app-table>
+  </div>
+</ion-content>

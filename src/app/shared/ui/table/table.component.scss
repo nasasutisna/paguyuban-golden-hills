@@ -54,10 +54,40 @@
 
 .table-actions {
   display: flex;
-  align-items: end;
+  align-items: center;
   gap: 12px;
   justify-content: end;
   width: 100%;
+
+  // Wrapper around projected action buttons ([table-actions]) so they
+  // flow as a self-contained group and wrap gracefully when many.
+  .table-actions-slot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  // Mobile layout — driven by LayoutService (see `.layout-mobile` class
+  // bound in the template). Search box goes full-width on its own line,
+  // action buttons sit below it as a wrapping row.
+  &.layout-mobile {
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+
+    .search-box {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .table-actions-slot {
+      width: 100%;
+      justify-content: stretch;
+    }
+  }
 }
 
 .search-box {
@@ -271,6 +301,15 @@
 
         .cell-currency {
           color: #4caf50;
+        }
+
+        // Per-cell color modifiers (set via column.cellClass)
+        &.cell-danger {
+          .cell-currency,
+          .cell-number,
+          .cell-text {
+            color: #ef4444;
+          }
         }
 
         .cell-date {
@@ -641,6 +680,14 @@
         color: #81c784;
       }
 
+      td.cell-danger {
+        .cell-currency,
+        .cell-number,
+        .cell-text {
+          color: #f87171;
+        }
+      }
+
       .cell-date {
         color: #9ca3af;
       }
@@ -687,7 +734,6 @@
 // Responsive
 @media (max-width: 640px) {
   .app-table-container {
-    margin: 8px;
     border-radius: 8px;
   }
 

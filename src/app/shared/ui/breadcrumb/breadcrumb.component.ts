@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { ActivatedRoute, ActivatedRouteSnapshot, Router, NavigationEnd } from '@angular/router';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import {
@@ -43,12 +43,50 @@ interface BreadcrumbItem {
 })
 export class BreadcrumbComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
   private destroy$ = new Subject<void>();
 
   breadcrumbs: BreadcrumbItem[] = [];
 
-  // Store route data for skip checking
-  private routeDataMap = new Map<string, any>();
+  // Maps for the legacy per-segment fallback (routes without data.breadcrumb.label).
+  private static readonly LABEL_MAP: { [key: string]: string } = {
+    'admin': 'Admin',
+    'dashboard': 'Dashboard',
+    'profile': 'Profile',
+    'residents': 'Residents',
+    'employees': 'Employees',
+    'house-units': 'House Units',
+    'house-blocks': 'House Blocks',
+    'transactions': 'Transactions',
+    'invoices': 'Invoices',
+    'reports': 'Reports',
+    'financial': 'Financial',
+    'monthly': 'Monthly',
+    'activity': 'Activity Logs',
+    'settings': 'Settings',
+    'general': 'General',
+    'security': 'Security',
+    'roles': 'Roles & Permissions',
+    'backup': 'Backup & Restore',
+    'new': 'New',
+    'edit': 'Edit'
+  };
+
+  private static readonly ICON_MAP: { [key: string]: string } = {
+    'dashboard': 'grid',
+    'home': 'home',
+    'residents': 'people',
+    'employees': 'people',
+    'house-units': 'business-outline',
+    'house-blocks': 'business',
+    'transactions': 'receipt',
+    'invoices': 'document',
+    'reports': 'trending-up',
+    'settings': 'settings',
+    'security': 'shield',
+    'roles': 'key',
+    'backup': 'cloud-upload'
+  };
 
   constructor() {
     addIcons({
@@ -71,15 +109,14 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Initialize from current URL
-    this.updateBreadcrumbs(this.router.url);
+    // Build from the current activated route, then refresh on every navigation.
+    this.updateBreadcrumbs();
 
-    // Listen for route changes
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
       takeUntil(this.destroy$)
-    ).subscribe((event: NavigationEnd) => {
-      this.updateBreadcrumbs(event.url);
+    ).subscribe(() => {
+      this.updateBreadcrumbs();
     });
   }
 
@@ -88,104 +125,78 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private updateBreadcrumbs(url: string) {
-    this.breadcrumbs = this.generateBreadcrumbs(url);
+  private updateBreadcrumbs() {
+    this.breadcrumbs = this.generateBreadcrumbs();
   }
 
-  private generateBreadcrumbs(url: string): BreadcrumbItem[] {
-    const breadcrumbs: BreadcrumbItem[] = [];
-    const pathSegments = url.split('/').filter(segment => segment.length > 0);
+  /**
+   * Walk the ActivatedRoute snapshot tree (root → leaf). Each route level may
+   * declare its own breadcrumb via `data.breadcrumb`, read from the route's OWN
+   * config (snap.routeConfig.data) — NOT the merged/inherited data — so a
+   * parent's `{ skip: true }` (e.g. /admin) does not hide its children. Levels
+   * without a label fall back to the legacy per-segment labeler, preserving the
+   * previous breadcrumb for all existing unlabeled routes.
+   */
+  private generateBreadcrumbs(): BreadcrumbItem[] {
+    const items: BreadcrumbItem[] = [{ label: 'Home', url: '/dashboard', icon: 'grid' }];
 
-    // Handle empty URL or root path
-    if (!url || url === '/' || url === '') {
-      return [{ label: 'Home', url: '/dashboard', icon: 'grid' }];
-    }
+    let url = '';
+    let snap: ActivatedRouteSnapshot | null = this.activatedRoute.root.snapshot;
 
-    // Always add home as first breadcrumb
-    breadcrumbs.push({ label: 'Home', url: '/dashboard', icon: 'grid' });
+    while (snap) {
+      const segments = snap.url.map(s => s.path);
+      const segPath = segments.join('/');
+      const bc = snap.routeConfig?.data?.['breadcrumb'];
 
-    // Build the route data map from router config
-    this.buildRouteDataMap();
-
-    if (pathSegments.length === 0) {
-      return breadcrumbs;
-    }
-
-    let currentPath = '';
-    const labelMap: { [key: string]: string } = {
-      'admin': 'Admin',
-      'dashboard': 'Dashboard',
-      'profile': 'Profile',
-      'residents': 'Residents',
-      'employees': 'Employees',
-      'house-units': 'House Units',
-      'house-blocks': 'House Blocks',
-      'transactions': 'Transactions',
-      'invoices': 'Invoices',
-      'reports': 'Reports',
-      'financial': 'Financial',
-      'monthly': 'Monthly',
-      'activity': 'Activity Logs',
-      'settings': 'Settings',
-      'general': 'General',
-      'security': 'Security',
-      'roles': 'Roles & Permissions',
-      'backup': 'Backup & Restore',
-      'new': 'New',
-      'edit': 'Edit'
-    };
-
-    const iconMap: { [key: string]: string } = {
-      'dashboard': 'grid',
-      'home': 'home',
-      'residents': 'people',
-      'employees': 'people',
-      'house-units': 'business-outline',
-      'house-blocks': 'business',
-      'transactions': 'receipt',
-      'invoices': 'document',
-      'reports': 'trending-up',
-      'settings': 'settings',
-      'security': 'shield',
-      'roles': 'key',
-      'backup': 'cloud-upload'
-    };
-
-    for (let i = 0; i < pathSegments.length; i++) {
-      const segment = pathSegments[i];
-      currentPath += '/' + segment;
-
-      // Check if this route should be skipped
-      if (this.shouldSkipRoute(currentPath)) {
-        continue;
-      }
-
-      // Skip dynamic segments (IDs) for URL, but show appropriate label
-      if (/^\d+$/.test(segment) || segment === 'new' || segment === 'edit') {
-        const parentSegment = i > 0 ? pathSegments[i - 1] : '';
-        const isDetailPage = /^\d+$/.test(segment);
-        const isNewPage = segment === 'new';
-        const isEditPage = segment === 'edit';
-
-        if (isDetailPage) {
-          const parentLabel = labelMap[parentSegment] || this.formatLabel(parentSegment);
-          breadcrumbs.push({ label: `${parentLabel} Detail` });
-        } else if (isNewPage) {
-          const parentLabel = labelMap[parentSegment] || this.formatLabel(parentSegment);
-          breadcrumbs.push({ label: `New ${parentLabel.slice(0, -1)}` });
-        } else if (isEditPage) {
-          const parentLabel = labelMap[parentSegment] || this.formatLabel(parentSegment);
-          breadcrumbs.push({ label: `Edit ${parentLabel.slice(0, -1)}` });
+      if (bc?.skip) {
+        // Advance the cumulative URL so child levels resolve correctly.
+        if (segPath) url += '/' + segPath;
+      } else if (bc?.label) {
+        if (segPath) url += '/' + segPath;
+        items.push({ label: bc.label, url, icon: bc.icon });
+      } else if (segments.length > 0) {
+        // Legacy per-segment fallback.
+        for (let i = 0; i < segments.length; i++) {
+          const seg = segments[i];
+          url += '/' + seg;
+          this.pushLegacyItem(items, seg, url, segments[i - 1]);
         }
-      } else {
-        // Regular segment
-        const label = labelMap[segment] || this.formatLabel(segment);
-        const icon = iconMap[segment];
-        breadcrumbs.push({ label, url: currentPath, icon });
       }
+
+      snap = snap.firstChild;
     }
 
-    return breadcrumbs;
+    return items;
+  }
+
+  /**
+   * Legacy per-segment breadcrumb item (used when a route level has no
+   * `data.breadcrumb.label`). Mirrors the previous URL-string-based behavior.
+   */
+  private pushLegacyItem(
+    items: BreadcrumbItem[],
+    segment: string,
+    url: string,
+    parentSegment: string | undefined
+  ): void {
+    const labelMap = BreadcrumbComponent.LABEL_MAP;
+    const parentLabel = parentSegment
+      ? (labelMap[parentSegment] || this.formatLabel(parentSegment))
+      : '';
+
+    if (/^\d+$/.test(segment)) {
+      items.push({ label: `${parentLabel} Detail` });
+    } else if (segment === 'new') {
+      items.push({ label: `New ${parentLabel.slice(0, -1)}` });
+    } else if (segment === 'edit') {
+      items.push({ label: `Edit ${parentLabel.slice(0, -1)}` });
+    } else {
+      items.push({
+        label: labelMap[segment] || this.formatLabel(segment),
+        url,
+        icon: BreadcrumbComponent.ICON_MAP[segment]
+      });
+    }
   }
 
   private formatLabel(segment: string): string {
@@ -193,35 +204,6 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  }
-
-  private buildRouteDataMap() {
-    this.routeDataMap.clear();
-    const routes = this.router.config;
-
-    const processRoute = (route: any, basePath = '') => {
-      if (route.path && route.data) {
-        const fullPath = basePath + '/' + route.path;
-        this.routeDataMap.set(fullPath, route.data);
-      }
-
-      if (route.children) {
-        const newBasePath = route.path ? basePath + '/' + route.path : basePath;
-        route.children.forEach((child: any) => processRoute(child, newBasePath));
-      }
-    };
-
-    routes.forEach(route => processRoute(route, ''));
-  }
-
-  private shouldSkipRoute(path: string): boolean {
-    // Only check exact path match, not parent paths
-    const exactPath = this.routeDataMap.get(path);
-    if (exactPath?.breadcrumb?.skip) {
-      return true;
-    }
-
-    return false;
   }
 
   navigate(url: string) {

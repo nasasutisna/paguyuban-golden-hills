@@ -6,7 +6,7 @@
       <p *ngIf="config.subtitle">{{ config.subtitle }}</p>
     </div>
 
-    <div class="table-actions">
+    <div class="table-actions" [class.layout-mobile]="isMobile">
       <!-- Search Input -->
       <div class="search-box" *ngIf="config.filterable">
         <ion-icon name="search-outline"></ion-icon>
@@ -19,7 +19,9 @@
       </div>
 
       <!-- Additional Actions Slot -->
-      <ng-content select="[table-actions]"></ng-content>
+      <div class="table-actions-slot">
+        <ng-content select="[table-actions]"></ng-content>
+      </div>
     </div>
   </div>
 
@@ -81,8 +83,7 @@
           >
             <td
               *ngFor="let column of columns"
-              [class]="getAlignClass(column)"
-              [class]="column.cellClass"
+              [class]="getCellClasses(column, item)"
             >
               <!-- Text Column -->
               <ng-container [ngSwitch]="column.type">

@@ -100,7 +100,7 @@ export class IplPaymentsPage implements OnInit, OnDestroy {
           color: 'success',
           show: (item: any) => {
             console.log('show approve called for:', item?.paymentNumber, 'status:', item?.status);
-            console.log('canAApprove:',this.canApprove(item));
+            console.log('canAApprove:', this.canApprove(item));
             return this.canApprove(item);
           },
           handler: (item) => this.quickApprove(item)
@@ -123,6 +123,7 @@ export class IplPaymentsPage implements OnInit, OnDestroy {
       pageSize: this.pageSize,
       pageSizeOptions: [10, 25, 50],
       showHeader: true,
+      showFooter: true,
       striped: true,
       hoverable: true,
       emptyMessage: 'Belum ada pembayaran IPL',
@@ -441,6 +442,11 @@ export class IplPaymentsPage implements OnInit, OnDestroy {
    */
   onPageChange(page: number): void {
     this.currentPage = page;
+    this.loadPayments();
+  }
+
+  onPageSizeChange(size: any) {
+    this.pageSize = size;
     this.loadPayments();
   }
 

@@ -1,0 +1,279 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/expense-requests"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detail Request Pengeluaran</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading State -->
+  @if (loading) {
+  <div class="loading-state">
+    <ion-skeleton-text animated style="width: 60px; height: 60px; border-radius: 50%;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 150px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100px;"></ion-skeleton-text>
+  </div>
+  }
+
+  <!-- Error State -->
+  @if (error && !loading) {
+  <div class="error-state">
+    <ion-icon name="warning-outline"></ion-icon>
+    <h2>{{ error }}</h2>
+    <ion-button fill="outline" (click)="retry()">Coba Lagi</ion-button>
+  </div>
+  }
+
+  <!-- Detail Content -->
+  @if (request && !loading) {
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="request-avatar">
+      <ion-icon name="receipt-outline"></ion-icon>
+    </div>
+    <h2>{{ request.requestNumber }}</h2>
+    <p class="title">{{ request.title }}</p>
+    <div class="badges">
+      <ion-chip [color]="getStatusColor(request.status)">
+        <ion-label>{{ STATUS_LABELS[request.status] }}</ion-label>
+      </ion-chip>
+      @if (request.paymentMethod) {
+      <ion-chip color="primary">
+        <ion-label>{{ getMethodLabel() }}</ion-label>
+      </ion-chip>
+      }
+    </div>
+  </div>
+
+  <!-- Amount Card -->
+  <ion-card class="amount-card">
+    <ion-card-content>
+      <div class="amount-row total">
+        <span>Jumlah Pengeluaran</span>
+        <span class="amount-value">{{ formatCurrency(request.amount) }}</span>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Actions -->
+  <div class="actions-row">
+    @if (isPending()) {
+      @if (canApproveAction) {
+      <ion-button size="small" fill="solid" color="success" (click)="approveRequest()">
+        <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+        Setujui
+      </ion-button>
+      <ion-button size="small" fill="solid" color="danger" (click)="rejectRequest()">
+        <ion-icon slot="start" name="close-outline"></ion-icon>
+        Tolak
+      </ion-button>
+      }
+      @if (canCancel()) {
+      <ion-button size="small" fill="outline" color="medium" (click)="cancelRequest()">
+        <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+        Batalkan
+      </ion-button>
+      }
+    }
+  </div>
+
+  <!-- Detail Request -->
+  <ion-card class="info-card">
+    <ion-card-header>
+      <ion-card-title>Detail Pengeluaran</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="full" class="info-list">
+        <ion-item>
+          <ion-icon name="pricetag-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h2>Kategori</h2>
+            <p>{{ getCategoryName() }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="calendar-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h2>Tanggal Pengeluaran</h2>
+            <p>{{ formatDate(request.transactionDate) }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="cash-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h2>Jumlah</h2>
+            <p>{{ formatCurrency(request.amount) }}</p>
+          </ion-label>
+        </ion-item>
+        @if (request.paymentMethod) {
+        <ion-item>
+          <ion-icon name="card-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h2>Metode Pembayaran</h2>
+            <p>{{ getMethodLabel() }}</p>
+          </ion-label>
+        </ion-item>
+        }
+        @if (request.description) {
+        <ion-item>
+          <ion-icon name="text-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h2>Keterangan</h2>
+            <p>{{ request.description }}</p>
+          </ion-label>
+        </ion-item>
+        }
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Pemohon -->
+  <ion-card class="info-card">
+    <ion-card-header>
+      <ion-card-title>Pemohon</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="full" class="info-list">
+        <ion-item>
+          <ion-icon name="person-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h2>Diajukan Oleh</h2>
+            <p>{{ getRequesterName() }}</p>
+          </ion-label>
+        </ion-item>
+        @if (request.resident) {
+        <ion-item>
+          <ion-icon name="home-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h2>Warga Terkait</h2>
+            <p>{{ getResidentName() }}</p>
+          </ion-label>
+        </ion-item>
+        }
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Status Persetujuan -->
+  <ion-card class="info-card">
+    <ion-card-header>
+      <ion-card-title>Status Persetujuan</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="full" class="info-list">
+        <ion-item>
+          <ion-icon name="calendar-number-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            <h2>Tanggal Pengajuan</h2>
+            <p>{{ formatDateTime(request.createdAt) }}</p>
+          </ion-label>
+        </ion-item>
+        @if (isApproved()) {
+        <ion-item>
+          <ion-icon name="checkmark-circle-outline" slot="start" color="success"></ion-icon>
+          <ion-label>
+            <h2>Disetujui Oleh</h2>
+            <p>{{ getApproverName() }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="calendar-number-outline" slot="start" color="success"></ion-icon>
+          <ion-label>
+            <h2>Tanggal Persetujuan</h2>
+            <p>{{ formatDateTime(request.approvedAt) }}</p>
+          </ion-label>
+        </ion-item>
+        @if (request.cashTransactionId) {
+        <ion-item>
+          <ion-icon name="wallet-outline" slot="start" color="success"></ion-icon>
+          <ion-label>
+            <h2>Transaksi Kas</h2>
+            <p class="posted">✓ Sudah diposting ke buku kas</p>
+          </ion-label>
+        </ion-item>
+        }
+        }
+        @if (isRejected() && request.rejectionReason) {
+        <ion-item>
+          <ion-icon name="close-circle-outline" slot="start" color="danger"></ion-icon>
+          <ion-label>
+            <h2>Alasan Penolakan</h2>
+            <p class="rejection-reason">{{ request.rejectionReason }}</p>
+          </ion-label>
+        </ion-item>
+        }
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Foto Bukti -->
+  @if (hasFiles()) {
+  <ion-card class="info-card">
+    <ion-card-header>
+      <ion-card-title>Foto Bukti</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="files-grid">
+        @for (file of request.files; track file.id) {
+        <div class="file-item" (click)="viewFile(file)">
+          @if (isImage(file)) {
+          <div class="file-preview">
+            <img [src]="getFileUrl(file)" [alt]="file.fileName" (error)="onImageError($event)" />
+          </div>
+          } @else {
+          <div class="file-icon-preview">
+            <ion-icon [name]="getFileIcon(file.mimeType)"></ion-icon>
+          </div>
+          }
+          <div class="file-info">
+            <p class="file-name">{{ file.fileName }}</p>
+            <p class="file-meta">{{ getFileSize(file.fileSize) }}</p>
+          </div>
+        </div>
+        }
+      </div>
+    </ion-card-content>
+  </ion-card>
+  }
+
+  <!-- Riwayat Persetujuan -->
+  @if (hasHistory()) {
+  <ion-card class="info-card">
+    <ion-card-header>
+      <ion-card-title>Riwayat Persetujuan</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="full" class="info-list">
+        @for (history of request.approvalHistories; track history.id) {
+        <ion-item class="history-item">
+          <ion-label>
+            <h3>
+              <span class="history-action">{{ history.action }}</span>
+              @if (history.toStatus) {
+              <span class="history-status" [style.color]="'var(--ion-color-' + getStatusColor(history.toStatus) + ')'">
+                → {{ getStatusLabel(history.toStatus) }}
+              </span>
+              }
+            </h3>
+            <p>Oleh: {{ history.approver?.username || history.approver?.firstName || '-' }}</p>
+            <p>{{ formatDateTime(history.createdAt) }}</p>
+            @if (history.comments) {
+            <p class="history-comments">{{ history.comments }}</p>
+            }
+          </ion-label>
+        </ion-item>
+        }
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+  }
+
+  <!-- Metadata -->
+  <div class="metadata">
+    <p>Dibuat: {{ formatDateTime(request.createdAt) }}</p>
+    <p>Terakhir Diperbarui: {{ formatDateTime(request.updatedAt) }}</p>
+  </div>
+  }
+</ion-content>

@@ -200,6 +200,12 @@ export class ResidentPaymentsPage implements OnInit, OnDestroy {
     }
   }
 
+  onPageSizeChange(size: any) {
+    console.log('onPageSizeChange', size)
+    this.pageSize = size;
+    this.loadPayments()
+  }
+
   /**
    * Handle search
    */

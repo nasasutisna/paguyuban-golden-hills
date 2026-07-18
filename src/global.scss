@@ -9,11 +9,11 @@
  * https://ionicframework.com/docs/layout/global-stylesheets
  */
 
+/* Shared Form Controls Styles (Sass module — @use must precede other rules) */
+@use "shared/ui/form-controls/_form-controls.scss";
+
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
-
-/* Shared Form Controls Styles */
-@import "shared/ui/form-controls/_form-controls.scss";
 
 /* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
@@ -76,10 +76,19 @@ ion-content {
  * when in desktop mode (992px and above)
  */
 @media (min-width: 992px) {
+
   /* Hide all ion-header elements except the admin-header in app.component */
   ion-router-outlet ion-header {
     display: none !important;
   }
+}
+
+ion-router-outlet ion-header {
+  display: none !important;
+}
+
+ion-select .native-wrapper {
+  width: 100%;
 }
 
 /**
