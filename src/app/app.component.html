@@ -49,6 +49,33 @@
           </ion-menu-toggle>
           }
 
+          <!-- Pengajuan Section -->
+          @if (canSeeExpenseRequests()) {
+          <ion-list-header class="menu-section-header">
+            <div class="section-header-content">
+              <ion-icon name="receipt-outline"></ion-icon>
+              <span>Pengajuan</span>
+            </div>
+          </ion-list-header>
+
+          @for (item of expenseMenuItems; track item.url) {
+          <ion-menu-toggle auto-hide="false">
+            <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
+              [class.active]="isActiveMenu(item.url)">
+              <div class="menu-item-icon" slot="start">
+                <ion-icon [name]="item.icon"></ion-icon>
+              </div>
+              <ion-label>
+                <span class="menu-label">{{ item.title }}</span>
+                @if (item.description) {
+                <span class="menu-description">{{ item.description }}</span>
+                }
+              </ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+          }
+          }
+
           <!-- IPL Section -->
           <ion-list-header class="menu-section-header">
             <div class="section-header-content">
@@ -75,33 +102,6 @@
               }
             </ion-item>
           </ion-menu-toggle>
-          }
-
-          <!-- Pengajuan Section -->
-          @if (canSeeExpenseRequests()) {
-          <ion-list-header class="menu-section-header">
-            <div class="section-header-content">
-              <ion-icon name="receipt-outline"></ion-icon>
-              <span>Pengajuan</span>
-            </div>
-          </ion-list-header>
-
-          @for (item of expenseMenuItems; track item.url) {
-          <ion-menu-toggle auto-hide="false">
-            <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
-              [class.active]="isActiveMenu(item.url)">
-              <div class="menu-item-icon" slot="start">
-                <ion-icon [name]="item.icon"></ion-icon>
-              </div>
-              <ion-label>
-                <span class="menu-label">{{ item.title }}</span>
-                @if (item.description) {
-                <span class="menu-description">{{ item.description }}</span>
-                }
-              </ion-label>
-            </ion-item>
-          </ion-menu-toggle>
-          }
           }
 
           <!-- Keuangan Section -->

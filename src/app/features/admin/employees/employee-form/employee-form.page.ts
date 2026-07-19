@@ -31,7 +31,8 @@ import {
   FormSelectComponent,
   FormTextareaComponent,
   FormButtonComponent,
-  SelectOption
+  SelectOption,
+  FormDatePickerComponent
 } from '@shared/ui/form-controls';
 
 /**
@@ -48,7 +49,8 @@ import {
     FormInputComponent,
     FormSelectComponent,
     FormTextareaComponent,
-    FormButtonComponent
+    FormButtonComponent,
+    FormDatePickerComponent
   ],
   templateUrl: './employee-form.page.html',
   styleUrls: ['./employee-form.page.scss']

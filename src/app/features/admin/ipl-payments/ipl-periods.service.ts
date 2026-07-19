@@ -8,7 +8,10 @@ import {
   UpdateIplPeriodDto,
   IplPeriodListResponse,
   IplPeriodQueryParams,
-  IplPeriodWithStats
+  IplPeriodWithStats,
+  IplPeriodWithStatsListResponse,
+  GenerateIplPeriodsDto,
+  GenerateIplPeriodsResult
 } from './ipl-payments.model';
 
 /**
@@ -82,17 +85,30 @@ export class IplPeriodsService {
   }
 
   /**
-   * Get periods with statistics
-   * @param params - Query parameters
+   * Get periods with statistics (paginated, server-side pagination)
+   * @param params - Query parameters (page, limit, filters, sort)
    */
-  getWithStats(params?: IplPeriodQueryParams): Observable<IplPeriodWithStats[]> {
+  getWithStats(params?: IplPeriodQueryParams): Observable<IplPeriodWithStatsListResponse> {
     const queryParams = this.buildQueryParams(params);
 
-    return this.apiService.get<IplPeriodWithStats[]>(`/ipl-periods/with-stats${queryParams}`).pipe(
-      map((response) => response.data || []),
+    return this.apiService.get<any>(`/ipl-periods/with-stats${queryParams}`).pipe(
+      map((response) => {
+        const paginatedData = response.data ?? {};
+        const data: IplPeriodWithStats[] = Array.isArray(paginatedData)
+          ? paginatedData
+          : (paginatedData.data ?? []);
+        const metadata = response?.meta;
+        return {
+          data,
+          total: metadata?.total ?? data.length,
+          page: metadata?.page ?? 1,
+          limit: metadata?.limit ?? 10,
+          totalPages: metadata?.totalPages ?? (data.length > 0 ? 1 : 0),
+        };
+      }),
       catchError((error) => {
         console.error('Error fetching periods with stats:', error);
-        return of([]);
+        return of({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
       })
     );
   }
@@ -120,6 +136,21 @@ export class IplPeriodsService {
       map((response) => response.data || null),
       catchError((error) => {
         console.error('Error creating IPL period:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Generate all 12 monthly periods (Jan-Dec) for a given year in one request.
+   * Existing months are skipped. @see POST /ipl-periods/generate
+   * @param dto - { year, baseRate?, status?, dueDay? }
+   */
+  generateYear(dto: GenerateIplPeriodsDto): Observable<GenerateIplPeriodsResult | null> {
+    return this.apiService.post<GenerateIplPeriodsResult>('/ipl-periods/generate', dto).pipe(
+      map((response) => response.data || null),
+      catchError((error) => {
+        console.error('Error generating IPL periods:', error);
         throw error;
       })
     );

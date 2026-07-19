@@ -1,0 +1,500 @@
+/**
+ * Resident Payment (Iuran Warga) Matrix page styles.
+ * Mirrors the IPL payment matrix styles so both matrices read as part of the
+ * same design system. Reuses the green/brown table tokens from the shared
+ * table component (see shared/ui/table/table.component.scss).
+ */
+
+.matrix-content {
+  --background: #f9fafb;
+  padding: 0 12px 24px;
+}
+
+.text-right {
+  text-align: right;
+}
+
+// Clickable deep-link targets (resident name, month cells/chips).
+.clickable {
+  cursor: pointer;
+}
+
+// Desktop: resident name becomes a link when a resident exists.
+.col-unit .unit-primary.clickable {
+  color: #1d4ed8;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Hover affordance for the compact month badges.
+.cell-badge.clickable {
+  transition: transform 0.08s ease, filter 0.08s ease;
+
+  &:hover {
+    transform: scale(1.12);
+    filter: brightness(1.05);
+  }
+}
+
+// ----- Toolbar: year filter + summary chips -----
+
+.matrix-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 4px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.year-filter,
+.block-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 4px 12px;
+
+  ion-icon {
+    font-size: 18px;
+    color: #6b7280;
+  }
+
+  ion-select {
+    min-width: 110px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+}
+
+.summary-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.summary-chip {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 14px;
+  min-width: 110px;
+
+  .summary-chip-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #6b7280;
+  }
+
+  .summary-chip-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #43A047;
+  }
+}
+
+// ----- Legend -----
+
+.matrix-legend {
+  display: flex;
+  gap: 16px;
+  padding: 4px 4px 12px;
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .cell-badge {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+}
+
+// ----- Loading / empty state -----
+
+.matrix-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  color: #6b7280;
+
+  ion-spinner {
+    --color: #4caf50;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+  }
+
+  ion-icon {
+    font-size: 56px;
+    color: #d1d5db;
+    margin-bottom: 12px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// ----- Matrix table (desktop / tablet) -----
+
+.matrix-scroll {
+  overflow-x: auto;
+  border: 1px solid #e1e1e1;
+  border-radius: 12px;
+  background: #ffffff;
+  -webkit-overflow-scrolling: touch;
+}
+
+.matrix-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  color: #374151;
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #e8e8e8;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    text-align: center;
+
+    &.sticky {
+      position: sticky;
+      left: 0;
+      z-index: 4;
+    }
+
+    &.sticky-2 {
+      position: sticky;
+      left: 44px; // width of the No column
+      z-index: 4;
+      text-align: left;
+    }
+  }
+
+  tbody td {
+    padding: 8px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+    text-align: center;
+    white-space: nowrap;
+
+    &.sticky {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: #ffffff;
+    }
+
+    &.sticky-2 {
+      position: sticky;
+      left: 44px;
+      z-index: 2;
+      background: #ffffff;
+      text-align: left;
+    }
+  }
+
+  tbody tr:nth-child(even) td {
+    background: #f9fafb;
+
+    &.sticky,
+    &.sticky-2 {
+      background: #f9fafb;
+    }
+  }
+
+  tbody tr:hover td {
+    background: rgba(67, 160, 71, 0.05);
+  }
+
+  // Faded row for inactive units
+  tbody tr.inactive td {
+    color: #9ca3af;
+    font-style: italic;
+  }
+
+  // Identity columns
+  .col-no {
+    width: 44px;
+    text-align: center;
+  }
+
+  .col-unit {
+    min-width: 180px;
+
+    .unit-primary {
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .unit-secondary {
+      font-size: 12px;
+      color: #6b7280;
+    }
+  }
+
+  .col-area {
+    font-family: 'SF Mono', 'Monaco', monospace;
+  }
+
+  .col-month {
+    width: 46px;
+    min-width: 46px;
+    padding: 6px 4px;
+  }
+
+  // Totals footer
+  tfoot td {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: #f5f5f5;
+    border-top: 2px solid #4caf50;
+    font-weight: 600;
+    padding: 10px 8px;
+    text-align: center;
+
+    &.sticky,
+    &.sticky-2 {
+      background: #f5f5f5;
+    }
+
+    &.total-cell {
+      font-size: 12px;
+      color: #374151;
+    }
+
+    &.grand {
+      color: #43A047;
+      font-weight: 700;
+      text-align: right;
+    }
+  }
+}
+
+// Cell badge (compact icon swatch)
+.cell-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+
+  ion-icon {
+    font-size: 15px;
+  }
+
+  &.paid {
+    background: #43A047;
+    color: #ffffff;
+
+    ion-icon {
+      color: #ffffff;
+    }
+  }
+
+  &.pending {
+    background: #f59e0b;
+    color: #ffffff;
+
+    ion-icon {
+      color: #ffffff;
+    }
+  }
+
+  &.unpaid {
+    background: #f3f4f6;
+    color: #9ca3af;
+    border: 1px solid #e5e7eb;
+
+    ion-icon {
+      color: #9ca3af;
+    }
+  }
+}
+
+// ----- Mobile: per-unit cards -----
+
+.matrix-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.matrix-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+
+  &.inactive {
+    opacity: 0.6;
+  }
+}
+
+.matrix-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f3f4f6;
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2937;
+
+    &.clickable {
+      color: #1d4ed8;
+    }
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .card-obligation {
+    font-size: 11px;
+    font-weight: 600;
+    color: #43A047;
+    background: rgba(67, 160, 71, 0.1);
+    border-radius: 6px;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+}
+
+.matrix-card-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  font-size: 12px;
+  color: #374151;
+  padding: 10px 0;
+
+  strong {
+    color: #6b7280;
+    font-weight: 500;
+  }
+}
+
+.matrix-card-months {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.month-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 6px;
+  padding: 5px 2px;
+  font-size: 11px;
+
+  .month-chip-name {
+    font-weight: 600;
+  }
+
+  ion-icon {
+    font-size: 13px;
+  }
+
+  &.paid {
+    background: #43A047;
+    color: #ffffff;
+
+    ion-icon {
+      color: #ffffff;
+    }
+  }
+
+  &.pending {
+    background: #f59e0b;
+    color: #ffffff;
+
+    ion-icon {
+      color: #ffffff;
+    }
+  }
+
+  &.unpaid {
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+
+    ion-icon {
+      color: #9ca3af;
+    }
+  }
+}
+
+.matrix-card-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #4caf50;
+  border-radius: 12px;
+  padding: 12px 16px;
+
+  span {
+    font-size: 13px;
+    color: #374151;
+  }
+
+  strong {
+    font-size: 16px;
+    color: #43A047;
+  }
+}
+
+// ----- Tablet tweaks: 3-col month grid is too wide for some phones -----
+
+@media (max-width: 380px) {
+  .matrix-card-months {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

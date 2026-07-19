@@ -119,6 +119,12 @@ export class ResidentPaymentFormPage implements OnInit {
         this.form.get('invoiceId')?.setValue(params['invoiceId']);
         this.onInvoiceChange();
       }
+      // Pre-select resident when opened via deep-link (e.g. from the Iuran
+      // Warga matrix unpaid cell). The form control holds the id; the
+      // residents dropdown (loaded async) will display it once available.
+      if (params['residentId']) {
+        this.form.get('residentId')?.setValue(params['residentId']);
+      }
     });
   }
 

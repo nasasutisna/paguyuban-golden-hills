@@ -305,6 +305,28 @@ export interface UpdateIplPeriodDto {
 }
 
 /**
+ * Generate IPL Periods (full year) DTO
+ * Body for POST /ipl-periods/generate
+ */
+export interface GenerateIplPeriodsDto {
+  year: number;
+  baseRate?: number;
+  status?: IplPeriodStatus;
+  /** Day of month (1-31) used to derive a per-month dueDate. */
+  dueDay?: number;
+}
+
+/**
+ * Result of a full-year generate request.
+ */
+export interface GenerateIplPeriodsResult {
+  created: number;
+  skipped: number;
+  skippedMonths: number[];
+  periods: IplPeriod[];
+}
+
+/**
  * Query parameters for IPL Payments list
  */
 export interface IplPaymentQueryParams {
@@ -356,6 +378,17 @@ export interface IplPaymentListResponse {
  */
 export interface IplPeriodListResponse {
   data: IplPeriod[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+/**
+ * Paginated list response for IPL Periods with payment statistics
+ */
+export interface IplPeriodWithStatsListResponse {
+  data: IplPeriodWithStats[];
   total: number;
   page: number;
   limit: number;

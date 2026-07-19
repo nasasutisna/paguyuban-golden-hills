@@ -75,14 +75,11 @@
           placeholder="contoh: 1234567890123456"
         ></app-form-input>
 
-        <ion-item class="date-item">
-          <ion-label position="stacked">Tanggal Lahir</ion-label>
-          <ion-datetime
-            formControlName="dateOfBirth"
-            presentation="date"
-            placeholder="Pilih tanggal lahir"
-          ></ion-datetime>
-        </ion-item>
+        <app-form-date-picker
+          formControlName="dateOfBirth"
+          label="Tanggal Masuk"
+          placeholder="Pilih Tanggal Masuk"
+        ></app-form-date-picker>
 
         <app-form-select
           label="Jenis Kelamin"
@@ -116,23 +113,17 @@
           [errorMessage]="getErrorMessage('positionId')"
         ></app-form-select>
 
-        <ion-item class="date-item">
-          <ion-label position="stacked">Tanggal Masuk</ion-label>
-          <ion-datetime
-            formControlName="hireDate"
-            presentation="date"
-            placeholder="Pilih tanggal masuk"
-          ></ion-datetime>
-        </ion-item>
+        <app-form-date-picker
+          formControlName="hireDate"
+          label="Tanggal Masuk"
+          placeholder="Pilih Tanggal Masuk"
+        ></app-form-date-picker>
 
-        <ion-item class="date-item">
-          <ion-label position="stacked">Akhir Masa Percobaan</ion-label>
-          <ion-datetime
-            formControlName="probationEndDate"
-            presentation="date"
-            placeholder="Pilih akhir masa percobaan"
-          ></ion-datetime>
-        </ion-item>
+        <app-form-date-picker
+          formControlName="probationEndDate"
+          label="Akhir Masa Percobaan"
+          placeholder="Pilih akhir masa percobaan"
+        ></app-form-date-picker>
 
         <app-form-select
           label="Status Kepegawaian"

@@ -46,6 +46,31 @@ export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
 };
 
 /**
+ * Fund Type Enum — which Kas (cash account) a transaction belongs to.
+ */
+export enum FundType {
+  IPL = 'IPL',
+  WARGA = 'WARGA'
+}
+
+/**
+ * Fund Type Labels
+ */
+export const FUND_TYPE_LABELS: Record<FundType, string> = {
+  [FundType.IPL]: 'Kas IPL',
+  [FundType.WARGA]: 'Kas Warga'
+};
+
+/**
+ * Cash account codes (mirrors backend CASH_ACCOUNT_CODES).
+ */
+export const CASH_ACCOUNT_CODES = {
+  KAS_IPL: 'KAS_IPL',
+  KAS_WARGA: 'KAS_WARGA'
+} as const;
+export type CashAccountCode = typeof CASH_ACCOUNT_CODES[keyof typeof CASH_ACCOUNT_CODES];
+
+/**
  * Payment Method Enum
  */
 export enum PaymentMethod {
@@ -90,9 +115,42 @@ export interface TransactionCategory {
   categoryName: string;
   description?: string;
   categoryType: TransactionType;
+  /** Fund this category posts to (IPL | WARGA). Drives which Kas is used. */
+  fundType?: FundType | string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Cash Account (Kas) Interface
+ */
+export interface CashAccount {
+  id: string;
+  accountCode: string;
+  accountName: string;
+  fundType: FundType | string;
+  openingBalance: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Per-account balance (from GET /cash-accounts/balances)
+ */
+export interface AccountBalance {
+  id: string;
+  accountCode: string;
+  accountName: string;
+  fundType: FundType | string;
+  openingBalance: number;
+  /** All-time balance: openingBalance + Σincome − Σexpense (transfers included). */
+  balance: number;
+  periodIncome: number;
+  periodExpense: number;
+  periodBalance: number;
+  isActive: boolean;
 }
 
 /**
@@ -110,6 +168,17 @@ export interface CashTransaction {
   referenceType?: ReferenceType;
   referenceId?: string;
   referenceNumber?: string;
+  /** Cash account (Kas) this transaction posts to. */
+  cashAccountId?: string;
+  cashAccount?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+    fundType: FundType | string;
+  };
+  /** True for the paired legs of an inter-account transfer. */
+  isInternalTransfer?: boolean;
+  transferGroupId?: string;
   description: string;
   notes?: string;
   // API returns 'status', mapped to 'approvalStatus' in service
@@ -182,11 +251,31 @@ export interface CashTransactionQueryParams {
   limit?: number;
   transactionType?: TransactionType;
   categoryId?: string;
+  cashAccountId?: string;
   paymentMethod?: PaymentMethod;
   approvalStatus?: ApprovalStatus;
   startDate?: string;
   endDate?: string;
   search?: string;
+}
+
+/**
+ * Transfer money between two cash accounts (Kas).
+ */
+export interface CreateTransferDto {
+  fromAccountCode: CashAccountCode;
+  toAccountCode: CashAccountCode;
+  amount: number;
+  transactionDate: string;
+  description?: string;
+}
+
+/**
+ * Transfer response from POST /cash-transactions/transfer
+ */
+export interface TransferResult {
+  transferGroupId: string;
+  legs: CashTransaction[];
 }
 
 /**

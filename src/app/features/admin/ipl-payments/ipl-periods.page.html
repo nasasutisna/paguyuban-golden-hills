@@ -8,6 +8,24 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <!-- Year Filter -->
+  <div class="year-filter">
+    <div class="year-filter__label">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <span>Tahun</span>
+    </div>
+    <ion-select
+      [ngModel]="selectedYear"
+      (ionChange)="onYearChange($event)"
+      interface="popover"
+      placeholder="Pilih Tahun"
+      class="year-filter__select">
+      @for (year of yearOptions; track year) {
+        <ion-select-option [value]="year">{{ year }}</ion-select-option>
+      }
+    </ion-select>
+  </div>
+
   <!-- Stats Cards -->
   <div class="stats-container ion-margin-top">
     @if (dataSource.loading) {
@@ -70,11 +88,15 @@
   <!-- Table Section -->
   <div>
     <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges" [currentPage]="currentPage"
-      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)">
+      (actionClick)="onAction($event)" (filterChange)="onFilterChange($event)" (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
       <div table-actions>
         <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
           <ion-icon slot="start" name="add-outline"></ion-icon>
           Buat Periode Baru
+        </ion-button>
+        <ion-button fill="outline" color="secondary" (click)="navigateToGenerate()">
+          <ion-icon slot="start" name="calendar-outline"></ion-icon>
+          Generate Setahun
         </ion-button>
       </div>
     </app-table>

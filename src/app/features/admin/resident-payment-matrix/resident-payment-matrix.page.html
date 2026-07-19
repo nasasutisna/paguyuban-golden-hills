@@ -1,0 +1,188 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Matrix Iuran Warga</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="matrix-content ion-padding">
+  <!-- Filter + summary bar -->
+  <div class="matrix-toolbar">
+    <div class="filters">
+      <div class="year-filter">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <ion-select
+          [value]="year"
+          interface="popover"
+          placeholder="Pilih Tahun"
+          (ionChange)="onYearChange($any($event))">
+          @for (y of yearOptions; track y) {
+            <ion-select-option [value]="y">{{ y }}</ion-select-option>
+          }
+        </ion-select>
+      </div>
+
+      <div class="block-filter">
+        <ion-icon name="business-outline"></ion-icon>
+        <ion-select
+          [value]="selectedBlockId"
+          interface="popover"
+          placeholder="Semua Blok"
+          (ionChange)="onBlockChange($any($event))">
+          <ion-select-option [value]="null">Semua Blok</ion-select-option>
+          @for (b of blocks; track b.id) {
+            <ion-select-option [value]="b.id">{{ b.blockName }}</ion-select-option>
+          }
+        </ion-select>
+      </div>
+    </div>
+
+    @if (data) {
+      <div class="summary-chips">
+        <div class="summary-chip">
+          <span class="summary-chip-label">Total Tahun {{ data.year }}</span>
+          <span class="summary-chip-value">{{ formatCurrency(data.grandTotal) }}</span>
+        </div>
+        <div class="summary-chip">
+          <span class="summary-chip-label">Unit</span>
+          <span class="summary-chip-value">{{ data.unitCount }}</span>
+        </div>
+        <div class="summary-chip">
+          <span class="summary-chip-label">Cell Lunas</span>
+          <span class="summary-chip-value">{{ data.paidCellCount }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Legend -->
+  <div class="matrix-legend">
+    <span class="legend-item"><span class="cell-badge paid"></span> Lunas</span>
+    <span class="legend-item"><span class="cell-badge pending"></span> Proses</span>
+    <span class="legend-item"><span class="cell-badge unpaid"></span> Belum</span>
+  </div>
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="matrix-state">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Memuat matrix pembayaran...</p>
+    </div>
+  }
+
+  <!-- Empty -->
+  @if (!loading && data && data.rows.length === 0) {
+    <div class="matrix-state">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <p>Belum ada unit / data pembayaran untuk tahun {{ data.year }}.</p>
+    </div>
+  }
+
+  <!-- ===== Desktop / tablet: full matrix table ===== -->
+  @if (!loading && data && data.rows.length > 0) {
+    @if (!(isMobile$ | async)) {
+      <div class="matrix-scroll">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th class="col-no sticky">No</th>
+              <th class="col-unit sticky-2">Unit / Blok</th>
+              <th class="col-area">LT</th>
+              @for (name of monthNames; track name; let i = $index) {
+                <th class="col-month" [title]="monthNamesLong[i]">{{ name }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of data.rows; track row.unitId) {
+              <tr [class.inactive]="!row.isActive">
+                <td class="col-no sticky">{{ row.no }}</td>
+                <td class="col-unit sticky-2">
+                  <div
+                    class="unit-primary"
+                    [class.clickable]="!!row.residentId"
+                    [title]="row.residentId ? 'Lihat detail warga' : null"
+                    (click)="onResidentClick(row)">
+                    {{ row.residentName || '— Kosong' }}
+                  </div>
+                  <div class="unit-secondary">{{ blockLabel(row) }}</div>
+                </td>
+                <td class="col-area text-right">{{ formatArea(row.landArea) }}</td>
+                @for (cell of row.cells; track cell.month) {
+                  <td class="col-month">
+                    <span
+                      class="cell-badge {{ statusColors[cell.status] }} clickable"
+                      [title]="monthNamesLong[cell.month - 1] + ' — ' + statusLabels[cell.status] + (cell.amount ? ' · ' + formatCurrency(cell.amount) : '') + ' · klik untuk detail'"
+                      (click)="onCellClick(row, cell)">
+                      <ion-icon [name]="statusIcons[cell.status]"></ion-icon>
+                    </span>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td class="col-no sticky total-cell" colspan="3">Total Dana Per Bulan</td>
+              @for (name of monthNames; track name; let i = $index) {
+                <td class="col-month total-cell" [title]="monthNamesLong[i]">
+                  {{ formatNumber(monthTotal(i)) }}
+                </td>
+              }
+              <td class="total-cell grand">
+                Total: {{ formatCurrency(data.grandTotal) }}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    }
+
+    <!-- ===== Mobile: per-unit cards ===== -->
+    @if (isMobile$ | async) {
+      <div class="matrix-cards">
+        @for (row of data.rows; track row.unitId) {
+          <div class="matrix-card" [class.inactive]="!row.isActive">
+            <div class="matrix-card-header">
+              <div>
+                <div
+                  class="card-title"
+                  [class.clickable]="!!row.residentId"
+                  [title]="row.residentId ? 'Lihat detail warga' : null"
+                  (click)="onResidentClick(row)">
+                  {{ row.residentName || '— Kosong' }}
+                </div>
+                <div class="card-subtitle">{{ blockLabel(row) }}</div>
+              </div>
+              <span class="card-obligation">{{ row.paidCount }}/12 Lunas</span>
+            </div>
+
+            <div class="matrix-card-meta">
+              <span><strong>LT:</strong> {{ formatArea(row.landArea) }}</span>
+              <span><strong>Telp:</strong> {{ row.phoneNumber || '-' }}</span>
+            </div>
+
+            <div class="matrix-card-months">
+              @for (cell of row.cells; track cell.month) {
+                <div
+                  class="month-chip {{ statusColors[cell.status] }} clickable"
+                  [title]="monthNamesLong[cell.month - 1] + ' — ' + statusLabels[cell.status] + ' · klik untuk detail'"
+                  (click)="onCellClick(row, cell)">
+                  <span class="month-chip-name">{{ monthNames[cell.month - 1] }}</span>
+                  <ion-icon [name]="statusIcons[cell.status]"></ion-icon>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="matrix-card-total">
+          <span>Total Tahun {{ data.year }}</span>
+          <strong>{{ formatCurrency(data.grandTotal) }}</strong>
+        </div>
+      </div>
+    }
+  }
+</ion-content>

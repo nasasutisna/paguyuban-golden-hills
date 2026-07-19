@@ -4,6 +4,39 @@
   }
 }
 
+// Year Filter Bar
+.year-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ion-color-medium);
+
+    ion-icon {
+      font-size: 18px;
+      color: var(--ion-color-primary);
+    }
+  }
+
+  &__select {
+    min-width: 140px;
+    max-width: 200px;
+    --color: var(--ion-color-dark);
+    font-weight: 600;
+  }
+}
+
 // Statistics Container
 .stats-container {
   margin-bottom: 20px;

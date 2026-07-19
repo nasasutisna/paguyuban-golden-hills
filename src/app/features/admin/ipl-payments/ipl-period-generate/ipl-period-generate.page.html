@@ -1,0 +1,221 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/ipl-periods"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Generate Periode IPL Setahun</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <!-- Pengaturan Generate -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Pengaturan Generate</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-input
+          label="Tahun"
+          type="number"
+          formControlName="year"
+          placeholder="2026"
+          [min]="2020"
+          [max]="2100"
+          [required]="true"
+          [showError]="isFieldInvalid('year')"
+          [errorMessage]="getErrorMessage('year')"
+          helperText="Tahun yang akan di-generate (Januari–Desember)"
+        ></app-form-input>
+
+        <ion-row class="form-row">
+          <ion-col size="6">
+            <app-form-input
+              label="Base Rate"
+              type="number"
+              formControlName="baseRate"
+              placeholder="2500"
+              [min]="0"
+              [required]="true"
+              [showError]="isFieldInvalid('baseRate')"
+              [errorMessage]="getErrorMessage('baseRate')"
+              helperText="Rp/m²"
+            ></app-form-input>
+          </ion-col>
+          <ion-col size="6">
+            <app-form-select
+              label="Status"
+              formControlName="status"
+              placeholder="Pilih status"
+              [options]="statusOptions"
+              [required]="true"
+              [showError]="isFieldInvalid('status')"
+              [errorMessage]="getErrorMessage('status')"
+            ></app-form-select>
+          </ion-col>
+        </ion-row>
+
+        <app-form-input
+          label="Hari Jatuh Tempo (tgl)"
+          type="number"
+          formControlName="dueDay"
+          placeholder="Contoh: 10"
+          [min]="1"
+          [max]="31"
+          [showError]="isFieldInvalid('dueDay')"
+          [errorMessage]="getErrorMessage('dueDay')"
+          helperText="Tanggal jatuh tempo tiap bulan (1-31). Otomatis menyesuaikan bulan lebih pendek (mis. tgl 30 di Feb -> 28/29). Kosongkan untuk tanpa jatuh tempo."
+        ></app-form-input>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Summary Card -->
+    <ion-card class="summary-card">
+      <ion-card-header>
+        <ion-card-title>Ringkasan Generate</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="summary-row">
+          <span>Tahun</span>
+          <strong>{{ form.get('year')?.value || '-' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Jumlah Periode</span>
+          <strong>12 (Januari–Desember)</strong>
+        </div>
+        <div class="summary-row">
+          <span>Base Rate</span>
+          <strong>{{ formatCurrency(form.get('baseRate')?.value || 2500) }}/m²</strong>
+        </div>
+        <div class="summary-row">
+          <span>Status</span>
+          <ion-chip
+            [color]="form.get('status')?.value === 'ACTIVE' ? 'success' : form.get('status')?.value === 'CLOSED' ? 'medium' : 'warning'"
+            outline
+          >
+            {{ selectedStatusLabel }}
+          </ion-chip>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row total">
+          <span>Jatuh Tempo</span>
+          <strong>{{ dueDayValue ? 'Tiap tgl ' + dueDayValue : 'Tanpa jatuh tempo' }}</strong>
+        </div>
+        <div class="summary-note">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>Bulan yang sudah ada akan dilewati otomatis. Aman diklik berulang.</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        expand="block"
+        (click)="navigateBack()"
+        [disabled]="loading"
+      ></app-form-button>
+      <app-form-button
+        text="Generate 12 Periode"
+        icon="calendar-outline"
+        iconSlot="start"
+        variant="solid"
+        color="primary"
+        type="submit"
+        expand="block"
+        [disabled]="loading || !isFormValid()"
+        [loading]="loading"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>
+
+<style>
+.form-card {
+  margin-bottom: 16px;
+}
+
+.form-row {
+  --ion-grid-column-padding: 8px;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, var(--ion-color-dark) 0%, #2c2c2c 100%);
+  color: white;
+}
+
+.summary-card ion-card-title {
+  color: white;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin: 8px 0;
+  color: rgba(255, 255, 255, 0.7);
+  align-items: center;
+}
+
+.summary-row strong {
+  color: white;
+}
+
+.summary-row ion-chip {
+  margin: 0;
+}
+
+.summary-divider {
+  margin: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.summary-row.total {
+  margin-top: 12px;
+  padding-top: 12px;
+  font-size: 16px;
+}
+
+.summary-row.total span,
+.summary-row.total strong {
+  color: var(--ion-color-success-shade);
+}
+
+.summary-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.summary-note ion-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 768px) {
+  .form-actions {
+    position: sticky;
+    bottom: 16px;
+    z-index: 10;
+  }
+}
+</style>

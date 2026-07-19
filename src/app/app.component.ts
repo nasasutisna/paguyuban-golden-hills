@@ -74,7 +74,11 @@ import {
   sendOutline,
   linkOutline,
   swapVerticalOutline,
-  shieldCheckmarkOutline
+  shieldCheckmarkOutline,
+  listOutline,
+  hourglass,
+  personRemove,
+  removeCircleOutline
 } from 'ionicons/icons';
 import { AuthService } from '@core/auth/auth.service';
 import { User } from '@models/auth.model';
@@ -171,7 +175,9 @@ export class AppComponent implements OnInit, OnDestroy {
   // IPL Menu Items
   iplMenuItems: MenuItem[] = [
     { title: 'Pembayaran IPL', url: '/admin/ipl-payments', icon: 'wallet-outline', description: 'Daftar Pembayaran IPL' },
+    { title: 'Matrix IPL', url: '/admin/ipl-payment-matrix', icon: 'grid', description: 'Status bayar unit per bulan' },
     { title: 'Iuran Warga', url: '/admin/resident-payments', icon: 'card-outline', description: 'Riwayat Pembayaran' },
+    { title: 'Matrix Iuran Warga', url: '/admin/resident-payment-matrix', icon: 'grid', description: 'Status bayar warga per bulan' },
     { title: 'Periode IPL', url: '/admin/ipl-periods', icon: 'calendar', description: 'Kelola Periode IPL' },
   ];
 
@@ -209,7 +215,8 @@ export class AppComponent implements OnInit, OnDestroy {
       pieChartOutline, codeOutline, calendarClearOutline, calendarNumberOutline, trendingDown,
       chevronDownOutline, chevronUpOutline, filterOutline, informationCircleOutline, cloudOutline, cloudUploadOutline,
       timeOutline, checkmarkDoneOutline, lockClosedOutline, lockOpenOutline, peopleCircle, briefcaseOutline, barcodeOutline,
-      location, peopleOutline, sendOutline, linkOutline, swapVerticalOutline, shieldCheckmarkOutline
+      location, peopleOutline, sendOutline, linkOutline, swapVerticalOutline, shieldCheckmarkOutline, listOutline, hourglass, personRemove,
+      removeCircleOutline
     });
   }
 
@@ -295,6 +302,7 @@ export class AppComponent implements OnInit, OnDestroy {
       '/admin/transactions': { title: 'Transaksi', icon: 'swap-horizontal' },
       '/admin/ipl-periods': { title: 'Periode IPL', icon: 'calendar' },
       '/admin/ipl-payments': { title: 'Pembayaran IPL', icon: 'wallet-outline' },
+      '/admin/ipl-payment-matrix': { title: 'Matrix Pembayaran IPL', icon: 'grid' },
       '/admin/cash-transactions/reports/ipl': { title: 'Laporan IPL', icon: 'document-text-outline' },
       '/admin/cash-transactions/reports/kegiatan': { title: 'Laporan Kegiatan', icon: 'calendar-outline' },
     };

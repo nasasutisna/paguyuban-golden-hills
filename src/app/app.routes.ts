@@ -266,6 +266,13 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'ipl-periods/generate',
+        loadComponent: () =>
+          import('./features/admin/ipl-payments/ipl-period-generate/ipl-period-generate.page').then(
+            (m) => m.IplPeriodGeneratePage
+          )
+      },
+      {
         path: 'ipl-periods/:id/edit',
         loadComponent: () =>
           import('./features/admin/ipl-payments/ipl-period-form/ipl-period-form.page').then(
@@ -279,6 +286,74 @@ export const routes: Routes = [
           import('./features/admin/ipl-payments/ipl-payments.page').then(
             (m) => m.IplPaymentsPage
           )
+      },
+      // IPL Payment Matrix — componentless wrapper so detail pages reached from
+      // the matrix (payment detail, resident detail) keep the matrix as their
+      // breadcrumb parent, mirroring the cash-transactions/:idcash nested-detail
+      // pattern. Each level stays clickable in the breadcrumb.
+      {
+        path: 'ipl-payment-matrix',
+        data: { breadcrumb: { label: 'Matrix Pembayaran IPL' } },
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            loadComponent: () =>
+              import('./features/admin/ipl-payment-matrix/ipl-payment-matrix.page').then(
+                (m) => m.IplPaymentMatrixPage
+              )
+          },
+          {
+            path: 'ipl-payments/:id',
+            data: { breadcrumb: { label: 'Detail Pembayaran IPL' } },
+            loadComponent: () =>
+              import('./features/admin/ipl-payments/ipl-payment-detail/ipl-payment-detail.page').then(
+                (m) => m.IplPaymentDetailPage
+              )
+          },
+          {
+            path: 'residents/:id',
+            data: { breadcrumb: { label: 'Detail Warga' } },
+            loadComponent: () =>
+              import('./features/admin/residents/resident-detail/resident-detail.page').then(
+                (m) => m.ResidentDetailPage
+              )
+          }
+        ]
+      },
+      // Resident Payment (Iuran Warga) Matrix — componentless wrapper so detail
+      // pages reached from the matrix (resident payment detail, resident detail)
+      // keep the matrix as their breadcrumb parent, mirroring the
+      // ipl-payment-matrix nested-detail pattern above.
+      {
+        path: 'resident-payment-matrix',
+        data: { breadcrumb: { label: 'Matrix Iuran Warga' } },
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            loadComponent: () =>
+              import('./features/admin/resident-payment-matrix/resident-payment-matrix.page').then(
+                (m) => m.ResidentPaymentMatrixPage
+              )
+          },
+          {
+            path: 'resident-payments/:id',
+            data: { breadcrumb: { label: 'Detail Iuran Warga' } },
+            loadComponent: () =>
+              import('./features/admin/resident-payment-detail/resident-payment-detail.page').then(
+                (m) => m.ResidentPaymentDetailPage
+              )
+          },
+          {
+            path: 'residents/:id',
+            data: { breadcrumb: { label: 'Detail Warga' } },
+            loadComponent: () =>
+              import('./features/admin/residents/resident-detail/resident-detail.page').then(
+                (m) => m.ResidentDetailPage
+              )
+          }
+        ]
       },
       {
         path: 'ipl-payments/new',

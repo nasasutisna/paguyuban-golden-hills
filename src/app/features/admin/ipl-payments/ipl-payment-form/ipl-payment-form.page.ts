@@ -90,6 +90,16 @@ export class IplPaymentFormPage implements OnInit {
   // Payment methods
   readonly PAYMENT_METHODS = Object.values(IplPaymentMethod);
 
+  /**
+   * Optional query-param prefill, used when the form is opened from the IPL
+   * payment matrix (e.g. clicking an unpaid month cell). `periodId` selects
+   * the IPL period; `residentId` selects the resident.
+   */
+  private prefillPeriodId?: string;
+  private prefillResidentId?: string;
+  private periodPrefillApplied = false;
+  private residentPrefillApplied = false;
+
   private subscriptions: Subscription[] = [];
 
   constructor() {
@@ -106,6 +116,8 @@ export class IplPaymentFormPage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.prefillPeriodId = this.route.snapshot.queryParamMap.get('periodId') ?? undefined;
+    this.prefillResidentId = this.route.snapshot.queryParamMap.get('residentId') ?? undefined;
     this.loadData();
   }
 
@@ -118,6 +130,7 @@ export class IplPaymentFormPage implements OnInit {
       this.iplPeriodsService.getActive().subscribe({
         next: (periods) => {
           this.periods = periods;
+          this.applyPeriodPrefill();
           this.loadingData = false;
         },
         error: (error) => {
@@ -133,6 +146,7 @@ export class IplPaymentFormPage implements OnInit {
       this.residentsService.getAll({ limit: 1000 }).subscribe({
         next: (residentsData) => {
           this.residents = residentsData.data;
+          this.applyResidentPrefill();
         },
         error: (error) => {
           console.error('Error loading residents:', error);
@@ -145,12 +159,65 @@ export class IplPaymentFormPage implements OnInit {
       this.houseUnitsService.getAll({ limit: 1000 }).subscribe({
         next: (unitsData) => {
           this.houseUnits = unitsData.data;
+          this.applyResidentPrefill();
         },
         error: (error) => {
           console.error('Error loading house units:', error);
         }
       })
     );
+  }
+
+  /**
+   * Apply the optional `periodId` query-param prefill (e.g. opened from the
+   * payment matrix). If the period isn't part of the active set (a closed past
+   * period), fetch it by id so it still appears in the dropdown and can be
+   * selected. No-op when no prefill was requested or it was already applied.
+   */
+  private applyPeriodPrefill(): void {
+    if (this.periodPrefillApplied || !this.prefillPeriodId) return;
+
+    const existing = this.periods.find((p) => p.id === this.prefillPeriodId);
+    if (existing) {
+      this.periodPrefillApplied = true;
+      this.form.get('periodId')?.setValue(this.prefillPeriodId);
+      this.onPeriodChange();
+      return;
+    }
+
+    // Not in the active list — fetch it so the prefill can still resolve.
+    this.subscriptions.push(
+      this.iplPeriodsService.getById(this.prefillPeriodId).subscribe({
+        next: (period) => {
+          this.periodPrefillApplied = true;
+          if (period) {
+            this.periods = [period, ...this.periods];
+            this.form.get('periodId')?.setValue(period.id);
+            this.onPeriodChange();
+          }
+        },
+        error: (error) => {
+          console.error('Error loading prefill period:', error);
+        }
+      })
+    );
+  }
+
+  /**
+   * Apply the optional `residentId` query-param prefill. Waits until both the
+   * residents and house-unit lists have loaded so the amount calculation has
+   * the land area / IPL percentage available.
+   */
+  private applyResidentPrefill(): void {
+    if (this.residentPrefillApplied || !this.prefillResidentId) return;
+    if (this.residents.length === 0 || this.houseUnits.length === 0) return;
+
+    const existing = this.residents.find((r) => r.id === this.prefillResidentId);
+    if (!existing) return;
+
+    this.residentPrefillApplied = true;
+    this.form.get('residentId')?.setValue(this.prefillResidentId);
+    this.onResidentChange();
   }
 
   /**

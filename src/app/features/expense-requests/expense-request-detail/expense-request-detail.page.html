@@ -238,38 +238,6 @@
   </ion-card>
   }
 
-  <!-- Riwayat Persetujuan -->
-  @if (hasHistory()) {
-  <ion-card class="info-card">
-    <ion-card-header>
-      <ion-card-title>Riwayat Persetujuan</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list lines="full" class="info-list">
-        @for (history of request.approvalHistories; track history.id) {
-        <ion-item class="history-item">
-          <ion-label>
-            <h3>
-              <span class="history-action">{{ history.action }}</span>
-              @if (history.toStatus) {
-              <span class="history-status" [style.color]="'var(--ion-color-' + getStatusColor(history.toStatus) + ')'">
-                → {{ getStatusLabel(history.toStatus) }}
-              </span>
-              }
-            </h3>
-            <p>Oleh: {{ history.approver?.username || history.approver?.firstName || '-' }}</p>
-            <p>{{ formatDateTime(history.createdAt) }}</p>
-            @if (history.comments) {
-            <p class="history-comments">{{ history.comments }}</p>
-            }
-          </ion-label>
-        </ion-item>
-        }
-      </ion-list>
-    </ion-card-content>
-  </ion-card>
-  }
-
   <!-- Metadata -->
   <div class="metadata">
     <p>Dibuat: {{ formatDateTime(request.createdAt) }}</p>

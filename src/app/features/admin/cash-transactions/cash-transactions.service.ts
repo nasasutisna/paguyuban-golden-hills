@@ -17,7 +17,11 @@ import {
   TransactionSummary,
   TransactionCategory,
   TransactionType,
-  ReportStatistics
+  ReportStatistics,
+  CashAccount,
+  AccountBalance,
+  CreateTransferDto,
+  TransferResult
 } from './cash-transactions.model';
 
 @Injectable({
@@ -27,6 +31,7 @@ export class CashTransactionsService {
   private apiService = inject(ApiService);
   private readonly cashTransactionsPath = '/cash-transactions';
   private readonly categoriesPath = '/transaction-categories';
+  private readonly cashAccountsPath = '/cash-accounts';
 
   /**
    * Get paginated list of cash transactions
@@ -88,6 +93,7 @@ export class CashTransactionsService {
     if (params.limit) queryParams.append('limit', params.limit.toString());
     if (params.transactionType) queryParams.append('transactionType', params.transactionType);
     if (params.categoryId) queryParams.append('categoryId', params.categoryId);
+    if (params.cashAccountId) queryParams.append('cashAccountId', params.cashAccountId);
     if (params.paymentMethod) queryParams.append('paymentMethod', params.paymentMethod);
     if (params.approvalStatus) queryParams.append('approvalStatus', params.approvalStatus);
     if (params.startDate) queryParams.append('startDate', params.startDate);
@@ -117,6 +123,10 @@ export class CashTransactionsService {
       referenceType: item.referenceType,
       referenceId: item.referenceId,
       referenceNumber: item.referenceNumber,
+      cashAccountId: item.cashAccountId,
+      cashAccount: item.cashAccount,
+      isInternalTransfer: item.isInternalTransfer ?? false,
+      transferGroupId: item.transferGroupId,
       description: item.description,
       notes: item.notes,
       // Map 'status' from API to 'approvalStatus' in model
@@ -406,6 +416,53 @@ export class CashTransactionsService {
           limit: 10,
           totalPages: 0
         });
+      })
+    );
+  }
+
+  /**
+   * List all cash accounts (Kas IPL, Kas Warga).
+   */
+  getCashAccounts(): Observable<CashAccount[]> {
+    return this.apiService.get<CashAccount[]>(this.cashAccountsPath).pipe(
+      map((response) => response.data || []),
+      catchError((error) => {
+        console.error('Error fetching cash accounts:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Per-account balances (all-time balance + optional period flow).
+   */
+  getAccountBalances(startDate?: string, endDate?: string): Observable<AccountBalance[]> {
+    const queryParams = new URLSearchParams();
+    if (startDate) queryParams.append('startDate', startDate);
+    if (endDate) queryParams.append('endDate', endDate);
+    const queryString = queryParams.toString();
+    const endpoint = queryString
+      ? `${this.cashAccountsPath}/balances?${queryString}`
+      : `${this.cashAccountsPath}/balances`;
+
+    return this.apiService.get<AccountBalance[]>(endpoint).pipe(
+      map((response) => response.data || []),
+      catchError((error) => {
+        console.error('Error fetching cash account balances:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Transfer money between two cash accounts (Kas).
+   */
+  transfer(dto: CreateTransferDto): Observable<TransferResult | null> {
+    return this.apiService.post<TransferResult>(`${this.cashTransactionsPath}/transfer`, dto).pipe(
+      map((response) => response.data || null),
+      catchError((error) => {
+        console.error('Error transferring between cash accounts:', error);
+        throw error;
       })
     );
   }

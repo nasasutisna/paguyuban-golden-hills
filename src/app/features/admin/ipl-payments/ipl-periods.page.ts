@@ -41,6 +41,10 @@ export class IplPeriodsPage implements OnInit, OnDestroy {
   total = 0;
   totalPages = 0;
 
+  // Selected year filter — defaults to the current year so the list
+  // only shows the current year's periods on first load.
+  selectedYear: number = new Date().getFullYear();
+
   // Table data source
   dataSource: TableDataSource<IplPeriodWithStats> = {
     data: [],
@@ -61,10 +65,14 @@ export class IplPeriodsPage implements OnInit, OnDestroy {
   readonly STATUS_LABELS = IPL_PERIOD_STATUS_LABELS;
   readonly IplPeriodStatus = IplPeriodStatus;
 
-  // Year options for filter
+  // Year options for filter: next year down to 4 years back
   get yearOptions(): number[] {
     const currentYear = new Date().getFullYear();
-    return [currentYear, currentYear - 1, currentYear + 1];
+    const years: number[] = [];
+    for (let year = currentYear + 1; year >= currentYear - 4; year--) {
+      years.push(year);
+    }
+    return years;
   }
 
   // Status filter options
@@ -154,22 +162,23 @@ export class IplPeriodsPage implements OnInit, OnDestroy {
 
     const params: IplPeriodQueryParams = {
       page: this.currentPage,
-      limit: this.pageSize
+      limit: this.pageSize,
+      year: this.selectedYear
     };
 
     this.subscriptions.push(
       this.iplPeriodsService.getWithStats(params).subscribe({
-        next: (data) => {
-          const transformedData = this.transformDataWithDisplay(data);
+        next: (result) => {
+          const transformedData = this.transformDataWithDisplay(result.data);
           this.periods = transformedData;
+          this.total = result.total || 0;
+          this.totalPages = result.totalPages || 0;
           this.dataSource = {
             data: transformedData,
             loading: false,
-            total: data.length,
-            totalPages: 1
+            total: this.total,
+            totalPages: this.totalPages
           };
-          this.total = data.length || 0;
-          this.totalPages = 1;
         },
         error: (error) => {
           this.toastService.error('Gagal memuat periode IPL');
@@ -199,6 +208,13 @@ export class IplPeriodsPage implements OnInit, OnDestroy {
    */
   navigateToCreate(): void {
     this.router.navigate(['/admin/ipl-periods/new']);
+  }
+
+  /**
+   * Navigate to generate-full-year page
+   */
+  navigateToGenerate(): void {
+    this.router.navigate(['/admin/ipl-periods/generate']);
   }
 
   /**
@@ -235,6 +251,19 @@ export class IplPeriodsPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Handle year filter change — reload periods for the selected year
+   */
+  onYearChange(event: CustomEvent): void {
+    const year = Number((event.detail as any)?.value);
+    if (!year || year === this.selectedYear) {
+      return;
+    }
+    this.selectedYear = year;
+    this.currentPage = 1;
+    this.loadPeriods();
+  }
+
+  /**
    * Handle search
    */
   private handleSearch(query: string): void {
@@ -265,6 +294,15 @@ export class IplPeriodsPage implements OnInit, OnDestroy {
    */
   onPageChange(page: number): void {
     this.currentPage = page;
+    this.loadPeriods();
+  }
+
+  /**
+   * Handle page size change (rows per page)
+   */
+  onPageSizeChange(size: number): void {
+    this.pageSize = Number(size) || 10;
+    this.currentPage = 1;
     this.loadPeriods();
   }
 

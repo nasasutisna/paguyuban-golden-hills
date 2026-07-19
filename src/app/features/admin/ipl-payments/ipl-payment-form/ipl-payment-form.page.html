@@ -61,9 +61,8 @@
           </label>
           <div class="month-count-buttons">
             <ion-button
-              size="small"
               fill="clear"
-              color="medium"
+              color="danger"
               [disabled]="getMonthCount() <= 1"
               (click)="decrementMonthCount()">
               <ion-icon name="remove-circle-outline" slot="icon-only"></ion-icon>
@@ -73,7 +72,6 @@
               <span class="label">bulan</span>
             </div>
             <ion-button
-              size="small"
               fill="clear"
               color="primary"
               [disabled]="getMonthCount() >= 24"

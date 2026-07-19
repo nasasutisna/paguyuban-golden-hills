@@ -24,18 +24,21 @@
         <p class="banner-subtitle">Here's what's happening with your community today</p>
         <div class="banner-stats">
           <div class="banner-stat">
-            <span class="stat-value">{{ formatCurrency(balance) }}</span>
-            <span class="stat-label">Current Balance</span>
+            <span class="stat-value">{{ 10 }}</span>
+            <span class="stat-label">Total Unit Rumah</span>
           </div>
           <div class="banner-divider"></div>
+
           <div class="banner-stat">
             <span class="stat-value">{{ totalEmployees }}</span>
-            <span class="stat-label">Total Employees</span>
+            <span class="stat-label">Sudah Bayar IPL</span>
           </div>
           <div class="banner-divider"></div>
+
+          <!-- Jumlah warga yang belum bayar IPL -->
           <div class="banner-stat">
             <span class="stat-value">{{ pendingInvoices }}</span>
-            <span class="stat-label">Pending Invoices</span>
+            <span class="stat-label">Belum Bayar IPL</span>
           </div>
         </div>
       </div>
@@ -45,13 +48,37 @@
     </div>
 
     <!-- Stats Cards Grid -->
+    <div>
+      <h4>IPL Bulan Ini</h4>
+    </div>
     <div class="stats-grid">
-      <div
-        class="stat-card stat-card-primary"
-        [class.clickable]="card.route"
-        (click)="navigateToCard(card.route)"
-        *ngFor="let card of dashboardCards"
-      >
+      <div class="stat-card stat-card-primary" [class.clickable]="card.route" (click)="navigateToCard(card.route)"
+        *ngFor="let card of dashboardCards">
+        <div class="stat-header">
+          <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
+          <div *ngIf="card.trend" class="stat-trend" [ngClass]="'trend-' + card.trend.direction">
+            <ion-icon [name]="card.trend.direction === 'up' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            <span>{{ card.trend.value }}%</span>
+          </div>
+        </div>
+        <div class="stat-body">
+          <p class="stat-label">{{ card.title }}</p>
+          <h3 class="stat-value">{{ card.value }}</h3>
+        </div>
+        <div class="stat-footer" *ngIf="card.route">
+          <span class="view-link">View Details</span>
+          <ion-icon name="chevron-forward"></ion-icon>
+        </div>
+      </div>
+    </div>
+
+        <!-- Stats Cards Grid -->
+    <div>
+      <h4>Iuran Warga Bulan Ini</h4>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card stat-card-primary" [class.clickable]="card.route" (click)="navigateToCard(card.route)"
+        *ngFor="let card of dashboardIuranCards">
         <div class="stat-header">
           <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
           <div *ngIf="card.trend" class="stat-trend" [ngClass]="'trend-' + card.trend.direction">
@@ -128,11 +155,7 @@
         </div>
 
         <div class="quick-actions-grid">
-          <div
-            class="quick-action-item"
-            *ngFor="let item of quickMenuItems"
-            (click)="navigateToMenuItem(item)"
-          >
+          <div class="quick-action-item" *ngFor="let item of quickMenuItems" (click)="navigateToMenuItem(item)">
             <div class="quick-action-icon">
               <ion-icon [name]="item.icon"></ion-icon>
             </div>
@@ -159,8 +182,10 @@
         </ion-button>
       </div>
 
-      <div class="transactions-list-wrapper" *ngIf="!isLoadingTransactions && hasTransactions(); else noTransactionsTemplate">
-        <div class="transaction-item" *ngFor="let transaction of recentTransactions" (click)="navigateToTransaction(transaction.id)">
+      <div class="transactions-list-wrapper"
+        *ngIf="!isLoadingTransactions && hasTransactions(); else noTransactionsTemplate">
+        <div class="transaction-item" *ngFor="let transaction of recentTransactions"
+          (click)="navigateToTransaction(transaction.id)">
           <div class="transaction-icon" [class.income]="transaction.type === 'INCOME'">
             <ion-icon [name]="getTransactionIcon(transaction.type)"></ion-icon>
           </div>

@@ -32,6 +32,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
 
   // Dashboard data
   dashboardCards: DashboardCard[] = [];
+  dashboardIuranCards: DashboardCard[] = [];
   quickMenuItems: QuickMenuItem[] = [];
   recentTransactions: RecentTransaction[] = [];
   monthlyChartData: MonthlyChartData[] = [];
@@ -102,20 +103,8 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
 
         this.dashboardCards = [
           {
-            id: 'employees',
-            title: 'Total Employees',
-            value: this.totalEmployees,
-            icon: 'people',
-            color: 'primary',
-            trend: {
-              value: employeeStats.newThisMonth || 0,
-              direction: 'up'
-            },
-            route: '/employees'
-          },
-          {
             id: 'income',
-            title: 'This Month Income',
+            title: 'Pemasukan Bulan Ini',
             value: this.formatCurrency(this.totalIncome),
             icon: 'trending-up',
             color: 'success',
@@ -123,7 +112,7 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
           },
           {
             id: 'expenses',
-            title: 'This Month Expenses',
+            title: 'Pengeluaran Bulan Ini',
             value: this.formatCurrency(this.totalExpenses),
             icon: 'trending-down',
             color: 'danger',
@@ -139,7 +128,42 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
           },
           {
             id: 'pending-invoices',
-            title: 'Pending Invoices',
+            title: 'Belum Bayar IPL',
+            value: this.pendingInvoices,
+            icon: 'document-text',
+            color: 'warning',
+            route: '/invoices?status=pending'
+          }
+        ];
+
+         this.dashboardIuranCards = [
+          {
+            id: 'income',
+            title: 'Pemasukan Bulan Ini',
+            value: this.formatCurrency(this.totalIncome),
+            icon: 'trending-up',
+            color: 'success',
+            route: '/transactions/income'
+          },
+          {
+            id: 'expenses',
+            title: 'Pengeluaran Bulan Ini',
+            value: this.formatCurrency(this.totalExpenses),
+            icon: 'trending-down',
+            color: 'danger',
+            route: '/transactions/expense'
+          },
+          {
+            id: 'balance',
+            title: 'Balance',
+            value: this.formatCurrency(this.balance),
+            icon: 'wallet',
+            color: this.balance >= 0 ? 'success' : 'danger',
+            route: '/transactions'
+          },
+          {
+            id: 'pending-invoices',
+            title: 'Belum Bayar IPL',
             value: this.pendingInvoices,
             icon: 'document-text',
             color: 'warning',
