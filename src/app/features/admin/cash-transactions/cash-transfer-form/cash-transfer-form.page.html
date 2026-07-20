@@ -1,0 +1,103 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/cash-transactions"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="transferForm" (ngSubmit)="onSubmit()">
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Pindah Dana Antar Kas</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-select
+          label="Dari Kas"
+          formControlName="fromAccountCode"
+          placeholder="Pilih kas asal"
+          [options]="fromOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('fromAccountCode')"
+          [errorMessage]="getErrorMessage('fromAccountCode')"
+        ></app-form-select>
+
+        <app-form-select
+          label="Ke Kas"
+          formControlName="toAccountCode"
+          placeholder="Pilih kas tujuan"
+          [options]="toOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('toAccountCode')"
+          [errorMessage]="getErrorMessage('toAccountCode')"
+        ></app-form-select>
+
+        <app-form-input
+          label="Nominal (Rp)"
+          type="number"
+          formControlName="amount"
+          placeholder="contoh: 500000"
+          [min]="0"
+          [required]="true"
+          [showError]="isFieldInvalid('amount')"
+          [errorMessage]="getErrorMessage('amount')"
+          [prefix]="'Rp '"
+        ></app-form-input>
+
+        <ion-item>
+          <ion-label position="stacked">Tanggal Transfer *</ion-label>
+          <ion-datetime
+            formControlName="transactionDate"
+            presentation="date"
+          ></ion-datetime>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Keterangan</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-textarea
+          label="Keterangan"
+          formControlName="description"
+          placeholder="Contoh: Transfer kas untuk kegiatan 17 Agustusan"
+          [rows]="3"
+          [maxlength]="500"
+          [showError]="isFieldInvalid('description')"
+          [errorMessage]="getErrorMessage('description')"
+        ></app-form-textarea>
+
+        @if (sourceBalance !== null) {
+        <ion-note color="medium">
+          Saldo kas asal saat ini: {{ formatCurrency(sourceBalance) }}
+        </ion-note>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        expand="block"
+        (click)="goBack()"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="swap-horizontal-outline"
+        iconSlot="start"
+        variant="solid"
+        color="primary"
+        type="submit"
+        expand="block"
+        [disabled]="!isFormValid()"
+        [loading]="isSubmitting"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>

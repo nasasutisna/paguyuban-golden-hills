@@ -1,6 +1,6 @@
 import { Injectable, inject, OnDestroy } from '@angular/core';
 import { Observable, BehaviorSubject, of, EMPTY, interval, Subscription } from 'rxjs';
-import { catchError, map, switchMap, tap, take, concatMap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap, take, concatMap, finalize, share } from 'rxjs/operators';
 import { ApiService, ApiResponse } from '@core/api/api.service';
 import { StorageService } from '@core/storage/storage.service';
 import { STORAGE_KEYS } from '@core/constants/storage-keys';
@@ -34,7 +34,14 @@ export class AuthService implements OnDestroy {
   });
 
   private refreshSubscription: Subscription | null = null;
-  private readonly TOKEN_REFRESH_INTERVAL = 4 * 60 * 1000; // 4 minutes
+  // Refresh proactively before the access token expires. Keep this comfortably
+  // below the backend JWT_EXPIRES_IN (currently 1h) so it always refreshes in
+  // time, but isn't needlessly frequent.
+  private readonly TOKEN_REFRESH_INTERVAL = 50 * 60 * 1000; // 50 minutes
+
+  // Single-flight lock: while a refresh is in flight, concurrent callers share
+  // the same observable instead of each hitting the (token-rotating) endpoint.
+  private refreshInProgress$: Observable<{ accessToken: string; refreshToken: string }> | null = null;
 
   constructor() {
     this.apiService.setBaseUrl(environment.apiUrl);
@@ -195,7 +202,19 @@ export class AuthService implements OnDestroy {
   /**
    * Refresh access token using refresh token
    */
+  /**
+   * Refresh access token using refresh token.
+   * Single-flighted: concurrent callers (proactive timer + multiple 401 retries)
+   * share the same in-flight refresh. The backend rotates the refresh token on
+   * every refresh, so issuing more than one at once would invalidate the others
+   * and log the user out.
+   */
   refreshAccessToken(): Observable<{ accessToken: string; refreshToken: string }> {
+    // A refresh is already in progress — reuse it
+    if (this.refreshInProgress$) {
+      return this.refreshInProgress$;
+    }
+
     const currentRefreshToken = this.authState$.value.refreshToken;
 
     if (!currentRefreshToken) {
@@ -204,7 +223,7 @@ export class AuthService implements OnDestroy {
 
     const request: RefreshTokenRequest = { refreshToken: currentRefreshToken };
 
-    return this.apiService.post<any>('/auth/refresh', request).pipe(
+    this.refreshInProgress$ = this.apiService.post<any>('/auth/refresh', request).pipe(
       tap(async (response: any) => {
         const data = response.data;
         await this.updateTokens(data.accessToken, data.refreshToken || currentRefreshToken);
@@ -215,10 +234,19 @@ export class AuthService implements OnDestroy {
       })),
       catchError(error => {
         console.error('Token refresh error:', error);
-        this.logout();
+        // Clear local session directly (no API call) to avoid a refresh/logout
+        // loop — the refresh token is already invalid, so a server logout would
+        // just 401 again.
+        this.clearAuthData();
         return EMPTY;
-      })
+      }),
+      finalize(() => {
+        this.refreshInProgress$ = null;
+      }),
+      share()
     );
+
+    return this.refreshInProgress$;
   }
 
   /**

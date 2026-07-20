@@ -135,6 +135,18 @@
           [errorMessage]="getErrorMessage('employmentStatus')"
         ></app-form-select>
 
+        <app-form-input
+          label="Gaji Pokok (per bulan)"
+          type="number"
+          formControlName="basicSalary"
+          placeholder="contoh: 1500000"
+          prefix="Rp"
+          [min]="0"
+          [step]="10000"
+          [showError]="isFieldInvalid('basicSalary')"
+          [errorMessage]="getErrorMessage('basicSalary')"
+        ></app-form-input>
+
         <ion-item class="toggle-item">
           <ion-label>Status Aktif</ion-label>
           <ion-toggle formControlName="isActive"></ion-toggle>

@@ -188,6 +188,20 @@ export class EmployeeDetailPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Format currency (Gaji Pokok, dll) → Rp format
+   */
+  formatCurrency(amount?: number | string): string {
+    if (amount === undefined || amount === null || amount === '') return '-';
+    const value = Number(amount);
+    if (isNaN(value)) return '-';
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(value);
+  }
+
+  /**
    * Format date for display
    */
   formatDate(date?: string): string {

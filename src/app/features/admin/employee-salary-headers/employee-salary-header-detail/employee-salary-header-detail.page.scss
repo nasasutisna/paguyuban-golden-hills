@@ -1,0 +1,138 @@
+ion-content {
+  --background: var(--ion-color-light);
+}
+
+.detail-card {
+  margin: 0 0 16px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  ion-card-header {
+    padding-bottom: 8px;
+  }
+
+  ion-card-subtitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+  }
+
+  ion-card-content {
+    padding: 8px 16px 16px;
+  }
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.detail-list {
+  background: transparent;
+  padding: 0;
+
+  ion-item {
+    --background: transparent;
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    --min-height: 44px;
+  }
+}
+
+.detail-label {
+  font-size: 13px;
+  color: var(--ion-color-medium) !important;
+  flex: 0 0 auto;
+  max-width: 45%;
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ion-color-dark);
+  text-align: right;
+  white-space: normal;
+}
+
+.detail-sub {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ion-color-medium);
+}
+
+.detail-amount {
+  font-weight: 700;
+  color: var(--ion-color-danger);
+}
+
+.detail-notes {
+  font-weight: 400;
+  color: var(--ion-color-medium-shade);
+  font-style: italic;
+}
+
+.tx-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--ion-color-success);
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+.no-cash-tx {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 12px 0 4px;
+
+  ion-icon {
+    font-size: 32px;
+    color: var(--ion-color-warning);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ion-color-medium);
+    max-width: 280px;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 48px 16px;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-medium);
+  }
+
+  p {
+    color: var(--ion-color-medium);
+  }
+}
+
+.actions {
+  padding: 8px 0 24px;
+}
+
+.cancel-btn {
+  margin-bottom: 8px;
+}

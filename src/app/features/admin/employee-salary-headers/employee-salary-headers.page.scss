@@ -1,0 +1,33 @@
+// Penggajian list — relies on the shared table component styling.
+ion-content {
+  --background: var(--ion-color-light);
+}
+
+.filter-card {
+  margin: 0 0 12px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  ion-card-content {
+    padding: 12px 16px;
+  }
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.period-input {
+  flex: 1 1 220px;
+  --background: transparent;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 4px;
+}

@@ -147,7 +147,7 @@ export class IplReportPage implements OnInit, OnDestroy {
           const filename = `Laporan-IPL_${startDate || ''}_${endDate || ''}.xlsx`;
           downloadBlob(blob, filename);
           this.loadingService.dismiss();
-          this.toastService.success('Laporan IPL berhasil diekspor');
+          this.toastService.success('Laporan Kas IPL berhasil diekspor');
         },
         error: (error) => {
           console.error('Error exporting IPL report:', error);

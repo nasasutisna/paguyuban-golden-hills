@@ -177,6 +177,28 @@ export const routes: Routes = [
             (m) => m.EmployeeFormPage
           )
       },
+      // Employee Salary Headers (Penggajian) Routes
+      {
+        path: 'employee-salary-headers',
+        loadComponent: () =>
+          import('./features/admin/employee-salary-headers/employee-salary-headers.page').then(
+            (m) => m.EmployeeSalaryHeadersPage
+          )
+      },
+      {
+        path: 'employee-salary-headers/new',
+        loadComponent: () =>
+          import('./features/admin/employee-salary-headers/employee-salary-header-form/employee-salary-header-form.page').then(
+            (m) => m.EmployeeSalaryHeaderFormPage
+          )
+      },
+      {
+        path: 'employee-salary-headers/:id',
+        loadComponent: () =>
+          import('./features/admin/employee-salary-headers/employee-salary-header-detail/employee-salary-header-detail.page').then(
+            (m) => m.EmployeeSalaryHeaderDetailPage
+          )
+      },
       // Fee Types Routes
       {
         path: 'fee-types',
@@ -405,6 +427,14 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/admin/cash-transactions/cash-transaction-form/cash-transaction-form.page').then(
                 (m) => m.CashTransactionFormPage
+              )
+          },
+          {
+            path: 'transfer',
+            data: { breadcrumb: { label: 'Transfer Antar Kas' } },
+            loadComponent: () =>
+              import('./features/admin/cash-transactions/cash-transfer-form/cash-transfer-form.page').then(
+                (m) => m.CashTransferFormPage
               )
           },
           // Cash Transaction Reports Routes

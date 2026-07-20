@@ -142,6 +142,7 @@ export interface Employee {
   probationEndDate?: string;
   employmentStatus: EmploymentStatus;
   terminationDate?: string;
+  basicSalary?: number;
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountName?: string;
@@ -178,6 +179,7 @@ export interface CreateEmployeeDto {
   hireDate: string;
   probationEndDate?: string;
   employmentStatus: EmploymentStatus;
+  basicSalary?: number;
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountName?: string;
@@ -211,6 +213,7 @@ export interface UpdateEmployeeDto {
   hireDate?: string;
   probationEndDate?: string;
   employmentStatus?: EmploymentStatus;
+  basicSalary?: number;
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountName?: string;

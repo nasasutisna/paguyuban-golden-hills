@@ -2,27 +2,32 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, RefresherCustomEvent } from '@ionic/angular';
-import { Subscription, Observable, forkJoin } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { DashboardService } from './dashboard.service';
 import { LoadingService } from '@services/loading.service';
 import { ToastService } from '@services/toast.service';
 import {
   DashboardCard,
+  DashboardOverview,
   QuickMenuItem,
   RecentTransaction,
-  MonthlyChartData
+  MonthlyChartData,
 } from './dashboard.model';
 
 /**
- * Admin Dashboard Page
- * Displays overview with cards, charts, recent transactions, and quick menu
+ * Admin Dashboard Page.
+ *
+ * Renders from a single aggregated payload (`getDashboardOverview`):
+ * welcome banner (house units + IPL collection status), per-Kas cards
+ * (Kas IPL / Kas Warga), a monthly income/expense chart, quick actions,
+ * and recent transactions.
  */
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [CommonModule, IonicModule],
   templateUrl: './admin-dashboard.page.html',
-  styleUrls: ['./admin-dashboard.page.scss']
+  styleUrls: ['./admin-dashboard.page.scss'],
 })
 export class AdminDashboardPage implements OnInit, OnDestroy {
   private dashboardService = inject(DashboardService);
@@ -30,29 +35,25 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
   private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
 
-  // Dashboard data
+  // Section data
   dashboardCards: DashboardCard[] = [];
   dashboardIuranCards: DashboardCard[] = [];
   quickMenuItems: QuickMenuItem[] = [];
   recentTransactions: RecentTransaction[] = [];
   monthlyChartData: MonthlyChartData[] = [];
 
+  // Welcome banner figures
+  totalHouseUnits = 0;
+  iplPaidUnits = 0;
+  iplUnpaidUnits = 0;
+  iplPeriodLabel = '';
+
   // Loading states
   isLoading = true;
-  isLoadingCards = true;
-  isLoadingTransactions = true;
   isLoadingChart = true;
-
-  // Statistics for display
-  totalEmployees = 0;
-  totalIncome = 0;
-  totalExpenses = 0;
-  pendingInvoices = 0;
-  balance = 0;
+  isLoadingTransactions = true;
 
   private subscriptions: Subscription[] = [];
-
-  constructor() { }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -62,297 +63,177 @@ export class AdminDashboardPage implements OnInit, OnDestroy {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  /**
-   * Load all dashboard data
-   */
+  /** Fetch the single overview payload and map it into the view models. */
   loadDashboardData(): void {
     this.isLoading = true;
-
-    // Load data in parallel groups
-    this.loadCards();
-    this.loadRecentTransactions();
-    this.loadChartData();
-    this.loadQuickMenu();
-
-    // Simulate overall loading completion
-    setTimeout(() => {
-      this.isLoading = false;
-    }, 1000);
-  }
-
-  /**
-   * Load dashboard cards statistics
-   */
-  private loadCards(): void {
-    this.isLoadingCards = true;
-
-    forkJoin({
-      employeeStats: this.dashboardService.getEmployeeStatistics(),
-      transactionStats: this.dashboardService.getTransactionStatistics(
-        this.getCurrentMonthStart(),
-        this.getCurrentMonthEnd()
-      ),
-      invoiceStats: this.dashboardService.getInvoiceStatistics()
-    }).subscribe({
-      next: ({ employeeStats, transactionStats, invoiceStats }) => {
-        this.totalEmployees = employeeStats.totalEmployees || 0;
-        this.totalIncome = transactionStats.totalIncome || 0;
-        this.totalExpenses = transactionStats.totalExpense || 0;
-        this.balance = transactionStats.balance || 0;
-        this.pendingInvoices = invoiceStats.pendingInvoices || 0;
-
-        this.dashboardCards = [
-          {
-            id: 'income',
-            title: 'Pemasukan Bulan Ini',
-            value: this.formatCurrency(this.totalIncome),
-            icon: 'trending-up',
-            color: 'success',
-            route: '/transactions/income'
-          },
-          {
-            id: 'expenses',
-            title: 'Pengeluaran Bulan Ini',
-            value: this.formatCurrency(this.totalExpenses),
-            icon: 'trending-down',
-            color: 'danger',
-            route: '/transactions/expense'
-          },
-          {
-            id: 'balance',
-            title: 'Balance',
-            value: this.formatCurrency(this.balance),
-            icon: 'wallet',
-            color: this.balance >= 0 ? 'success' : 'danger',
-            route: '/transactions'
-          },
-          {
-            id: 'pending-invoices',
-            title: 'Belum Bayar IPL',
-            value: this.pendingInvoices,
-            icon: 'document-text',
-            color: 'warning',
-            route: '/invoices?status=pending'
-          }
-        ];
-
-         this.dashboardIuranCards = [
-          {
-            id: 'income',
-            title: 'Pemasukan Bulan Ini',
-            value: this.formatCurrency(this.totalIncome),
-            icon: 'trending-up',
-            color: 'success',
-            route: '/transactions/income'
-          },
-          {
-            id: 'expenses',
-            title: 'Pengeluaran Bulan Ini',
-            value: this.formatCurrency(this.totalExpenses),
-            icon: 'trending-down',
-            color: 'danger',
-            route: '/transactions/expense'
-          },
-          {
-            id: 'balance',
-            title: 'Balance',
-            value: this.formatCurrency(this.balance),
-            icon: 'wallet',
-            color: this.balance >= 0 ? 'success' : 'danger',
-            route: '/transactions'
-          },
-          {
-            id: 'pending-invoices',
-            title: 'Belum Bayar IPL',
-            value: this.pendingInvoices,
-            icon: 'document-text',
-            color: 'warning',
-            route: '/invoices?status=pending'
-          }
-        ];
-
-        this.isLoadingCards = false;
-      },
-      error: (error) => {
-        console.error('Error loading dashboard cards:', error);
-        this.toastService.error('Failed to load statistics');
-        this.isLoadingCards = false;
-      }
-    });
-  }
-
-  /**
-   * Load recent transactions
-   */
-  private loadRecentTransactions(): void {
+    this.isLoadingChart = true;
     this.isLoadingTransactions = true;
 
-    this.dashboardService.getRecentTransactions(5).subscribe({
-      next: transactions => {
-        this.recentTransactions = transactions;
+    const sub = this.dashboardService.getDashboardOverview().subscribe({
+      next: overview => {
+        this.applyOverview(overview);
+        this.isLoading = false;
+      },
+      error: error => {
+        console.error('Error loading dashboard:', error);
+        this.toastService.error('Gagal memuat dashboard');
+        this.isLoading = false;
+        this.isLoadingChart = false;
         this.isLoadingTransactions = false;
       },
-      error: (error) => {
-        console.error('Error loading recent transactions:', error);
-        this.isLoadingTransactions = false;
-      }
     });
+    this.subscriptions.push(sub);
+
+    this.loadQuickMenu();
   }
 
-  /**
-   * Load monthly chart data
-   */
-  private loadChartData(): void {
-    this.isLoadingChart = true;
+  /** Map the overview payload into all section view models. */
+  private applyOverview(o: DashboardOverview): void {
+    // Welcome banner
+    this.totalHouseUnits = o.houseUnits?.total ?? 0;
+    this.iplPaidUnits = o.ipl?.paidUnits ?? 0;
+    this.iplUnpaidUnits = o.ipl?.unpaidUnits ?? 0;
+    this.iplPeriodLabel = o.ipl?.period?.label ?? '';
 
-    this.dashboardService.getMonthlyChartData().subscribe({
-      next: data => {
-        this.monthlyChartData = data;
-        this.isLoadingChart = false;
+    // Kas IPL cards (income / expense / saldo / belum bayar)
+    this.dashboardCards = [
+      {
+        id: 'ipl-income',
+        title: 'Pemasukan IPL',
+        value: this.formatCurrency(o.iplFund?.income ?? 0),
+        icon: 'trending-up',
+        color: 'success',
+        route: '/admin/cash-transactions',
       },
-      error: (error) => {
-        console.error('Error loading chart data:', error);
-        this.isLoadingChart = false;
-      }
-    });
+      {
+        id: 'ipl-expense',
+        title: 'Pengeluaran IPL',
+        value: this.formatCurrency(o.iplFund?.expense ?? 0),
+        icon: 'trending-down',
+        color: 'danger',
+        route: '/admin/cash-transactions',
+      },
+      {
+        id: 'ipl-balance',
+        title: 'Saldo Kas IPL',
+        value: this.formatCurrency(o.balances?.ipl ?? 0),
+        icon: 'wallet',
+        color: 'primary',
+        route: '/admin/cash-transactions',
+      },
+      {
+        id: 'ipl-unpaid',
+        title: 'Belum Bayar IPL',
+        value: o.ipl?.unpaidUnits ?? 0,
+        icon: 'document-text',
+        color: 'warning',
+        route: '/admin/ipl-payments',
+      },
+    ];
+
+    // Kas Warga cards (income / expense / saldo)
+    this.dashboardIuranCards = [
+      {
+        id: 'warga-income',
+        title: 'Pemasukan Warga',
+        value: this.formatCurrency(o.wargaFund?.income ?? 0),
+        icon: 'trending-up',
+        color: 'success',
+        route: '/admin/cash-transactions',
+      },
+      {
+        id: 'warga-expense',
+        title: 'Pengeluaran Warga',
+        value: this.formatCurrency(o.wargaFund?.expense ?? 0),
+        icon: 'trending-down',
+        color: 'danger',
+        route: '/admin/cash-transactions',
+      },
+      {
+        id: 'warga-balance',
+        title: 'Saldo Kas Warga',
+        value: this.formatCurrency(o.balances?.warga ?? 0),
+        icon: 'people',
+        color: 'tertiary',
+        route: '/admin/cash-transactions',
+      },
+    ];
+
+    this.monthlyChartData = o.monthlyChart ?? [];
+    this.recentTransactions = o.recentTransactions ?? [];
+    this.isLoadingChart = false;
+    this.isLoadingTransactions = false;
   }
 
-  /**
-   * Load quick menu items
-   */
   private loadQuickMenu(): void {
-    this.dashboardService.getQuickMenuItems().subscribe(items => {
+    const sub = this.dashboardService.getQuickMenuItems().subscribe(items => {
       this.quickMenuItems = items;
     });
+    this.subscriptions.push(sub);
   }
 
-  /**
-   * Handle pull to refresh
-   */
+  /** Handle pull-to-refresh. */
   handleRefresh(event: RefresherCustomEvent): void {
     this.loadDashboardData();
-
-    setTimeout(() => {
-      event.target.complete();
-    }, 1000);
+    setTimeout(() => event.target.complete(), 800);
   }
 
-  /**
-   * Navigate to card route
-   */
   navigateToCard(route: string | undefined): void {
-    if (route) {
-      this.router.navigateByUrl(route);
-    }
+    if (route) this.router.navigateByUrl(route);
   }
 
-  /**
-   * Navigate to quick menu item
-   */
   navigateToMenuItem(item: QuickMenuItem): void {
     this.router.navigateByUrl(item.route);
   }
 
-  /**
-   * Navigate to transaction details
-   */
   navigateToTransaction(transactionId: string): void {
-    this.router.navigateByUrl(`/transactions/${transactionId}`);
+    this.router.navigateByUrl(`/admin/cash-transactions/${transactionId}`);
   }
 
-  /**
-   * Format currency for display
-   */
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
+      maximumFractionDigits: 0,
+    }).format(amount ?? 0);
   }
 
-  /**
-   * Format date for display
-   */
   formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('id-ID', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   }
 
-  /**
-   * Get transaction status color
-   */
   getTransactionStatusColor(status: string): string {
     const colors: { [key: string]: string } = {
       completed: 'success',
       pending: 'warning',
-      failed: 'danger'
+      failed: 'danger',
     };
     return colors[status] || 'medium';
   }
 
-  /**
-   * Get transaction icon based on type
-   */
   getTransactionIcon(type: string): string {
     return type === 'INCOME' ? 'arrow-up-circle' : 'arrow-down-circle';
   }
 
-  /**
-   * Get transaction color based on type
-   */
-  getTransactionColor(type: string): string {
-    return type === 'INCOME' ? 'success' : 'danger';
-  }
-
-  /**
-   * Check if transactions exist
-   */
   hasTransactions(): boolean {
     return this.recentTransactions.length > 0;
   }
 
-  /**
-   * Check if chart data exists
-   */
   hasChartData(): boolean {
     return this.monthlyChartData.some(d => d.income > 0 || d.expense > 0);
   }
 
-  /**
-   * Get current month start date
-   */
-  private getCurrentMonthStart(): string {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-  }
-
-  /**
-   * Get current month end date
-   */
-  private getCurrentMonthEnd(): string {
-    const now = new Date();
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    return `${lastDay.getFullYear()}-${String(lastDay.getMonth() + 1).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
-  }
-
-  /**
-   * Get maximum value in chart data for scaling
-   */
   getMaxChartValue(): number {
-    const maxIncome = Math.max(...this.monthlyChartData.map(d => d.income));
-    const maxExpense = Math.max(...this.monthlyChartData.map(d => d.expense));
+    const maxIncome = Math.max(...this.monthlyChartData.map(d => d.income), 0);
+    const maxExpense = Math.max(...this.monthlyChartData.map(d => d.expense), 0);
     return Math.max(maxIncome, maxExpense, 100);
   }
 
-  /**
-   * Get bar height percentage for chart
-   */
   getBarHeight(value: number): number {
     const maxValue = this.getMaxChartValue();
     if (maxValue === 0) return 0;

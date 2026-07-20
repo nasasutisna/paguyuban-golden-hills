@@ -1,7 +1,6 @@
-<ng-container [ngSwitch]="true">
+@if (loading) {
   <!-- Loading state with spinner -->
   <ion-button
-    *ngSwitchCase="loading"
     [type]="type"
     [color]="color"
     [disabled]="true"
@@ -17,10 +16,9 @@
     <ion-spinner name="crescent" class="button-spinner"></ion-spinner>
     <span class="button-text">Please wait...</span>
   </ion-button>
-
+} @else if (isIconOnly) {
   <!-- Icon only button -->
   <ion-button
-    *ngSwitchCase="isIconOnly"
     [type]="type"
     [color]="color"
     [disabled]="disabled"
@@ -36,10 +34,9 @@
   >
     <ion-icon [name]="icon" slot="icon-only" class="button-icon"></ion-icon>
   </ion-button>
-
+} @else if (icon && iconSlot === 'start') {
   <!-- Button with icon at start -->
   <ion-button
-    *ngSwitchCase="icon && iconSlot === 'start'"
     [type]="type"
     [color]="color"
     [disabled]="disabled"
@@ -56,10 +53,9 @@
     <ion-icon [name]="icon" slot="start" class="button-icon"></ion-icon>
     <span class="button-text">{{ text }}</span>
   </ion-button>
-
+} @else if (icon && iconSlot === 'end') {
   <!-- Button with icon at end -->
   <ion-button
-    *ngSwitchCase="icon && iconSlot === 'end'"
     [type]="type"
     [color]="color"
     [disabled]="disabled"
@@ -76,10 +72,9 @@
     <span class="button-text">{{ text }}</span>
     <ion-icon [name]="icon" slot="end" class="button-icon"></ion-icon>
   </ion-button>
-
+} @else {
   <!-- Default button with text only -->
   <ion-button
-    *ngSwitchDefault
     [type]="type"
     [color]="color"
     [disabled]="disabled"
@@ -95,4 +90,4 @@
   >
     <span class="button-text">{{ text }}</span>
   </ion-button>
-</ng-container>
+}

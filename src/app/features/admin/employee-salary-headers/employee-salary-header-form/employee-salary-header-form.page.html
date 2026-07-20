@@ -1,0 +1,116 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/employee-salary-headers"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="payrollForm" (ngSubmit)="onSubmit()">
+    <!-- Informasi Penggajian -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Penggajian</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-select
+          label="Karyawan"
+          formControlName="employeeId"
+          placeholder="Pilih karyawan"
+          [options]="employeeOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('employeeId')"
+          [errorMessage]="getErrorMessage('employeeId')"
+          [helperText]="employeeHelperText"
+        ></app-form-select>
+
+        <app-form-input
+          label="Periode (Bulan-Tahun)"
+          type="text"
+          formControlName="payPeriod"
+          placeholder="2026-07"
+          [maxlength]="7"
+          [required]="true"
+          [showError]="isFieldInvalid('payPeriod')"
+          [errorMessage]="getErrorMessage('payPeriod')"
+          [helperText]="periodHelperText"
+        ></app-form-input>
+
+        <app-form-input
+          label="Jumlah Gaji (Rp)"
+          type="number"
+          formControlName="netSalary"
+          placeholder="contoh: 3500000"
+          [min]="0"
+          [required]="true"
+          [showError]="isFieldInvalid('netSalary')"
+          [errorMessage]="getErrorMessage('netSalary')"
+          [helperText]="amountHelperText"
+          [prefix]="'Rp '"
+        ></app-form-input>
+
+        <ion-button
+          fill="clear"
+          size="small"
+          color="primary"
+          class="use-salary-btn"
+          (click)="useBasicSalary()"
+        >
+          <ion-icon slot="start" name="swap-horizontal"></ion-icon>
+          Gunakan gaji pokok
+        </ion-button>
+
+        <app-form-date-picker
+          formControlName="paymentDate"
+          label="Tanggal Pembayaran"
+          placeholder="Pilih tanggal pembayaran"
+          [showError]="isFieldInvalid('paymentDate')"
+          [errorMessage]="getErrorMessage('paymentDate')"
+          [required]="true"
+        ></app-form-date-picker>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Catatan -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Catatan (Opsional)</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-textarea
+          label="Catatan"
+          formControlName="notes"
+          placeholder="Catatan tambahan, cth: gaji bulanan + lembur..."
+          [rows]="3"
+          [maxlength]="1000"
+          [showError]="isFieldInvalid('notes')"
+          [errorMessage]="getErrorMessage('notes')"
+        ></app-form-textarea>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        expand="block"
+        (click)="goBack()"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="save-outline"
+        iconSlot="start"
+        variant="solid"
+        color="primary"
+        type="submit"
+        expand="block"
+        [disabled]="!isFormValid()"
+        [loading]="isSubmitting"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>

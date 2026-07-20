@@ -171,6 +171,7 @@ export class EmployeeFormPage implements OnInit, OnDestroy {
         EmploymentStatus.ACTIVE,
         [Validators.required]
       ],
+      basicSalary: ['', [Validators.min(0)]],
       bankName: [''],
       bankAccountNumber: [''],
       bankAccountName: [''],
@@ -255,6 +256,7 @@ export class EmployeeFormPage implements OnInit, OnDestroy {
       hireDate: employee.hireDate || '',
       probationEndDate: employee.probationEndDate || '',
       employmentStatus: employee.employmentStatus,
+      basicSalary: employee.basicSalary ?? '',
       bankName: employee.bankName || '',
       bankAccountNumber: employee.bankAccountNumber || '',
       bankAccountName: employee.bankAccountName || '',
@@ -300,6 +302,7 @@ export class EmployeeFormPage implements OnInit, OnDestroy {
       hireDate: 'Tanggal masuk',
       probationEndDate: 'Akhir masa percobaan',
       employmentStatus: 'Status kepegawaian',
+      basicSalary: 'Gaji pokok',
       bankName: 'Nama bank',
       bankAccountNumber: 'Nomor rekening',
       bankAccountName: 'Nama pemilik rekening',
@@ -452,6 +455,12 @@ export class EmployeeFormPage implements OnInit, OnDestroy {
     }
     if (formValue.probationEndDate) {
       dto.probationEndDate = this.toLocalIsoString(formValue.probationEndDate);
+    }
+    if (formValue.basicSalary !== '' && formValue.basicSalary != null) {
+      const salary = Number(formValue.basicSalary);
+      if (!isNaN(salary)) {
+        dto.basicSalary = salary;
+      }
     }
     if (formValue.bankName?.trim()) {
       dto.bankName = formValue.bankName.trim();

@@ -60,6 +60,7 @@ export class EmployeesPage implements OnInit, OnDestroy {
       { key: 'firstName', header: 'Nama Depan', type: 'text', sortable: true },
       { key: 'lastName', header: 'Nama Belakang', type: 'text', sortable: true },
       { key: 'position.positionName', header: 'Jabatan', type: 'text' },
+      { key: 'basicSalary', header: 'Gaji Pokok', type: 'currency', align: 'right' },
       { key: 'email', header: 'Email', type: 'text' },
       { key: 'phoneNumber', header: 'Telepon', type: 'text' },
       { key: 'employmentStatus', header: 'Status Kepegawaian', type: 'status', sortable: true },

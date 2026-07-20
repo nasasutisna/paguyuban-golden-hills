@@ -13,7 +13,24 @@
 
     <!-- Stats Cards -->
     @if (!statsLoading && summary) {
+
     <div class="stats-grid">
+
+      <!-- Balance -->
+      <ion-card class="stat-card primary">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="wallet"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ formatCurrency(summary.netAmount) }}</div>
+              <div class="stat-label">Saldo</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
       <!-- Total Income -->
       <ion-card class="stat-card success">
         <ion-card-content>
@@ -44,21 +61,6 @@
         </ion-card-content>
       </ion-card>
 
-      <!-- Balance -->
-      <ion-card class="stat-card primary">
-        <ion-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <ion-icon name="wallet"></ion-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ formatCurrency(summary.netAmount) }}</div>
-              <div class="stat-label">Saldo</div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
       <!-- Pending Approval -->
       @if (summary.pendingApproval > 0) {
       <ion-card class="stat-card warning">
@@ -79,6 +81,51 @@
     }
   </div>
   }
+
+  <!-- Per-Kas saldo (Kas IPL / Kas Warga) -->
+  @if (accountBalances.length > 0) {
+  <div class="stats-container ion-margin-top">
+    <div class="stats-grid">
+      <ion-card class="stat-card primary">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="cash-outline"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ formatCurrency(kasIplBalance?.balance ?? 0) }}</div>
+              <div class="stat-label">Saldo Kas IPL</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="stat-card primary">
+        <ion-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <ion-icon name="people-outline"></ion-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ formatCurrency(kasWargaBalance?.balance ?? 0) }}</div>
+              <div class="stat-label">Saldo Kas Warga</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+  }
+
+  <!-- Kas filter (Semua / Kas IPL / Kas Warga) -->
+  <ion-segment scrollable="true" class="ion-margin-bottom" [value]="kasFilter"
+    (ionChange)="onKasFilterChange($event.detail.value)">
+    @for (k of KAS_FILTERS; track k.value) {
+    <ion-segment-button [value]="k.value">
+      <ion-label>{{ k.label }}</ion-label>
+    </ion-segment-button>
+    }
+  </ion-segment>
 
   <!-- Date Range Filter (Collapsible, below summary) -->
   <ion-card class="filter-card ion-margin-top">
@@ -156,6 +203,10 @@
         <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
           <ion-icon slot="start" name="add"></ion-icon>
           Tambah Transaksi
+        </ion-button>
+        <ion-button fill="outline" color="tertiary" (click)="navigateToTransfer()">
+          <ion-icon slot="start" name="swap-horizontal-outline"></ion-icon>
+          Transfer Antar Kas
         </ion-button>
       </div>
     </app-table>

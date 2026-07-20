@@ -1,0 +1,143 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/employee-salary-headers"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detail Penggajian</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Loading -->
+  <div *ngIf="loading" class="ion-padding-top">
+    <ion-skeleton-text animated style="width: 60%; height: 24px; margin-bottom: 16px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 120px; margin-bottom: 12px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 90px;"></ion-skeleton-text>
+  </div>
+
+  <!-- Not found -->
+  <div *ngIf="!loading && notFound" class="empty-state">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <p>Data penggajian tidak ditemukan.</p>
+    <ion-button fill="clear" (click)="goBack()">Kembali</ion-button>
+  </div>
+
+  <!-- Detail -->
+  <ng-container *ngIf="!loading && payroll as p">
+    <!-- Informasi Penggajian -->
+    <ion-card class="detail-card">
+      <ion-card-header>
+        <ion-card-subtitle>
+          <div class="card-title-row">
+            <span>Informasi Penggajian</span>
+            <ion-badge [color]="statusColor">{{ statusLabel }}</ion-badge>
+          </div>
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full" class="detail-list">
+          <ion-item>
+            <ion-label class="detail-label">No. Penggajian</ion-label>
+            <ion-label slot="end" class="detail-value">{{ p.payrollNumber }}</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label class="detail-label">Karyawan</ion-label>
+            <ion-label slot="end" class="detail-value">
+              {{ employeeName }}
+              <span class="detail-sub" *ngIf="p.employee?.employeeCode as empCode">
+                {{ empCode }}
+              </span>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="p.positionName || p.employee?.position?.positionName">
+            <ion-label class="detail-label">Jabatan</ion-label>
+            <ion-label slot="end" class="detail-value">
+              {{ p.positionName || p.employee?.position?.positionName }}
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label class="detail-label">Periode</ion-label>
+            <ion-label slot="end" class="detail-value">{{ p.payPeriod }}</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label class="detail-label">Gaji Dibayar</ion-label>
+            <ion-label slot="end" class="detail-value detail-amount">
+              {{ formatCurrency(p.netSalary) }}
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="p.paymentDate">
+            <ion-label class="detail-label">Tanggal Bayar</ion-label>
+            <ion-label slot="end" class="detail-value">
+              {{ p.paymentDate | date: 'dd MMM yyyy' }}
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="p.notes">
+            <ion-label class="detail-label">Catatan</ion-label>
+            <ion-label slot="end" class="detail-value detail-notes">{{ p.notes }}</ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Pembayaran ke Kas IPL -->
+    <ion-card class="detail-card">
+      <ion-card-header>
+        <ion-card-subtitle>Pembayaran ke Kas IPL</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div *ngIf="p.cashTransaction as ctx">
+          <ion-list lines="full" class="detail-list">
+            <ion-item>
+              <ion-label class="detail-label">No. Transaksi</ion-label>
+              <ion-label slot="end" class="detail-value">{{ ctx.transactionNumber }}</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label class="detail-label">Jumlah</ion-label>
+              <ion-label slot="end" class="detail-value detail-amount">
+                -{{ formatCurrency(ctx.amount) }}
+              </ion-label>
+            </ion-item>
+            <ion-item *ngIf="ctx.transactionDate">
+              <ion-label class="detail-label">Tanggal Transaksi</ion-label>
+              <ion-label slot="end" class="detail-value">
+                {{ ctx.transactionDate | date: 'dd MMM yyyy' }}
+              </ion-label>
+            </ion-item>
+            <ion-item *ngIf="ctx.category?.categoryName">
+              <ion-label class="detail-label">Kategori</ion-label>
+              <ion-label slot="end" class="detail-value">{{ ctx.category.categoryName }}</ion-label>
+            </ion-item>
+            <ion-item *ngIf="ctx.cashAccount?.accountName">
+              <ion-label class="detail-label">Tercatat di</ion-label>
+              <ion-label slot="end" class="detail-value">{{ ctx.cashAccount.accountName }}</ion-label>
+            </ion-item>
+          </ion-list>
+          <p class="tx-note">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            Gaji ini sudah tercatat sebagai pengeluaran di Kas IPL.
+          </p>
+        </div>
+
+        <div *ngIf="!p.cashTransaction" class="no-cash-tx">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <p>Belum ada transaksi Kas IPL yang tertaut. Penggajian ini belum dibayar / diposting.</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="actions">
+      <ion-button
+        *ngIf="canCancel"
+        expand="block"
+        fill="outline"
+        color="danger"
+        class="cancel-btn"
+        (click)="confirmCancel()"
+      >
+        <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+        Batalkan Pembayaran
+      </ion-button>
+      <ion-button expand="block" fill="outline" color="medium" (click)="goBack()">Kembali</ion-button>
+    </div>
+  </ng-container>
+</ion-content>

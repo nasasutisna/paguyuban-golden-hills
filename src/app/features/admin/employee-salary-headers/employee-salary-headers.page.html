@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Penggajian</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="navigateToCreate()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Period filter -->
+  <ion-card class="filter-card">
+    <ion-card-content>
+      <div class="filter-row">
+        <ion-item class="period-input" fill="outline">
+          <ion-icon slot="start" name="calendar-outline" color="medium"></ion-icon>
+          <ion-label position="stacked">Filter Periode</ion-label>
+          <ion-input
+            type="text"
+            placeholder="2026-07"
+            maxlength="7"
+            [(ngModel)]="filterPeriod"
+            (keyup.enter)="applyPeriodFilter()"
+          ></ion-input>
+          <ion-note slot="helper">Format YYYY-MM</ion-note>
+        </ion-item>
+        <div class="filter-actions">
+          <ion-button size="default" color="primary" (click)="applyPeriodFilter()">
+            <ion-icon slot="start" name="filter-outline"></ion-icon>
+            Terapkan
+          </ion-button>
+          <ion-button
+            *ngIf="hasActiveFilter"
+            size="default"
+            fill="clear"
+            color="medium"
+            (click)="clearPeriodFilter()"
+          >
+            Reset
+          </ion-button>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <app-table
+    [config]="tableConfig"
+    [dataSource]="dataSource"
+    [statusBadges]="statusBadges"
+    [currentPage]="currentPage"
+    (actionClick)="onAction($event)"
+    (filterChange)="onFilterChange($event)"
+    (pageChange)="onPageChange($event)"
+  >
+    <div table-actions>
+      <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
+        <ion-icon slot="start" name="add"></ion-icon>
+        Bayar Gaji
+      </ion-button>
+    </div>
+  </app-table>
+</ion-content>

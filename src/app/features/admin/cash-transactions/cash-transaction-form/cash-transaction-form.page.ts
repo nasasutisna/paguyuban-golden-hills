@@ -21,6 +21,8 @@ import {
   TransactionType as TxType,
   PaymentMethod as PayMethod,
   TransactionCategory,
+  FundType,
+  FUND_TYPE_LABELS,
   TRANSACTION_TYPE_LABELS,
   PAYMENT_METHOD_LABELS,
   REFERENCE_TYPE_LABELS,
@@ -87,6 +89,8 @@ export class CashTransactionFormPage implements OnInit, OnDestroy {
 
   // Category options
   categoryOptions: SelectOption[] = [];
+  // Map categoryId -> fundType, to show which Kas a transaction will post to.
+  categoryFundMap: Record<string, string> = {};
 
   // Reference type options (dynamically filtered by transaction type)
   referenceTypeOptions: SelectOption[] = getReferenceTypeOptions('ALL');
@@ -165,6 +169,24 @@ export class CashTransactionFormPage implements OnInit, OnDestroy {
     console.log('Reference type changed:', referenceType);
   }
 
+  /** Human-readable Kas label for a fund type (IPL -> "Kas IPL"). */
+  private fundLabel(fundType: string | undefined): string {
+    if (!fundType) return '';
+    return FUND_TYPE_LABELS[fundType as FundType] || fundType;
+  }
+
+  /**
+   * Helper text for the category field: which Kas this transaction will post to.
+   * Derived from the selected category's fundType.
+   */
+  get categoryHelperText(): string {
+    const categoryId = this.cashTransactionForm?.get('categoryId')?.value;
+    if (!categoryId) return 'Pilih kategori untuk menentukan Kas';
+    const fund = this.categoryFundMap[categoryId];
+    const label = this.fundLabel(fund);
+    return label ? `Akan tercatat di: ${label}` : 'Kategori ini belum ditandai Kas-nya';
+  }
+
   /**
    * Load transaction categories for dropdown
    */
@@ -172,10 +194,17 @@ export class CashTransactionFormPage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.cashTransactionsService.getCategories().subscribe({
         next: (categories) => {
-          this.categoryOptions = categories.map((cat: TransactionCategory) => ({
-            value: cat.id,
-            label: `${cat.categoryCode} - ${cat.categoryName}`
-          }));
+          this.categoryFundMap = {};
+          this.categoryOptions = categories.map((cat: TransactionCategory) => {
+            this.categoryFundMap[cat.id] = (cat.fundType as string) || '';
+            const fundLabel = this.fundLabel(cat.fundType);
+            return {
+              value: cat.id,
+              label: fundLabel
+                ? `${fundLabel} · ${cat.categoryCode} - ${cat.categoryName}`
+                : `${cat.categoryCode} - ${cat.categoryName}`
+            };
+          });
         },
         error: (error) => {
           console.error('Error loading categories:', error);

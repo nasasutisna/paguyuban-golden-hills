@@ -1,74 +1,49 @@
 /**
- * Dashboard models and interfaces
- * Based on Swagger API specification
+ * Dashboard models.
+ *
+ * `DashboardOverview` mirrors the backend `GET /dashboard/overview` response.
+ * The page maps this single payload into its card/chart/transaction views.
  */
 
-/**
- * Dashboard statistics card data
- */
-export interface DashboardStats {
-  total: number;
-  count?: number;
-  percentage?: number;
-  trend?: 'up' | 'down' | 'neutral';
+/** Current IPL period summary (null when no active period exists for this month). */
+export interface DashboardIplPeriod {
+  id: string;
+  periodCode: string;
+  periodName: string;
+  month: number;
+  year: number;
+  label: string;
 }
 
-/**
- * Employee statistics
- */
-export interface EmployeeStatistics {
-  totalEmployees: number;
-  activeEmployees: number;
-  inactiveEmployees: number;
-  newThisMonth: number;
+/** IPL collection status for the running period. */
+export interface DashboardIplStatus {
+  period: DashboardIplPeriod | null;
+  totalUnits: number;
+  paidUnits: number;
+  pendingUnits: number;
+  unpaidUnits: number;
+  totalAmount: number;
 }
 
-/**
- * Cash transaction statistics
- */
-export interface CashTransactionStatistics {
-  totalIncome: number;
-  totalExpense: number;
+/** Per-Kas (IPL / Warga) income, expense, and balance for the current month. */
+export interface DashboardFundFlow {
+  income: number;
+  expense: number;
   balance: number;
-  transactionCount: number;
 }
 
-/**
- * Invoice statistics
- */
-export interface InvoiceStatistics {
-  totalInvoices: number;
-  paidInvoices: number;
-  pendingInvoices: number;
-  overdueInvoices: number;
-  totalAmount: number;
-  paidAmount: number;
-  pendingAmount: number;
-}
-
-/**
- * Payment statistics
- */
-export interface PaymentStatistics {
-  totalPayments: number;
-  totalAmount: number;
-  thisMonthPayments: number;
-  thisMonthAmount: number;
-}
-
-/**
- * Dashboard overview data
- */
+/** Aggregated payload returned by the dashboard overview endpoint. */
 export interface DashboardOverview {
-  employeeStats: EmployeeStatistics;
-  transactionStats: CashTransactionStatistics;
-  invoiceStats: InvoiceStatistics;
-  paymentStats: PaymentStatistics;
+  houseUnits: { total: number; active: number };
+  ipl: DashboardIplStatus;
+  iplFund: DashboardFundFlow;
+  wargaFund: DashboardFundFlow;
+  balances: { ipl: number; warga: number };
+  monthlyChart: MonthlyChartData[];
+  recentTransactions: RecentTransaction[];
 }
 
-/**
- * Recent transaction item
- */
+/** Recent transaction item (display-oriented). */
 export interface RecentTransaction {
   id: string;
   type: 'INCOME' | 'EXPENSE';
@@ -79,9 +54,7 @@ export interface RecentTransaction {
   status: 'completed' | 'pending' | 'failed';
 }
 
-/**
- * Dashboard card configuration
- */
+/** Dashboard stat card configuration (built client-side from the overview). */
 export interface DashboardCard {
   id: string;
   title: string;
@@ -95,9 +68,7 @@ export interface DashboardCard {
   route?: string;
 }
 
-/**
- * Quick menu item
- */
+/** Quick menu item. */
 export interface QuickMenuItem {
   id: string;
   title: string;
@@ -107,17 +78,7 @@ export interface QuickMenuItem {
   badge?: number;
 }
 
-/**
- * Chart data point
- */
-export interface ChartDataPoint {
-  label: string;
-  value: number;
-}
-
-/**
- * Monthly chart data
- */
+/** Monthly chart data point. */
 export interface MonthlyChartData {
   month: string;
   income: number;

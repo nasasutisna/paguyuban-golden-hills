@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { ButtonVariant, ButtonSize } from '../form.model';
@@ -10,7 +9,7 @@ import { ButtonVariant, ButtonSize } from '../form.model';
 @Component({
   selector: 'app-form-button',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [IonicModule],
   templateUrl: './form-button.component.html',
   styleUrls: ['./form-button.component.scss']
 })

@@ -162,11 +162,12 @@ export class AppComponent implements OnInit, OnDestroy {
     { title: 'Unit Rumah', url: '/admin/house-units', icon: 'business-outline', description: 'Manajemen Unit Rumah' },
     { title: 'Blok', url: '/admin/house-blocks', icon: 'business', description: 'Manajemen Blok' },
     { title: 'Karyawan', url: '/admin/employees', icon: 'people', description: 'Manajemen Staf' },
+    { title: 'Penggajian', url: '/admin/employee-salary-headers', icon: 'cash-outline', description: 'Gaji Karyawan → Kas IPL' },
   ];
 
   // Keuangan Menu Items
   keuanganMenuItems: MenuItem[] = [
-    { title: 'Transaksi', url: '/admin/cash-transactions', icon: 'swap-horizontal', description: 'Catatan Keuangan' },
+    { title: 'Kas Paguyuban', url: '/admin/cash-transactions', icon: 'swap-horizontal', description: 'Catatan Keuangan' },
     { title: 'Jenis Iuran', url: '/admin/fee-types', icon: 'funnel', description: 'Kelola Jenis Iuran & IPL' },
     { title: 'Tagihan Warga', url: '/admin/resident-invoices', icon: 'document', description: 'Daftar Tagihan Warga' },
 
@@ -294,12 +295,13 @@ export class AppComponent implements OnInit, OnDestroy {
       '/profile': { title: 'Profil', icon: 'person-circle' },
       '/admin/residents': { title: 'Warga', icon: 'home' },
       '/admin/employees': { title: 'Karyawan', icon: 'people' },
+      '/admin/employee-salary-headers': { title: 'Penggajian', icon: 'cash-outline' },
       '/admin/house-units': { title: 'Unit Rumah', icon: 'business-outline' },
       '/admin/house-blocks': { title: 'Blok', icon: 'business' },
       '/admin/fee-types': { title: 'Jenis Iuran', icon: 'funnel' },
       '/admin/resident-invoices': { title: 'Tagihan Warga', icon: 'document' },
       '/admin/resident-payments': { title: 'Pembayaran', icon: 'card-outline' },
-      '/admin/transactions': { title: 'Transaksi', icon: 'swap-horizontal' },
+      '/admin/transactions': { title: 'Kas Paguyuban', icon: 'swap-horizontal' },
       '/admin/ipl-periods': { title: 'Periode IPL', icon: 'calendar' },
       '/admin/ipl-payments': { title: 'Pembayaran IPL', icon: 'wallet-outline' },
       '/admin/ipl-payment-matrix': { title: 'Matrix Pembayaran IPL', icon: 'grid' },

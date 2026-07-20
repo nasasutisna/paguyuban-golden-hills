@@ -146,8 +146,17 @@ export class JwtInterceptor implements HttpInterceptor {
           return next.handle(request).pipe(
             catchError((error: HttpErrorResponse) => {
               console.error('[JWT] Request error:', error.status, error.url);
-              // Handle 401 Unauthorized - try to refresh token
-              if (error.status === 401 && this.authService.isAuthenticated) {
+              // Handle 401 Unauthorized - try to refresh token.
+              // Never refresh for the auth endpoints themselves, or a failed
+              // refresh/logout would trigger another refresh and loop.
+              const isAuthEndpoint =
+                request.url.includes('/auth/refresh') ||
+                request.url.includes('/auth/logout');
+              if (
+                error.status === 401 &&
+                this.authService.isAuthenticated &&
+                !isAuthEndpoint
+              ) {
                 console.log('[JWT] Got 401, attempting token refresh');
                 return this.handle401Error(request, next);
               }
@@ -163,29 +172,28 @@ export class JwtInterceptor implements HttpInterceptor {
   }
 
   /**
-   * Handle 401 errors by attempting to refresh the token
+   * Handle 401 errors by attempting to refresh the token.
+   * refreshAccessToken() is single-flighted, so concurrent 401s all share one
+   * refresh HTTP call and each replay their own request with the returned token.
    */
   private handle401Error(
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    // Try to refresh the token
     return this.authService.refreshAccessToken().pipe(
       take(1),
-      switchMap(() => {
-        // Retry the original request with new token
-        const newAccessToken = this.authService.accessToken;
-        console.log('Retrying request with new access token:', newAccessToken);
+      switchMap((tokens) => {
+        // Replay with the freshly issued token from the response (not a re-read
+        // of authState, which may lag behind async storage writes).
         const clonedRequest = request.clone({
           setHeaders: {
-            Authorization: `Bearer ${newAccessToken}`
+            Authorization: `Bearer ${tokens.accessToken}`
           }
         });
         return next.handle(clonedRequest);
       }),
       catchError((error) => {
-        // If refresh fails, logout and redirect to login
-        this.authService.logout().subscribe();
+        // Refresh failed — session is cleared inside refreshAccessToken.
         return EMPTY;
       })
     );

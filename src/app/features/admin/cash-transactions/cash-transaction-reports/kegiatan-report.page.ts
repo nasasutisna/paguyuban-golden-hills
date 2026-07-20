@@ -147,7 +147,7 @@ export class KegiatanReportPage implements OnInit, OnDestroy {
           const filename = `Laporan-Kegiatan_${startDate || ''}_${endDate || ''}.xlsx`;
           downloadBlob(blob, filename);
           this.loadingService.dismiss();
-          this.toastService.success('Laporan Kegiatan berhasil diekspor');
+          this.toastService.success('Laporan Kas Warga berhasil diekspor');
         },
         error: (error) => {
           console.error('Error exporting Kegiatan report:', error);

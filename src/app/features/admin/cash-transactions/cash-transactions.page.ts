@@ -13,6 +13,8 @@ import {
   PaymentMethod,
   ApprovalStatus,
   TransactionCategory,
+  AccountBalance,
+  FundType,
   TRANSACTION_TYPE_LABELS,
   PAYMENT_METHOD_LABELS,
   APPROVAL_STATUS_LABELS
@@ -86,6 +88,18 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
   summary: TransactionSummary | null = null;
   statsLoading = true;
 
+  // Per-Kas balances (Kas IPL / Kas Warga)
+  accountBalances: AccountBalance[] = [];
+  balancesLoading = false;
+  // Kas filter: 'ALL' | 'IPL' | 'WARGA'
+  kasFilter: 'ALL' | 'IPL' | 'WARGA' = 'ALL';
+  selectedCashAccountId: string | null = null;
+  readonly KAS_FILTERS: { value: 'ALL' | 'IPL' | 'WARGA'; label: string }[] = [
+    { value: 'ALL', label: 'Semua Kas' },
+    { value: 'IPL', label: 'Kas IPL' },
+    { value: 'WARGA', label: 'Kas Warga' }
+  ];
+
   // Table configuration
   tableConfig!: TableConfig;
 
@@ -123,6 +137,7 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
     this.initializeTableConfig();
     this.loadCategories();
     this.loadSummary();
+    this.loadAccountBalances();
     this.loadTransactions();
   }
 
@@ -245,6 +260,56 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Load per-Kas balances (Kas IPL / Kas Warga) for the saldo cards.
+   */
+  private loadAccountBalances(): void {
+    this.balancesLoading = true;
+    this.subscriptions.push(
+      this.cashTransactionsService
+        .getAccountBalances(this.startDate || undefined, this.endDate || undefined)
+        .subscribe({
+          next: (balances) => {
+            this.accountBalances = balances;
+            this.balancesLoading = false;
+          },
+          error: (error) => {
+            console.error('Error loading cash account balances:', error);
+            this.accountBalances = [];
+            this.balancesLoading = false;
+          }
+        })
+    );
+  }
+
+  /** Saldo Kas IPL from the loaded balances (undefined if not loaded). */
+  get kasIplBalance(): AccountBalance | undefined {
+    return this.accountBalances.find((b) => b.fundType === FundType.IPL);
+  }
+
+  /** Saldo Kas Warga from the loaded balances (undefined if not loaded). */
+  get kasWargaBalance(): AccountBalance | undefined {
+    return this.accountBalances.find((b) => b.fundType === FundType.WARGA);
+  }
+
+  /**
+   * Handle the Kas filter (Semua / Kas IPL / Kas Warga) and reload the list.
+   * ion-segment's ionChange delivers a SegmentValue (string | number).
+   */
+  onKasFilterChange(value: any): void {
+    const raw = value == null ? '' : String(value);
+    const v: 'ALL' | 'IPL' | 'WARGA' = raw === 'IPL' || raw === 'WARGA' ? raw : 'ALL';
+    this.kasFilter = v;
+    if (v === 'ALL') {
+      this.selectedCashAccountId = null;
+    } else {
+      const match = this.accountBalances.find((b) => b.fundType === v);
+      this.selectedCashAccountId = match?.id ?? null;
+    }
+    this.currentPage = 1;
+    this.loadTransactions();
+  }
+
+  /**
    * Handle category filter change — applies immediately and reloads the list
    * and summary so the stat cards reflect the selected category.
    */
@@ -265,6 +330,7 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
         page: this.currentPage,
         limit: this.pageSize,
         categoryId: this.selectedCategoryId || undefined,
+        cashAccountId: this.selectedCashAccountId || undefined,
         startDate: this.startDate || undefined,
         endDate: this.endDate || undefined
       }).subscribe({
@@ -294,6 +360,10 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
    */
   navigateToCreate(): void {
     this.router.navigate(['/admin/cash-transactions/create']);
+  }
+
+  navigateToTransfer(): void {
+    this.router.navigate(['/admin/cash-transactions/transfer']);
   }
 
   /**
@@ -464,6 +534,7 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
 
     this.loadTransactions();
     this.loadSummary();
+    this.loadAccountBalances();
   }
 
   /**
@@ -557,9 +628,10 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
     this.endDate = this.pendingEndDate;
     this.currentPage = 1;
 
-    // Reload both transactions and summary with date filter
+    // Reload transactions, summary, and per-Kas balances with date filter
     this.loadTransactions();
     this.loadSummary();
+    this.loadAccountBalances();
   }
 
   /**
@@ -577,6 +649,7 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
     // Reload both transactions and summary without filter
     this.loadTransactions();
     this.loadSummary();
+    this.loadAccountBalances();
   }
 
   /**

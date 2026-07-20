@@ -16,28 +16,31 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div class="dashboard-wrapper" *ngIf="!isLoading; else loadingTemplate">
+  @if (!isLoading) {
+  <div class="dashboard-wrapper">
     <!-- Welcome Banner with Gradient -->
     <div class="welcome-banner">
       <div class="banner-content">
         <h2>Welcome back, Admin!</h2>
-        <p class="banner-subtitle">Here's what's happening with your community today</p>
+        <p class="banner-subtitle">
+          @if (iplPeriodLabel) { Periode IPL: {{ iplPeriodLabel }} } @else { Ringkasan komunitas Anda hari ini }
+        </p>
         <div class="banner-stats">
           <div class="banner-stat">
-            <span class="stat-value">{{ 10 }}</span>
+            <span class="stat-value">{{ totalHouseUnits }}</span>
             <span class="stat-label">Total Unit Rumah</span>
           </div>
           <div class="banner-divider"></div>
 
           <div class="banner-stat">
-            <span class="stat-value">{{ totalEmployees }}</span>
+            <span class="stat-value">{{ iplPaidUnits }}</span>
             <span class="stat-label">Sudah Bayar IPL</span>
           </div>
           <div class="banner-divider"></div>
 
-          <!-- Jumlah warga yang belum bayar IPL -->
+          <!-- Jumlah warga yang belum bayar IPL periode berjalan -->
           <div class="banner-stat">
-            <span class="stat-value">{{ pendingInvoices }}</span>
+            <span class="stat-value">{{ iplUnpaidUnits }}</span>
             <span class="stat-label">Belum Bayar IPL</span>
           </div>
         </div>
@@ -47,54 +50,66 @@
       </div>
     </div>
 
-    <!-- Stats Cards Grid -->
+    <!-- Kas IPL — Stats Cards Grid -->
     <div>
-      <h4>IPL Bulan Ini</h4>
+      <h4>Kas IPL Bulan Ini</h4>
     </div>
     <div class="stats-grid">
-      <div class="stat-card stat-card-primary" [class.clickable]="card.route" (click)="navigateToCard(card.route)"
-        *ngFor="let card of dashboardCards">
-        <div class="stat-header">
-          <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
-          <div *ngIf="card.trend" class="stat-trend" [ngClass]="'trend-' + card.trend.direction">
-            <ion-icon [name]="card.trend.direction === 'up' ? 'arrow-up' : 'arrow-down'"></ion-icon>
-            <span>{{ card.trend.value }}%</span>
+      @for (card of dashboardCards; track card.id) {
+        <div class="stat-card stat-card-primary" [class.clickable]="card.route"
+          (click)="navigateToCard(card.route)">
+          <div class="stat-header">
+            <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
+            @if (card.trend) {
+              <div class="stat-trend" [ngClass]="'trend-' + card.trend.direction">
+                <ion-icon [name]="card.trend.direction === 'up' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+                <span>{{ card.trend.value }}%</span>
+              </div>
+            }
           </div>
+          <div class="stat-body">
+            <p class="stat-label">{{ card.title }}</p>
+            <h3 class="stat-value">{{ card.value }}</h3>
+          </div>
+          @if (card.route) {
+            <div class="stat-footer">
+              <span class="view-link">View Details</span>
+              <ion-icon name="chevron-forward"></ion-icon>
+            </div>
+          }
         </div>
-        <div class="stat-body">
-          <p class="stat-label">{{ card.title }}</p>
-          <h3 class="stat-value">{{ card.value }}</h3>
-        </div>
-        <div class="stat-footer" *ngIf="card.route">
-          <span class="view-link">View Details</span>
-          <ion-icon name="chevron-forward"></ion-icon>
-        </div>
-      </div>
+      }
     </div>
 
-        <!-- Stats Cards Grid -->
+    <!-- Kas Warga — Stats Cards Grid -->
     <div>
-      <h4>Iuran Warga Bulan Ini</h4>
+      <h4>Kas Warga Bulan Ini</h4>
     </div>
     <div class="stats-grid">
-      <div class="stat-card stat-card-primary" [class.clickable]="card.route" (click)="navigateToCard(card.route)"
-        *ngFor="let card of dashboardIuranCards">
-        <div class="stat-header">
-          <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
-          <div *ngIf="card.trend" class="stat-trend" [ngClass]="'trend-' + card.trend.direction">
-            <ion-icon [name]="card.trend.direction === 'up' ? 'arrow-up' : 'arrow-down'"></ion-icon>
-            <span>{{ card.trend.value }}%</span>
+      @for (card of dashboardIuranCards; track card.id) {
+        <div class="stat-card stat-card-primary" [class.clickable]="card.route"
+          (click)="navigateToCard(card.route)">
+          <div class="stat-header">
+            <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
+            @if (card.trend) {
+              <div class="stat-trend" [ngClass]="'trend-' + card.trend.direction">
+                <ion-icon [name]="card.trend.direction === 'up' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+                <span>{{ card.trend.value }}%</span>
+              </div>
+            }
           </div>
+          <div class="stat-body">
+            <p class="stat-label">{{ card.title }}</p>
+            <h3 class="stat-value">{{ card.value }}</h3>
+          </div>
+          @if (card.route) {
+            <div class="stat-footer">
+              <span class="view-link">View Details</span>
+              <ion-icon name="chevron-forward"></ion-icon>
+            </div>
+          }
         </div>
-        <div class="stat-body">
-          <p class="stat-label">{{ card.title }}</p>
-          <h3 class="stat-value">{{ card.value }}</h3>
-        </div>
-        <div class="stat-footer" *ngIf="card.route">
-          <span class="view-link">View Details</span>
-          <ion-icon name="chevron-forward"></ion-icon>
-        </div>
-      </div>
+      }
     </div>
 
     <!-- Main Content Grid -->
@@ -112,37 +127,47 @@
           </ion-button>
         </div>
 
-        <div class="chart-container" *ngIf="!isLoadingChart && hasChartData(); else noChartTemplate">
-          <div class="bar-chart">
-            <div class="chart-bars">
-              <div class="bar-group" *ngFor="let data of monthlyChartData">
-                <div class="bar-wrapper">
-                  <div class="bar bar-income" [style.height.%]="getBarHeight(data.income)">
-                    <span class="bar-tooltip" *ngIf="data.income > 0">
-                      Income: {{ formatCurrency(data.income) }}
-                    </span>
+        @if (!isLoadingChart && hasChartData()) {
+          <div class="chart-container">
+            <div class="bar-chart">
+              <div class="chart-bars">
+                @for (data of monthlyChartData; track data.month) {
+                  <div class="bar-group">
+                    <div class="bar-wrapper">
+                      <div class="bar bar-income" [style.height.%]="getBarHeight(data.income)">
+                        @if (data.income > 0) {
+                          <span class="bar-tooltip">
+                            Income: {{ formatCurrency(data.income) }}
+                          </span>
+                        }
+                      </div>
+                      <div class="bar bar-expense" [style.height.%]="getBarHeight(data.expense)">
+                        @if (data.expense > 0) {
+                          <span class="bar-tooltip">
+                            Expense: {{ formatCurrency(data.expense) }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                    <span class="bar-x-label">{{ data.month }}</span>
                   </div>
-                  <div class="bar bar-expense" [style.height.%]="getBarHeight(data.expense)">
-                    <span class="bar-tooltip" *ngIf="data.expense > 0">
-                      Expense: {{ formatCurrency(data.expense) }}
-                    </span>
-                  </div>
-                </div>
-                <span class="bar-x-label">{{ data.month }}</span>
+                }
+              </div>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <div class="legend-color income"></div>
+                <span>Income</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color expense"></div>
+                <span>Expenses</span>
               </div>
             </div>
           </div>
-          <div class="chart-legend">
-            <div class="legend-item">
-              <div class="legend-color income"></div>
-              <span>Income</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color expense"></div>
-              <span>Expenses</span>
-            </div>
-          </div>
-        </div>
+        } @else {
+          <ng-container [ngTemplateOutlet]="noChartTemplate"></ng-container>
+        }
       </div>
 
       <!-- Quick Actions -->
@@ -155,13 +180,17 @@
         </div>
 
         <div class="quick-actions-grid">
-          <div class="quick-action-item" *ngFor="let item of quickMenuItems" (click)="navigateToMenuItem(item)">
-            <div class="quick-action-icon">
-              <ion-icon [name]="item.icon"></ion-icon>
+          @for (item of quickMenuItems; track item.id) {
+            <div class="quick-action-item" (click)="navigateToMenuItem(item)">
+              <div class="quick-action-icon">
+                <ion-icon [name]="item.icon"></ion-icon>
+              </div>
+              <span class="quick-action-label">{{ item.title }}</span>
+              @if (item.badge) {
+                <ion-badge>{{ item.badge }}</ion-badge>
+              }
             </div>
-            <span class="quick-action-label">{{ item.title }}</span>
-            <ion-badge *ngIf="item.badge">{{ item.badge }}</ion-badge>
-          </div>
+          }
         </div>
       </div>
     </div>
@@ -182,33 +211,40 @@
         </ion-button>
       </div>
 
-      <div class="transactions-list-wrapper"
-        *ngIf="!isLoadingTransactions && hasTransactions(); else noTransactionsTemplate">
-        <div class="transaction-item" *ngFor="let transaction of recentTransactions"
-          (click)="navigateToTransaction(transaction.id)">
-          <div class="transaction-icon" [class.income]="transaction.type === 'INCOME'">
-            <ion-icon [name]="getTransactionIcon(transaction.type)"></ion-icon>
-          </div>
-          <div class="transaction-details">
-            <h4 class="transaction-title">{{ transaction.description }}</h4>
-            <p class="transaction-meta">
-              <span>{{ transaction.category }}</span>
-              <span class="separator">•</span>
-              <span>{{ formatDate(transaction.createdAt) }}</span>
-            </p>
-          </div>
-          <div class="transaction-amount">
-            <p class="amount" [ngClass]="'amount-' + transaction.type.toLowerCase()">
-              {{ transaction.type === 'INCOME' ? '+' : '-' }} {{ formatCurrency(transaction.amount) }}
-            </p>
-            <ion-chip [color]="getTransactionStatusColor(transaction.status)" size="small">
-              {{ transaction.status }}
-            </ion-chip>
-          </div>
+      @if (!isLoadingTransactions && hasTransactions()) {
+        <div class="transactions-list-wrapper">
+          @for (transaction of recentTransactions; track transaction.id) {
+            <div class="transaction-item" (click)="navigateToTransaction(transaction.id)">
+              <div class="transaction-icon" [class.income]="transaction.type === 'INCOME'">
+                <ion-icon [name]="getTransactionIcon(transaction.type)"></ion-icon>
+              </div>
+              <div class="transaction-details">
+                <h4 class="transaction-title">{{ transaction.description }}</h4>
+                <p class="transaction-meta">
+                  <span>{{ transaction.category }}</span>
+                  <span class="separator">•</span>
+                  <span>{{ formatDate(transaction.createdAt) }}</span>
+                </p>
+              </div>
+              <div class="transaction-amount">
+                <p class="amount" [ngClass]="'amount-' + transaction.type.toLowerCase()">
+                  {{ transaction.type === 'INCOME' ? '+' : '-' }} {{ formatCurrency(transaction.amount) }}
+                </p>
+                <ion-chip [color]="getTransactionStatusColor(transaction.status)" size="small">
+                  {{ transaction.status }}
+                </ion-chip>
+              </div>
+            </div>
+          }
         </div>
-      </div>
+      } @else {
+        <ng-container [ngTemplateOutlet]="noTransactionsTemplate"></ng-container>
+      }
     </div>
   </div>
+  } @else {
+    <ng-container [ngTemplateOutlet]="loadingTemplate"></ng-container>
+  }
 
   <!-- Loading Template -->
   <ng-template #loadingTemplate>
