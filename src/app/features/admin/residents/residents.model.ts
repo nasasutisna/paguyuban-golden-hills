@@ -95,6 +95,8 @@ export interface Resident {
   emergencyPhone?: string;
   houseBlockId: string;
   houseBlock?: HouseBlockReference;
+  houseUnitId?: string;
+  houseUnit?: HouseUnitReference;
   unitNumber: string;
   moveInDate?: string;
   moveOutDate?: string;
@@ -117,6 +119,18 @@ export interface HouseBlockReference {
 }
 
 /**
+ * House Unit reference (included in resident data)
+ */
+export interface HouseUnitReference {
+  id: string;
+  unitCode: string;
+  unitNumber: string;
+  unitType?: string;
+  occupancyStatus?: string;
+  houseBlockId: string;
+}
+
+/**
  * Create Resident DTO
  */
 export interface CreateResidentDto {
@@ -135,6 +149,7 @@ export interface CreateResidentDto {
   emergencyContact?: string;
   emergencyPhone?: string;
   houseBlockId: string;
+  houseUnitId?: string;
   unitNumber: string;
   moveInDate?: string;
   moveOutDate?: string;
@@ -162,6 +177,7 @@ export interface UpdateResidentDto {
   emergencyContact?: string;
   emergencyPhone?: string;
   houseBlockId?: string;
+  houseUnitId?: string;
   unitNumber?: string;
   moveInDate?: string;
   moveOutDate?: string;

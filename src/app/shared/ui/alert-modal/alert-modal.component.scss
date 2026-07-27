@@ -1,0 +1,147 @@
+:host {
+  display: block;
+}
+
+// Compact toolbar — only carries the close button.
+.alert-modal-header {
+  ion-toolbar {
+    --background: transparent;
+    --min-height: 40px;
+  }
+}
+
+.alert-modal-content {
+  --background: #ffffff;
+}
+
+.alert-modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 24px 20px;
+}
+
+.alert-icon {
+  font-size: 64px;
+  margin-bottom: 12px;
+}
+
+.alert-title {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ion-text-color, #1f2937);
+}
+
+.alert-message {
+  margin: 0 0 16px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ion-color-medium-shade, #6b7280);
+}
+
+// Prominent boxed value (e.g. reference number).
+.alert-highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  text-align: center;
+  background: rgba(76, 175, 80, 0.08);
+  border: 1px dashed rgba(76, 175, 80, 0.35);
+  border-radius: 12px;
+
+  .highlight-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--ion-color-medium-shade, #6b7280);
+  }
+
+  .highlight-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    word-break: break-all;
+    color: var(--ion-text-color, #1f2937);
+  }
+}
+
+// Key/value summary rows.
+.alert-rows {
+  width: 100%;
+}
+
+.alert-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--ion-color-step-100, #f1f3f6);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .row-label {
+    color: var(--ion-color-medium-shade, #6b7280);
+  }
+
+  .row-value {
+    font-weight: 600;
+    text-align: right;
+    color: var(--ion-text-color, #1f2937);
+  }
+
+  &.row-strong .row-value {
+    font-weight: 700;
+  }
+
+  &.row-total {
+    margin-top: 6px;
+    padding-top: 14px;
+    border-top: 2px solid var(--ion-color-step-150, #e5e7eb);
+    border-bottom: none;
+    font-size: 1rem;
+
+    .row-label {
+      font-weight: 700;
+      color: var(--ion-text-color, #1f2937);
+    }
+
+    .row-value {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--ion-color-primary, #4caf50);
+    }
+  }
+}
+
+.alert-modal-footer {
+  ion-toolbar {
+    --background: #ffffff;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 4px;
+    --padding-bottom: 16px;
+    --min-height: 0;
+  }
+}
+
+.alert-buttons {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+
+  ion-button {
+    flex: 1;
+    margin: 0;
+    font-weight: 600;
+    text-transform: none;
+  }
+}

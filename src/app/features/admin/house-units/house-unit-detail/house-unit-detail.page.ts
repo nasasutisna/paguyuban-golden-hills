@@ -51,7 +51,7 @@ export class HouseUnitDetailPage implements OnInit, OnDestroy {
   /**
    * Load house unit data
    */
-  private loadHouseUnit(): void {
+  private async loadHouseUnit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
       this.error = 'ID Unit tidak ditemukan';
@@ -59,7 +59,7 @@ export class HouseUnitDetailPage implements OnInit, OnDestroy {
       return;
     }
 
-    this.loadingService.show({ message: 'Memuat detail unit...' });
+    await this.loadingService.show({ message: 'Memuat detail unit...' });
 
     this.subscriptions.push(
       this.houseUnitsService.getById(id).subscribe({

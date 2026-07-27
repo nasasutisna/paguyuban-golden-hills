@@ -1,0 +1,93 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Pengaturan WhatsApp</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="wa-settings-content ion-padding">
+
+  <!-- ===== Connection ===== -->
+  <ion-card class="wa-card conn-card">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="chatbubbles"></ion-icon>
+        Koneksi WhatsApp
+      </ion-card-title>
+      <ion-card-subtitle>Sambungkan nomor admin yang dipakai untuk blast</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="conn-row">
+        <div class="conn-status">
+          <ion-badge [color]="connStateColor">
+            <ion-icon [name]="status?.state === 'OPEN' ? 'checkmark-circle' : 'time-outline'"></ion-icon>
+            {{ connStateLabel }}
+          </ion-badge>
+          @if (status?.phoneNumber) {
+            <span class="conn-phone">{{ status?.phoneNumber }}</span>
+          }
+        </div>
+        <div class="conn-actions">
+          @if (status?.state !== 'OPEN') {
+            <ion-button size="small" color="primary" (click)="connect()" [disabled]="connecting || statusLoading">
+              <ion-icon slot="start" name="link-outline"></ion-icon>
+              @if (connecting) { Menghubungkan... } @else { Sambungkan }
+            </ion-button>
+          } @else {
+            <ion-button size="small" color="medium" fill="outline" (click)="disconnect()">
+              <ion-icon slot="start" name="close-outline"></ion-icon>
+              Putuskan
+            </ion-button>
+          }
+        </div>
+      </div>
+
+      <!-- QR pairing -->
+      @if (status?.qrDataUrl; as qrDataUrl) {
+        <div class="qr-box">
+          <img [src]="qrDataUrl | safeUrl" alt="WhatsApp QR" class="qr-img" />
+          <p class="qr-hint">
+            <ion-icon name="scan"></ion-icon>
+            Scan QR ini dengan WhatsApp di HP (Menu → Perangkat tertaut) untuk menyambungkan nomor admin.
+          </p>
+        </div>
+      } @else if (status?.state === 'QR') {
+        <p class="muted">Menyiapkan QR... tunggu sebentar.</p>
+      } @else if (!status?.connected) {
+        <p class="muted">Klik <strong>Sambungkan</strong> untuk memunculkan QR pairing. Koneksi dipakai bersama untuk semua blast.</p>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <!-- ===== Send test ===== -->
+  <ion-card class="wa-card">
+    <ion-card-header>
+      <ion-card-title><ion-icon name="send-outline"></ion-icon> Tes Kirim Pesan</ion-card-title>
+      <ion-card-subtitle>Verifikasi nomor &amp; koneksi sebelum blast</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-input label="Nomor HP" labelPlacement="stacked" placeholder="08xxx / +62xxx" [(ngModel)]="testPhone"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-textarea label="Pesan (opsional)" labelPlacement="stacked" [autoGrow]="true" rows="2" [(ngModel)]="testMessage"></ion-textarea>
+      </ion-item>
+      <ion-button expand="block" color="secondary" (click)="sendTest()" [disabled]="sendingTest || !status?.connected">
+        <ion-icon slot="start" name="send-outline"></ion-icon>
+        @if (sendingTest) { Mengirim... } @else { Kirim Pesan Uji }
+      </ion-button>
+      @if (!status?.connected) {
+        <p class="muted small">Sambungkan WhatsApp dulu untuk mengirim.</p>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <!-- ===== Go to blast ===== -->
+  <ion-button expand="block" fill="clear" color="primary" routerLink="/admin/whatsapp-blast">
+    <ion-icon slot="start" name="megaphone-outline"></ion-icon>
+    Lanjut ke Blast WhatsApp
+  </ion-button>
+
+</ion-content>

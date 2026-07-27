@@ -154,15 +154,18 @@
           [errorMessage]="getErrorMessage('houseBlockId')"
         ></app-form-select>
 
-        <app-form-input
+        <app-form-searchable-select
           label="Nomor Unit"
           formControlName="unitNumber"
-          placeholder="contoh: A-101"
-          [maxlength]="20"
+          placeholder="Pilih nomor unit"
+          [options]="unitNumberOptions"
           [required]="true"
+          [helperText]="unitNumberHelperText"
+          modalTitle="Pilih Nomor Unit"
+          searchPlaceholder="Cari nomor unit..."
           [showError]="isFieldInvalid('unitNumber')"
           [errorMessage]="getErrorMessage('unitNumber')"
-        ></app-form-input>
+        ></app-form-searchable-select>
 
         <app-form-select
           label="Tipe Kepemilikan"

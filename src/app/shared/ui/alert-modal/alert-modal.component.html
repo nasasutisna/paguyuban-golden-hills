@@ -1,0 +1,63 @@
+<ion-header class="ion-no-border alert-modal-header">
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()" aria-label="Tutup">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="alert-modal-content" [scrollY]="false">
+  <div class="alert-modal-body">
+    <ion-icon class="alert-icon" [name]="meta.icon" [color]="meta.color"></ion-icon>
+
+    @if (title) {
+      <h2 class="alert-title">{{ title }}</h2>
+    }
+
+    @if (message) {
+      <p class="alert-message">{{ message }}</p>
+    }
+
+    @if (highlight) {
+      <div class="alert-highlight">
+        <span class="highlight-label">{{ highlight.label }}</span>
+        <span class="highlight-value">{{ highlight.value }}</span>
+      </div>
+    }
+
+    @if (rows && rows.length > 0) {
+      <div class="alert-rows">
+        @for (row of rows; track row.label; let i = $index) {
+          <div
+            class="alert-row"
+            [class.row-strong]="row.emphasis === 'strong'"
+            [class.row-total]="row.emphasis === 'total'">
+            <span class="row-label">{{ row.label }}</span>
+            <span class="row-value">{{ row.value }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border alert-modal-footer">
+  <ion-toolbar>
+    <div class="alert-buttons">
+      @for (button of buttons; track button.text; let i = $index) {
+        <ion-button
+          expand="block"
+          [fill]="buttonFill(button)"
+          [color]="buttonColor(button)"
+          (click)="onButton(button)">
+          @if (button.icon) {
+            <ion-icon [name]="button.icon" slot="start"></ion-icon>
+          }
+          {{ button.text }}
+        </ion-button>
+      }
+    </div>
+  </ion-toolbar>
+</ion-footer>

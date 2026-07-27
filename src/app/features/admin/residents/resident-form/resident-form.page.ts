@@ -12,6 +12,8 @@ import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { ResidentsService } from '../residents.service';
 import { HouseBlocksService } from '@features/admin/house-blocks/house-blocks.service';
+import { HouseUnitsService } from '@features/admin/house-units/house-units.service';
+import { HouseUnit } from '@features/admin/house-units/house-units.model';
 import { ToastService } from '@services/toast.service';
 import { LoadingService } from '@services/loading.service';
 import { getErrorMessage } from '@validators/validators';
@@ -29,6 +31,7 @@ import { HouseBlock } from '@features/admin/house-blocks/house-blocks.model';
 import {
   FormInputComponent,
   FormSelectComponent,
+  FormSearchableSelectComponent,
   FormTextareaComponent,
   FormButtonComponent,
   SelectOption,
@@ -48,6 +51,7 @@ import {
     ReactiveFormsModule,
     FormInputComponent,
     FormSelectComponent,
+    FormSearchableSelectComponent,
     FormTextareaComponent,
     FormButtonComponent,
     FormDatePickerComponent
@@ -61,6 +65,7 @@ export class ResidentFormPage implements OnInit, OnDestroy {
   private router = inject(Router);
   private residentsService = inject(ResidentsService);
   private houseBlocksService = inject(HouseBlocksService);
+  private houseUnitsService = inject(HouseUnitsService);
   private toastService = inject(ToastService);
   private loadingService = inject(LoadingService);
 
@@ -72,6 +77,9 @@ export class ResidentFormPage implements OnInit, OnDestroy {
 
   // Available house blocks
   houseBlocks: HouseBlock[] = [];
+
+  // All house units (filtered by selected block in the unitNumber options getter)
+  houseUnits: HouseUnit[] = [];
 
   // House block options for select dropdown
   houseBlockOptions: SelectOption[] = [];
@@ -103,6 +111,20 @@ export class ResidentFormPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadHouseBlocks();
+    this.loadHouseUnits();
+
+    // When the user changes the house block, the previously picked unit number
+    // (which is block-specific) is stale — reset it so a wrong-block value can't
+    // be saved. populateForm uses emitEvent:false so this only reacts to genuine
+    // user changes, not the edit-mode patch.
+    const blockControl = this.residentForm.get('houseBlockId');
+    if (blockControl) {
+      this.subscriptions.push(
+        blockControl.valueChanges.subscribe(() => {
+          this.residentForm.get('unitNumber')?.reset();
+        })
+      );
+    }
 
     // Check if we're in edit mode by checking for :id parameter
     this.subscriptions.push(
@@ -203,6 +225,52 @@ export class ResidentFormPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Load all house units once; the unitNumber options getter filters them by
+   * the currently selected house block on the fly.
+   */
+  private loadHouseUnits(): void {
+    this.subscriptions.push(
+      this.houseUnitsService.getAll({ limit: 1000 }).subscribe({
+        next: (response) => {
+          this.houseUnits = response.data || [];
+        },
+        error: (error) => {
+          console.error('Error loading house units:', error);
+          this.houseUnits = [];
+        }
+      })
+    );
+  }
+
+  /**
+   * Unit-number options for the searchable select, filtered by the selected
+   * house block. Value is the `unitNumber` string (matches the Resident field
+   * stored by the backend), not the house-unit id.
+   */
+  get unitNumberOptions(): SelectOption[] {
+    const blockId = this.residentForm.get('houseBlockId')?.value;
+    const units = blockId
+      ? this.houseUnits.filter((u) => u.houseBlockId === blockId)
+      : this.houseUnits;
+    return units
+      .slice()
+      .sort((a, b) => a.unitNumber.localeCompare(b.unitNumber))
+      .map((unit) => {
+        const sub = unit.unitCode && unit.unitCode !== unit.unitNumber ? ` • ${unit.unitCode}` : '';
+        return { value: unit.unitNumber, label: `${unit.unitNumber}${sub}` };
+      });
+  }
+
+  /**
+   * Hint shown under the unit field until a house block is chosen.
+   */
+  get unitNumberHelperText(): string {
+    return this.residentForm.get('houseBlockId')?.value
+      ? ''
+      : 'Pilih blok rumah terlebih dahulu untuk melihat daftar unit';
+  }
+
+  /**
    * Load existing resident for edit
    */
   private loadResident(id: string): void {
@@ -231,6 +299,8 @@ export class ResidentFormPage implements OnInit, OnDestroy {
 
   /**
    * Populate form with existing data
+   * Uses emitEvent:false so the houseBlockId valueChanges listener (which resets
+   * unitNumber) doesn't fire and wipe the prefilled unit number during edit.
    */
   private populateForm(resident: Resident): void {
     this.residentForm.patchValue({
@@ -255,7 +325,7 @@ export class ResidentFormPage implements OnInit, OnDestroy {
       ownershipType: resident.ownershipType,
       isActive: resident.isActive ?? true,
       notes: resident.notes || ''
-    });
+    }, { emitEvent: false });
   }
 
   /**
@@ -385,14 +455,27 @@ export class ResidentFormPage implements OnInit, OnDestroy {
    * Build DTO from form values
    */
   private buildDto(formValue: any): CreateResidentDto | UpdateResidentDto {
+    const trimmedUnitNumber = formValue.unitNumber?.trim();
     const dto: any = {
       firstName: formValue.firstName?.trim(),
       lastName: formValue.lastName?.trim(),
       houseBlockId: formValue.houseBlockId,
-      unitNumber: formValue.unitNumber?.trim(),
+      unitNumber: trimmedUnitNumber,
       ownershipType: formValue.ownershipType,
       isActive: formValue.isActive ?? true
     };
+
+    // Relate the resident to a concrete house unit. The unit picker stores the
+    // unitNumber string, so resolve it back to the house-unit id via the loaded
+    // units (filtered by the selected block to avoid cross-block collisions).
+    const selectedUnit = this.houseUnits.find(
+      (u) =>
+        u.houseBlockId === formValue.houseBlockId &&
+        u.unitNumber === trimmedUnitNumber
+    );
+    if (selectedUnit) {
+      dto.houseUnitId = selectedUnit.id;
+    }
 
     // Optional fields
     // Kode warga hanya dikirim saat edit (di-generate backend saat create)

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { IplPaymentsService } from '../ipl-payments.service';
 import { IplPeriodsService } from '../ipl-periods.service';
@@ -30,9 +30,11 @@ interface ResidentWithHouseUnit extends Resident {
 }
 import { LoadingService } from '@services/loading.service';
 import { ToastService } from '@services/toast.service';
+import { AlertModalService, AlertModalRow } from '@services/alert-modal.service';
 import {
   FormDatePickerComponent,
   FormSelectComponent,
+  FormSearchableSelectComponent,
   FormInputComponent,
   FormTextareaComponent,
   FormButtonComponent
@@ -52,6 +54,7 @@ import {
     FormsModule,
     FormDatePickerComponent,
     FormSelectComponent,
+    FormSearchableSelectComponent,
     FormInputComponent,
     FormTextareaComponent,
     FormButtonComponent
@@ -68,7 +71,7 @@ export class IplPaymentFormPage implements OnInit {
   private houseUnitsService = inject(HouseUnitsService);
   private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
-  private alertController = inject(AlertController);
+  private alertModalService = inject(AlertModalService);
 
   form: FormGroup;
   payment: IplPayment | null = null;
@@ -227,10 +230,13 @@ export class IplPaymentFormPage implements OnInit {
     const residentId = this.form.get('residentId')?.value;
     const resident = this.residents.find(r => r.id === residentId);
 
+    console.log('resident', resident)
     if (resident) {
       // Find the associated house unit for this resident
       const houseUnit = this.houseUnits.find(unit => unit.residents?.some(r => r.id === residentId));
-
+      console.log('residentId', residentId)
+      console.log('houseUnits', this.houseUnits)
+      console.log('house unit', houseUnit)
       // Create an enriched resident object with house unit data
       this.selectedResident = {
         ...resident,
@@ -314,7 +320,7 @@ export class IplPaymentFormPage implements OnInit {
     const monthCount = this.form.get('monthCount')?.value || 1;
     const iplTotal = this.calculateIplAmount() * monthCount;
     const kegiatanAmount = this.form.get('kegiatanAmount')?.value || 0;
-    return iplTotal + kegiatanAmount;
+    return Number(iplTotal) + Number(kegiatanAmount);
   }
 
   /**
@@ -447,95 +453,60 @@ export class IplPaymentFormPage implements OnInit {
   }
 
   /**
-   * Show success modal with reference number and payment details
+   * Show success modal with reference number and payment details.
+   * Uses the reusable AlertModalComponent (rich content) instead of
+   * AlertController, which cannot render structured HTML in its message.
    */
   private async showSuccessModal(payment: IplPayment): Promise<void> {
     const isApproved = payment.status === IplPaymentStatus.APPROVED;
-    const statusMessage = isApproved ? 'Pembayaran berhasil disetujui' : 'Pembayaran berhasil dikirim dan menunggu persetujuan';
+    const message = isApproved
+      ? 'Pembayaran berhasil disetujui'
+      : 'Pembayaran berhasil dikirim dan menunggu persetujuan';
 
-    let message = `
-      <div class="success-modal-content">
-        <div class="reference-section">
-          <p class="reference-label">Nomor Referensi:</p>
-          <p class="reference-number">${payment.referenceNumber || '-'}</p>
-        </div>
-        <div class="payment-summary">
-          <div class="summary-row">
-            <span>Status:</span>
-            <strong>${isApproved ? '✅ Disetujui' : '⏳ Menunggu Approval'}</strong>
-          </div>
-    `;
+    const rows: AlertModalRow[] = [
+      { label: 'Status', value: isApproved ? 'Disetujui' : 'Menunggu Approval' },
+    ];
 
     // Add multi-month info if applicable
     if (payment._meta?.isMultiMonth) {
-      message += `
-          <div class="summary-row">
-            <span>Jumlah Bulan:</span>
-            <strong>${payment._meta.monthCount} bulan</strong>
-          </div>
-      `;
+      rows.push({ label: 'Jumlah Bulan', value: `${payment._meta.monthCount} bulan`, emphasis: 'strong' });
     }
 
     // Add kegiatan payment info if applicable
     if (payment.kegiatanPayment) {
-      message += `
-          <div class="summary-row">
-            <span>Iuran Kegiatan:</span>
-            <strong>${this.formatCurrency(payment.kegiatanPayment.amount)}</strong>
-          </div>
-      `;
+      rows.push({ label: 'Iuran Kegiatan', value: this.formatCurrency(payment.kegiatanPayment.amount) });
     }
 
-    // Add total amounts
+    // Add total amount (with divider + accent)
     if (payment._meta?.grandTotal) {
-      message += `
-          <div class="summary-divider"></div>
-          <div class="summary-row total">
-            <span>Total Pembayaran:</span>
-            <strong>${this.formatCurrency(payment._meta.grandTotal)}</strong>
-          </div>
-      `;
+      rows.push({ label: 'Total Pembayaran', value: this.formatCurrency(payment._meta.grandTotal), emphasis: 'total' });
     } else {
-      message += `
-          <div class="summary-row total">
-            <span>Total IPL:</span>
-            <strong>${this.formatCurrency(payment.calculatedAmount)}</strong>
-          </div>
-      `;
+      rows.push({ label: 'Total IPL', value: this.formatCurrency(payment.calculatedAmount), emphasis: 'total' });
     }
 
-    message += `
-        </div>
-      </div>
-    `;
-
-    const alert = await this.alertController.create({
-      header: '✅ Pembayaran Berhasil',
-      message: message,
-      cssClass: 'success-modal-alert',
+    const result = await this.alertModalService.open({
+      type: 'success',
+      title: 'Pembayaran Berhasil',
+      message,
+      highlight: { label: 'Nomor Referensi', value: payment.referenceNumber || '-' },
+      rows,
+      dismissable: false,
       buttons: [
-        {
-          text: 'Tambah Lagi',
-          role: 'cancel',
-          handler: () => {
-            // Reset form and stay on page
-            this.form.reset();
-            this.selectedFile = null;
-            this.filePreview = null;
-            this.selectedResident = null;
-            this.selectedPeriod = null;
-          }
-        },
-        {
-          text: 'Lihat Detail',
-          handler: () => {
-            this.router.navigate(['/admin/ipl-payments', payment.id]);
-          }
-        }
-      ]
+        { text: 'Tambah Lagi', role: 'cancel', variant: 'outline', value: 'add' },
+        { text: 'Lihat Detail', role: 'confirm', variant: 'solid', value: 'detail' },
+      ],
     });
 
-    await alert.present();
+    if (result === 'detail') {
+      this.router.navigate(['/admin/ipl-payments', payment.id]);
+    } else {
+      // 'add' (or any other dismissal) → reset form and stay on page
+      this.form.reset();
+      this.selectedFile = null;
+      this.filePreview = null;
+      this.selectedResident = null;
+      this.selectedPeriod = null;
+    }
   }
 
   /**

@@ -1,0 +1,52 @@
+<div class="form-control-wrapper" [class.has-error]="showError">
+  <!-- Label -->
+  @if (label) {
+    <ion-label [color]="labelColor" [position]="labelPosition" [class.required]="required">
+      {{ label }}
+    </ion-label>
+  }
+
+  <!-- Tappable trigger styled like the native select box -->
+  <div
+    class="form-searchable-select-item"
+    [class.error]="showError"
+    [class.with-border]="border"
+    [style.borderRadius]="borderRadius"
+    [style.borderColor]="borderColor">
+    <button
+      type="button"
+      class="trigger"
+      [disabled]="isDisabled"
+      [attr.aria-haspopup]="'dialog'"
+      [attr.aria-expanded]="false"
+      [attr.aria-disabled]="isDisabled"
+      [attr.aria-label]="label + (getDisplayLabel() ? ': ' + getDisplayLabel() : '')"
+      (click)="openModal()">
+      <span class="trigger-text" [class.placeholder]="isEmpty">
+        {{ getDisplayLabel() || placeholder }}
+      </span>
+      <ion-icon class="chevron" name="chevron-down" aria-hidden="true"></ion-icon>
+    </button>
+
+    @if (clearable && !isEmpty && !isDisabled) {
+      <span class="clear-btn" role="button" aria-label="Hapus pilihan" (click)="clear($event)">
+        <ion-icon name="close-circle"></ion-icon>
+      </span>
+    }
+  </div>
+
+  <!-- Validation Error Message -->
+  @if (showError && errorMessage) {
+    <ion-text class="error-message">
+      <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+      {{ errorMessage }}
+    </ion-text>
+  }
+
+  <!-- Helper Text -->
+  @if (helperText && !showError) {
+    <ion-note class="helper-text">
+      {{ helperText }}
+    </ion-note>
+  }
+</div>

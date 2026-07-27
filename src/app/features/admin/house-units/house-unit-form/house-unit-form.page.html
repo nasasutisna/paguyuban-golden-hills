@@ -33,14 +33,16 @@
         [errorMessage]="getErrorMessage('unitNumber')"
       ></app-form-input>
 
-      <app-form-input
+      <app-form-select
         formControlName="houseBlockId"
-        label="ID Blok"
+        label="Blok Rumah"
         placeholder="Pilih blok rumah"
         [required]="true"
+        [options]="houseBlockOptions"
         [showError]="hasError('houseBlockId')"
         [errorMessage]="getErrorMessage('houseBlockId')"
-      ></app-form-input>
+        helperText="Pilih blok rumah tempat unit ini berada"
+      ></app-form-select>
 
       <app-form-input
         formControlName="floorNumber"

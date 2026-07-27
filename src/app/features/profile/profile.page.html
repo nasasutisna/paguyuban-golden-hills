@@ -110,6 +110,99 @@
       </ng-container>
     </div>
 
+    <!-- Change Password (non-admin only) -->
+    <div class="change-password-section" *ngIf="canChangePassword">
+      <ion-button
+        *ngIf="!isChangingPassword"
+        expand="block"
+        fill="outline"
+        (click)="toggleChangePassword()"
+        class="change-password-button"
+      >
+        <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+        Ubah Password
+      </ion-button>
+
+      <div class="password-form" *ngIf="isChangingPassword">
+        <div class="password-form-header">
+          <h3>Ubah Password</h3>
+          <ion-button fill="clear" size="small" (click)="toggleChangePassword()">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </div>
+
+        <form [formGroup]="passwordForm">
+          <!-- Current Password -->
+          <ion-item class="info-item">
+            <ion-label position="stacked" class="field-label">Password Saat Ini</ion-label>
+            <ion-input
+              type="password"
+              formControlName="currentPassword"
+              autocomplete="current-password"
+            ></ion-input>
+          </ion-item>
+          <div class="error-message" *ngIf="getPasswordErrorMessage('currentPassword')">
+            <ion-text color="danger">{{ getPasswordErrorMessage('currentPassword') }}</ion-text>
+          </div>
+
+          <!-- New Password -->
+          <ion-item class="info-item">
+            <ion-label position="stacked" class="field-label">Password Baru</ion-label>
+            <ion-input
+              type="password"
+              formControlName="newPassword"
+              autocomplete="new-password"
+            ></ion-input>
+          </ion-item>
+          <div class="error-message" *ngIf="getPasswordErrorMessage('newPassword')">
+            <ion-text color="danger">{{ getPasswordErrorMessage('newPassword') }}</ion-text>
+          </div>
+
+          <!-- Confirm New Password -->
+          <ion-item class="info-item">
+            <ion-label position="stacked" class="field-label">Konfirmasi Password Baru</ion-label>
+            <ion-input
+              type="password"
+              formControlName="confirmPassword"
+              autocomplete="new-password"
+            ></ion-input>
+          </ion-item>
+          <div class="error-message" *ngIf="getPasswordErrorMessage('confirmPassword')">
+            <ion-text color="danger">{{ getPasswordErrorMessage('confirmPassword') }}</ion-text>
+          </div>
+
+          <div class="password-hint">
+            <ion-text color="medium">
+              Min. 8 karakter, harus mengandung huruf besar, huruf kecil, angka, dan karakter khusus.
+            </ion-text>
+          </div>
+
+          <div class="action-buttons">
+            <ion-button
+              expand="block"
+              fill="solid"
+              (click)="onChangePassword()"
+              [disabled]="!isPasswordFormValid()"
+              class="save-button"
+            >
+              <ion-icon slot="start" name="save"></ion-icon>
+              Simpan Password
+            </ion-button>
+
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="toggleChangePassword()"
+              class="cancel-button"
+            >
+              <ion-icon slot="start" name="close"></ion-icon>
+              Batal
+            </ion-button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Logout Button (Mobile/Secondary) -->
     <ion-button
       expand="block"

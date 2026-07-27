@@ -78,15 +78,23 @@ import {
   listOutline,
   hourglass,
   personRemove,
-  removeCircleOutline
+  removeCircleOutline,
+  logoWhatsapp,
+  megaphoneOutline,
+  pauseCircleOutline,
+  playCircleOutline,
+  person
 } from 'ionicons/icons';
 import { AuthService } from '@core/auth/auth.service';
 import { User } from '@models/auth.model';
+import { getRequiredRoles } from '@core/guards/role-access.config';
 import { BreadcrumbComponent } from '@shared/ui/breadcrumb/breadcrumb.component';
 import { IplPaymentsService } from '@features/admin/ipl-payments/ipl-payments.service';
 import { IplPayment } from '@features/admin/ipl-payments/ipl-payments.model';
 import { ResidentPaymentsService } from '@features/admin/resident-payments/resident-payments.service';
 import { PaymentStatus, ResidentPayment } from '@features/admin/resident-payments/resident-payments.model';
+import { ExpenseRequestsService } from '@features/expense-requests/expense-requests.service';
+import { ExpenseRequest } from '@features/expense-requests/expense-requests.model';
 
 interface MenuItem {
   title: string;
@@ -102,7 +110,7 @@ interface MenuItem {
  */
 interface ApprovalItem {
   id: string;
-  type: 'ipl' | 'resident_payment';
+  type: 'ipl' | 'resident_payment' | 'expense_request';
   typeLabel: string;
   title: string;
   subtitle: string;
@@ -129,6 +137,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private iplPaymentsService = inject(IplPaymentsService);
   private residentPaymentsService = inject(ResidentPaymentsService);
+  private expenseRequestsService = inject(ExpenseRequestsService);
   private destroy$ = new Subject<void>();
 
   // Authentication state
@@ -163,20 +172,21 @@ export class AppComponent implements OnInit, OnDestroy {
     { title: 'Blok', url: '/admin/house-blocks', icon: 'business', description: 'Manajemen Blok' },
     { title: 'Karyawan', url: '/admin/employees', icon: 'people', description: 'Manajemen Staf' },
     { title: 'Penggajian', url: '/admin/employee-salary-headers', icon: 'cash-outline', description: 'Gaji Karyawan → Kas IPL' },
+    { title: 'Pengguna', url: '/admin/users', icon: 'people', description: 'Pengguna' },
   ];
 
   // Keuangan Menu Items
   keuanganMenuItems: MenuItem[] = [
     { title: 'Kas Paguyuban', url: '/admin/cash-transactions', icon: 'swap-horizontal', description: 'Catatan Keuangan' },
-    { title: 'Jenis Iuran', url: '/admin/fee-types', icon: 'funnel', description: 'Kelola Jenis Iuran & IPL' },
-    { title: 'Tagihan Warga', url: '/admin/resident-invoices', icon: 'document', description: 'Daftar Tagihan Warga' },
-
+    // { title: 'Jenis Iuran', url: '/admin/fee-types', icon: 'funnel', description: 'Kelola Jenis Iuran & IPL' },
+    // { title: 'Tagihan Warga', url: '/admin/resident-invoices', icon: 'document', description: 'Daftar Tagihan Warga' },
   ];
 
   // IPL Menu Items
   iplMenuItems: MenuItem[] = [
     { title: 'Pembayaran IPL', url: '/admin/ipl-payments', icon: 'wallet-outline', description: 'Daftar Pembayaran IPL' },
     { title: 'Matrix IPL', url: '/admin/ipl-payment-matrix', icon: 'grid', description: 'Status bayar unit per bulan' },
+    { title: 'Blast WhatsApp', url: '/admin/whatsapp-blast', icon: 'logo-whatsapp', description: 'Kirim reminder WA tunggakan IPL' },
     { title: 'Iuran Warga', url: '/admin/resident-payments', icon: 'card-outline', description: 'Riwayat Pembayaran' },
     { title: 'Matrix Iuran Warga', url: '/admin/resident-payment-matrix', icon: 'grid', description: 'Status bayar warga per bulan' },
     { title: 'Periode IPL', url: '/admin/ipl-periods', icon: 'calendar', description: 'Kelola Periode IPL' },
@@ -193,11 +203,21 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Settings Menu Items
   settingsMenuItems: MenuItem[] = [
-    { title: 'Pengaturan Umum', url: '/admin/settings/general', icon: 'settings', description: 'Konfigurasi Aplikasi' },
-    { title: 'Keamanan', url: '/admin/settings/security', icon: 'shield', description: 'Keamanan & Akses' },
-    { title: 'Role & Izin', url: '/admin/settings/roles', icon: 'key', description: 'Role Pengguna' },
+    { title: 'Pengaturan Whatsapp', url: '/admin/setting-whatsapp', icon: 'logo-whatsapp', description: 'Koneksi & tes kirim WA' },
+    // { title: 'Keamanan', url: '/admin/settings/security', icon: 'shield', description: 'Keamanan & Akses' },
+    // { title: 'Role & Izin', url: '/admin/settings/roles', icon: 'key', description: 'Role Pengguna' },
     { title: 'Backup & Restore', url: '/admin/settings/backup', icon: 'cloud-upload', description: 'Manajemen Data' },
   ];
+
+  // Role-filtered menus shown in the side bar. Recomputed whenever the auth
+  // state (and therefore the current role) changes — see refreshVisibleMenus().
+  visibleMainMenuItems: MenuItem[] = [];
+  visibleExpenseMenuItems: MenuItem[] = [];
+  visibleIplMenuItems: MenuItem[] = [];
+  visibleKeuanganMenuItems: MenuItem[] = [];
+  visibleReportsMenuItems: MenuItem[] = [];
+  visibleManagementMenuItems: MenuItem[] = [];
+  visibleSettingsMenuItems: MenuItem[] = [];
 
   constructor() {
     // Register all icons
@@ -217,7 +237,7 @@ export class AppComponent implements OnInit, OnDestroy {
       chevronDownOutline, chevronUpOutline, filterOutline, informationCircleOutline, cloudOutline, cloudUploadOutline,
       timeOutline, checkmarkDoneOutline, lockClosedOutline, lockOpenOutline, peopleCircle, briefcaseOutline, barcodeOutline,
       location, peopleOutline, sendOutline, linkOutline, swapVerticalOutline, shieldCheckmarkOutline, listOutline, hourglass, personRemove,
-      removeCircleOutline
+      removeCircleOutline, logoWhatsapp, megaphoneOutline, pauseCircleOutline, playCircleOutline, person
     });
   }
 
@@ -226,6 +246,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.authService.authState.pipe(takeUntil(this.destroy$)).subscribe(state => {
       this.isAuthenticated = state.isAuthenticated;
       this.currentUser = state.user;
+
+      // Recompute role-filtered menus for the current user.
+      this.refreshVisibleMenus();
 
       // Load pending approvals for the notification bell
       this.loadPendingApprovals();
@@ -305,6 +328,8 @@ export class AppComponent implements OnInit, OnDestroy {
       '/admin/ipl-periods': { title: 'Periode IPL', icon: 'calendar' },
       '/admin/ipl-payments': { title: 'Pembayaran IPL', icon: 'wallet-outline' },
       '/admin/ipl-payment-matrix': { title: 'Matrix Pembayaran IPL', icon: 'grid' },
+      '/admin/whatsapp-blast': { title: 'Blast WhatsApp', icon: 'logo-whatsapp' },
+      '/admin/setting-whatsapp': { title: 'Pengaturan WhatsApp', icon: 'logo-whatsapp' },
       '/admin/cash-transactions/reports/ipl': { title: 'Laporan IPL', icon: 'document-text-outline' },
       '/admin/cash-transactions/reports/kegiatan': { title: 'Laporan Kegiatan', icon: 'calendar-outline' },
     };
@@ -340,15 +365,35 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Whether the current user may access the Expense Requests feature.
-   * Backend `/mine` is open to all authenticated roles; gate the menu to the
-   * known role set so unrelated users don't see a dead link.
+   * Whether the current user may see a menu item. Roles are resolved from the
+   * item's URL via the shared ROUTE_ROLE_RULES map (same map the route guard
+   * uses), so the menu can never offer a page the guard would block.
+   * SUPERADMIN sees everything; items with no rule are shown to everyone.
    */
-  canSeeExpenseRequests(): boolean {
+  private canSeeMenuItem(item: MenuItem): boolean {
     const role = this.currentUser?.role?.name || '';
-    return [
-      'PENGURUS', 'COORDINATOR', 'ADMIN', 'ACCOUNTANT', 'MANAGER', 'SUPERADMIN', 'STAFF',
-    ].includes(role);
+    if (!role) return false;
+    if (role === 'SUPERADMIN') return true;
+    const required = getRequiredRoles(item.url);
+    return !required || required.length === 0 || required.includes(role);
+  }
+
+  private filterMenu(items: MenuItem[]): MenuItem[] {
+    return items.filter(item => this.canSeeMenuItem(item));
+  }
+
+  /**
+   * Recompute every role-filtered menu. Called on auth state changes (login,
+   * logout, profile refresh). Empty sections collapse in the template.
+   */
+  private refreshVisibleMenus(): void {
+    this.visibleMainMenuItems = this.filterMenu(this.mainMenuItems);
+    this.visibleExpenseMenuItems = this.filterMenu(this.expenseMenuItems);
+    this.visibleIplMenuItems = this.filterMenu(this.iplMenuItems);
+    this.visibleKeuanganMenuItems = this.filterMenu(this.keuanganMenuItems);
+    this.visibleReportsMenuItems = this.filterMenu(this.reportsMenuItems);
+    this.visibleManagementMenuItems = this.filterMenu(this.managementMenuItems);
+    this.visibleSettingsMenuItems = this.filterMenu(this.settingsMenuItems);
   }
 
   /**
@@ -368,9 +413,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load pending approvals for IPL & resident payments (notification bell).
-   * IPL uses a dedicated pending endpoint; resident payments are filtered
-   * client-side because the service does not support status filtering.
+   * Load pending approvals for IPL, resident payments & expense requests
+   * (notification bell). IPL & expense use dedicated pending endpoints;
+   * resident payments are filtered client-side because the service does not
+   * support status filtering. Each branch self-heals to an empty list on
+   * error (e.g. 403 for non-admin roles) so one failing call won't clear the
+   * others.
    */
   loadPendingApprovals() {
     if (!this.isAuthenticated) {
@@ -383,15 +431,17 @@ export class AppComponent implements OnInit, OnDestroy {
     forkJoin({
       ipl: this.iplPaymentsService.getPending({ page: 1, limit: 50 }),
       resident: this.residentPaymentsService.getAll({ page: 1, limit: 50 }),
+      expense: this.expenseRequestsService.getPending({ page: 1, limit: 50 }),
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ ipl, resident }) => {
+        next: ({ ipl, resident, expense }) => {
           const iplItems = (ipl?.data || []).map(p => this.mapIplToApproval(p));
           const residentItems = (resident?.data || [])
             .filter(p => p.status === PaymentStatus.PENDING)
             .map(p => this.mapResidentPaymentToApproval(p));
+          const expenseItems = (expense?.data || []).map(r => this.mapExpenseRequestToApproval(r));
 
-          this.pendingApprovals = [...iplItems, ...residentItems]
+          this.pendingApprovals = [...iplItems, ...residentItems, ...expenseItems]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
           this.pendingCount = this.pendingApprovals.length;
           this.loadingApprovals = false;
@@ -437,6 +487,34 @@ export class AppComponent implements OnInit, OnDestroy {
       amount: p.amount,
       date: p.paymentDate,
       route: ['/admin/resident-payments', p.id],
+    };
+  }
+
+  /**
+   * Map a pending expense request (Pengeluaran) to a bell item. The fund type
+   * (IPL vs WARGA) comes from the request's category and is surfaced in the
+   * type label so "Pengeluaran IPL" is distinguishable from "Pengeluaran Warga".
+   */
+  private mapExpenseRequestToApproval(r: ExpenseRequest): ApprovalItem {
+    const fundType = r.category?.fundType;
+    const typeLabel = fundType === 'IPL'
+      ? 'Pengeluaran IPL'
+      : fundType === 'WARGA'
+        ? 'Pengeluaran Warga'
+        : 'Pengeluaran';
+    const requesterName = r.requester
+      ? `${r.requester.firstName ?? ''} ${r.requester.lastName ?? ''}`.trim() || r.requester.username
+      : r.requestNumber;
+    const category = r.category?.categoryName || '';
+    return {
+      id: r.id,
+      type: 'expense_request',
+      typeLabel,
+      title: r.title || requesterName,
+      subtitle: [requesterName, category].filter(Boolean).join(' • ') || r.requestNumber || '-',
+      amount: Number(r.amount) || 0,
+      date: r.transactionDate || r.createdAt,
+      route: ['/expense-requests', r.id],
     };
   }
 

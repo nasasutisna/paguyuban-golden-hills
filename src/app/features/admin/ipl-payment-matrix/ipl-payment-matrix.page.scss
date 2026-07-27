@@ -526,3 +526,214 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+// =========================================================================
+// Delinquent-units chip + modal
+// =========================================================================
+
+// Danger variant of the summary chip (rendered as a <button>).
+button.summary-chip {
+  // Reset default button chrome so it reads like the div chips.
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  align-items: center;
+  flex-direction: row;
+  gap: 8px;
+
+  ion-spinner {
+    width: 18px;
+    height: 18px;
+  }
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &.danger {
+    background: #fef2f2;
+    border-color: #fecaca;
+
+    ion-icon {
+      color: #dc2626;
+    }
+
+    .summary-chip-label {
+      color: #b91c1c;
+    }
+
+    .summary-chip-value {
+      color: #dc2626;
+      font-size: 17px;
+    }
+
+    &:hover:not(:disabled) {
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+  }
+
+  // Softer look when count is 0 (informational, not urgent).
+  &.zero.danger {
+    background: #ffffff;
+    border-color: #e5e7eb;
+
+    ion-icon,
+    .summary-chip-label,
+    .summary-chip-value {
+      color: #9ca3af;
+    }
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+// Desktop: render the modal as a centered card; mobile keeps the default sheet.
+@media (min-width: 768px) {
+  .delinquent-modal {
+    --width: 940px;
+    --max-width: 96vw;
+    --height: 80vh;
+    --max-height: 88vh;
+    --border-radius: 14px;
+  }
+}
+
+.delinquent-subinfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 12px;
+  color: #374151;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+
+  strong {
+    color: #6b7280;
+    font-weight: 600;
+  }
+}
+
+// Desktop table
+.delinquent-scroll {
+  overflow-x: auto;
+  border: 1px solid #e1e1e1;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.delinquent-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: #374151;
+
+  thead th {
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 10px 8px;
+    text-align: left;
+    border-bottom: 1px solid #fca5a5;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 8px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: #fafafa;
+  }
+
+  .danger-strong {
+    color: #dc2626;
+    font-weight: 700;
+  }
+}
+
+// Mobile cards
+.delinquent-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.delinquent-card {
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 12px 14px;
+
+  .dc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .dc-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .dc-subtitle {
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .dc-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #374151;
+    padding-top: 8px;
+
+    .danger-strong {
+      color: #dc2626;
+    }
+  }
+}
+
+// Obligation badge (FULL 100% / SETENGAH 50% / 0%)
+.obligation-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+
+  &.full {
+    background: rgba(67, 160, 71, 0.12);
+    color: #2e7d32;
+  }
+
+  &.half {
+    background: rgba(245, 158, 11, 0.14);
+    color: #b45309;
+  }
+
+  &.zero {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+}
+
+.danger-strong {
+  color: #dc2626;
+}

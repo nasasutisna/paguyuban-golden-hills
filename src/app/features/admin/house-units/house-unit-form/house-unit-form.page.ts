@@ -10,6 +10,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { HouseUnitsService } from '../house-units.service';
+import { HouseBlocksService } from '../../house-blocks/house-blocks.service';
 import { ToastService } from '@services/toast.service';
 import { LoadingService } from '@services/loading.service';
 import { HouseUnit, CreateHouseUnitDto, UpdateHouseUnitDto, OccupancyStatus, UNIT_TYPE_OPTIONS } from '../house-units.model';
@@ -17,7 +18,8 @@ import {
   FormInputComponent,
   FormSelectComponent,
   FormTextareaComponent,
-  FormButtonComponent
+  FormButtonComponent,
+  SelectOption
 } from '@shared/ui/form-controls';
 
 /**
@@ -44,6 +46,7 @@ export class HouseUnitFormPage implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private houseUnitsService = inject(HouseUnitsService);
+  private houseBlocksService = inject(HouseBlocksService);
   private toastService = inject(ToastService);
   private loadingService = inject(LoadingService);
 
@@ -63,6 +66,10 @@ export class HouseUnitFormPage implements OnInit, OnDestroy {
 
   unitTypeOptions = UNIT_TYPE_OPTIONS;
 
+  // House block dropdown options (loaded from API)
+  houseBlockOptions: SelectOption[] = [];
+  isLoadingBlocks = false;
+
   private subscriptions: Subscription[] = [];
 
   constructor() {
@@ -70,6 +77,9 @@ export class HouseUnitFormPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Load house blocks for the dropdown (used in both add & edit modes)
+    this.loadHouseBlocks();
+
     // Check if we're in edit mode by checking for :id parameter
     this.subscriptions.push(
       this.route.paramMap.subscribe((params) => {
@@ -78,6 +88,32 @@ export class HouseUnitFormPage implements OnInit, OnDestroy {
           this.isEditMode = true;
           this.houseUnitId = id;
           this.loadHouseUnit(id);
+        }
+      })
+    );
+  }
+
+  /**
+   * Load house blocks for the dropdown select
+   */
+  private loadHouseBlocks(): void {
+    this.isLoadingBlocks = true;
+    this.subscriptions.push(
+      this.houseBlocksService.getAll({ limit: 1000, sortBy: 'blockCode', sortOrder: 'asc' }).subscribe({
+        next: (response) => {
+          this.houseBlockOptions = (response.data || []).map((block) => ({
+            value: block.id,
+            label: block.blockName
+              ? `${block.blockCode} - ${block.blockName}`
+              : block.blockCode
+          }));
+          this.isLoadingBlocks = false;
+        },
+        error: (error) => {
+          this.isLoadingBlocks = false;
+          this.houseBlockOptions = [];
+          this.toastService.error('Gagal memuat daftar blok rumah');
+          console.error('Error loading house blocks:', error);
         }
       })
     );
@@ -99,7 +135,7 @@ export class HouseUnitFormPage implements OnInit, OnDestroy {
       buildingArea: ['', [Validators.required, Validators.min(0)]],
       floorNumber: ['', [Validators.min(1)]],
       unitType: [''],
-      occupancyStatus: [OccupancyStatus.VACANT],
+      occupancyStatus: [OccupancyStatus.FULLY_OCCUPIED],
       occupancyNotes: [''],
       isBankBuyback: [false],
       iplPercentage: [100, [Validators.min(0), Validators.max(100)]],

@@ -2,68 +2,54 @@ import { inject } from '@angular/core';
 import {
   CanActivateFn,
   Router,
+  RouterStateSnapshot,
   UrlTree,
-  ActivatedRouteSnapshot
 } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { AuthService } from '@core/auth/auth.service';
 import { ToastService } from '@services/toast.service';
+import { getRequiredRoles } from '@core/guards/role-access.config';
 
 /**
- * Role Guard Configuration
- * Define route roles in route data:
- * {
- *   path: 'admin',
- *   canActivate: [roleGuard],
- *   data: { roles: ['admin', 'moderator'] }
- * }
- */
-
-/**
- * Role Guard
- * Protects routes based on user roles
- * Redirects users without required roles to access denied page
+ * Role Guard (URL-prefix based)
+ *
+ * Role requirements live in a single source of truth — `ROUTE_ROLE_RULES` in
+ * role-access.config.ts — shared with the side menu so the menu only shows
+ * pages the user can actually open. The guard resolves the required roles from
+ * the navigated URL (longest-prefix match); URLs with no matching rule are
+ * auth-only. `SUPERADMIN` bypasses every check.
  */
 export const roleGuard: CanActivateFn = (
-  route: ActivatedRouteSnapshot
+  _route,
+  state: RouterStateSnapshot,
 ): Observable<boolean | UrlTree> => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const toastService = inject(ToastService);
 
-  // Get required roles from route data
-  const requiredRoles = route.data?.['roles'] as string[] | undefined;
+  const requiredRoles = getRequiredRoles(state.url);
 
+  // No rule for this URL → auth-only (authGuard has already run).
   if (!requiredRoles || requiredRoles.length === 0) {
     return of(true);
   }
 
   return authService.authState.pipe(
-    map((state) => {
-      console.log('role guard',state)
-      if (!state.isAuthenticated) {
-        // Not authenticated - redirect to login
+    map((auth) => {
+      if (!auth.isAuthenticated || !auth.user) {
         return router.createUrlTree(['/auth/login'], {
-          queryParams: { returnUrl: router.url }
+          queryParams: { returnUrl: state.url },
         });
       }
 
-      if (!state.user) {
-        return router.createUrlTree(['/auth/login']);
-      }
-
-      // Check if user has any of the required roles
-      // const hasRole = requiredRoles.includes(state.user.roleId);
-      const hasRole = state?.user?.role?.name === 'ADMIN'
-
-      if (hasRole) {
+      const role = auth.user.role?.name || '';
+      if (role === 'SUPERADMIN' || requiredRoles.includes(role)) {
         return true;
       }
 
-      // User doesn't have required role - show toast and redirect
-      toastService.error('You do not have permission to access this page');
+      toastService.error('Anda tidak memiliki akses ke halaman ini');
       return router.createUrlTree(['/profile']);
-    })
+    }),
   );
 };

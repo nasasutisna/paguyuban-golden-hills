@@ -309,6 +309,19 @@ export class AuthService implements OnDestroy {
   }
 
   /**
+   * Change the current user's own password.
+   * The backend verifies the current password before accepting the new one.
+   */
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.apiService.post('/auth/change-password', {
+      currentPassword,
+      newPassword
+    }).pipe(
+      map(() => void 0)
+    );
+  }
+
+  /**
    * Check if user has required role
    * @param roles - Required roles
    */

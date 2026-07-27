@@ -6,10 +6,27 @@
       "Bash(git branch *)",
       "Bash(pkill -f \"ionic serve\")",
       "Bash(curl 'http://localhost:3000/api/v1/cash-transactions?page=1&limit=10' -H 'Accept: application/json' -s)",
-      "Bash(curl 'http://localhost:3000/api/v1/cash-transactions?page=1&limit=10' -H 'Accept: application/json, text/plain, */*' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiOWYzZmUyMy00OTJmLTQxYjAtODE0Yy03NzVkYzJkOTY4ZDMiLCJ1c2VybmFtZSI6ImFkbWluIiwiZW1haWwiOiJhZG1pbkBnb2xkZW5oaWxscy5jb20iLCJyb2xlSWQiOiI0MmJhMDY4Yi0zMDdkLTRhNDUtYTBiMy01NzE4ODA3Yjc1MGYiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzg0MDY2MTY0LCJleHAiOjE4MTU2MDIxNjR9.cyV3QpixgijonB0KOqT_7bl-lqIW3i-XYlp-FwO2TZ0' -s)"
+      "Bash(curl 'http://localhost:3000/api/v1/cash-transactions?page=1&limit=10' -H 'Accept: application/json, text/plain, */*' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiOWYzZmUyMy00OTJmLTQxYjAtODE0Yy03NzVkYzJkOTY4ZDMiLCJ1c2VybmFtZSI6ImFkbWluIiwiZW1haWwiOiJhZG1pbkBnb2xkZW5oaWxscy5jb20iLCJyb2xlSWQiOiI0MmJhMDY4Yi0zMDdkLTRhNDUtYTBiMy01NzE4ODA3Yjc1MGYiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzg0MDY2MTY0LCJleHAiOjE4MTU2MDIxNjR9.cyV3QpixgijonB0KOqT_7bl-lqIW3i-XYlp-FwO2TZ0' -s)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\).get\\('data',{}\\); print\\('state:',d.get\\('state'\\),'| connected:',d.get\\('connected'\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\).get\\('data',{}\\); print\\('state:',d.get\\('state'\\),'| hasQr:',d.get\\('hasQr'\\),'| qrDataUrl:', 'yes' if d.get\\('qrDataUrl'\\) else 'null'\\)\")",
+      "Bash(rm -rf wa-auth/*)",
+      "Bash(kill 47700)",
+      "Bash(ps -o pid,lstart,command -p 51193)",
+      "Bash(ps -o command= -p 51193)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\).get\\('data',{}\\); url=d.get\\('qrDataUrl'\\) or ''; print\\('state:',d.get\\('state'\\),'| hasQr:',d.get\\('hasQr'\\),'| qrDataUrl:', \\(url[:40]+'...\\('+str\\(len\\(url\\)\\)+' chars\\)'\\) if url else 'null'\\)\")",
+      "Bash(grep -nA2 '\"@validators\"' tsconfig.json)",
+      "Bash(grep -nA2 '@validators' src/tsconfig.app.json)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"const s=require\\('./package.json'\\).scripts; console.log\\(JSON.stringify\\(s,null,2\\)\\)\")",
+      "Bash(npx --prefix /Users/nasasutisna/project/nestjs/golden-hills-finance tsc --noEmit -p /Users/nasasutisna/project/nestjs/golden-hills-finance/tsconfig.json)"
     ],
     "additionalDirectories": [
-      "/Users/nasasutisna/project/nestjs/golden-hills-finance/src/cash-transactions"
+      "/Users/nasasutisna/project/nestjs/golden-hills-finance/src/cash-transactions",
+      "/Users/nasasutisna/project/nestjs/golden-hills-finance/src/users",
+      "/Users/nasasutisna/project/nestjs/golden-hills-finance/src/auth",
+      "/Users/nasasutisna/project/nestjs/golden-hills-finance/src/users/dto",
+      "/Users/nasasutisna/project/nestjs/golden-hills-finance/src/expense-requests",
+      "/Users/nasasutisna/project/nestjs/golden-hills-finance/src/auth/dto"
     ]
   }
 }

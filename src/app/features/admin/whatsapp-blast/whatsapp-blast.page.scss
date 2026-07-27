@@ -1,0 +1,263 @@
+.wa-blast-content {
+  --background: #f5f7fa;
+}
+
+.wa-card {
+  margin: 0 0 16px;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+
+  ion-card-header {
+    padding-bottom: 8px;
+  }
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    color: #1f2937;
+
+    ion-icon {
+      color: var(--ion-color-primary, #4caf50);
+    }
+  }
+
+  ion-card-subtitle {
+    font-size: 0.78rem;
+    color: #6b7280;
+  }
+}
+
+/* Connection */
+.conn-card {
+  border-left: 4px solid var(--ion-color-primary, #4caf50);
+}
+
+.conn-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.conn-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  ion-badge {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+
+    ion-icon {
+      margin-right: 4px;
+    }
+  }
+
+  .conn-phone {
+    font-weight: 600;
+    color: #374151;
+  }
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 4px 10px;
+
+  ion-icon {
+    color: #6b7280;
+  }
+
+  ion-select {
+    min-width: 120px;
+  }
+}
+
+/* Summary chips */
+.summary-chips,
+.detail-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.chip-stat {
+  display: flex;
+  flex-direction: column;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 6px 12px;
+  min-width: 78px;
+
+  .lbl {
+    font-size: 0.68rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .val {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+
+    &.sm {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+  }
+
+  &.success {
+    background: #ecfdf5;
+    .lbl { color: #047857; }
+    .val { color: #065f46; }
+  }
+
+  &.warning {
+    background: #fffbeb;
+    .lbl { color: #b45309; }
+    .val { color: #92400e; }
+  }
+}
+
+/* Tables */
+.table-scroll {
+  overflow-x: auto;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  thead th {
+    text-align: left;
+    padding: 8px 10px;
+    background: #f9fafb;
+    color: #374151;
+    font-weight: 600;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f3f5;
+    vertical-align: top;
+    color: #374151;
+  }
+
+  .text-right {
+    text-align: right;
+  }
+
+  ion-badge {
+    font-size: 0.72rem;
+    text-transform: lowercase;
+  }
+}
+
+.msg-preview {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 0.78rem;
+  color: #4b5563;
+  background: #f9fafb;
+  padding: 6px 8px;
+  border-radius: 6px;
+  max-width: 360px;
+  margin: 0;
+}
+
+.err-cell {
+  max-width: 240px;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* Mobile preview cards */
+.preview-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.preview-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+
+  .pc-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .pc-meta {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 6px;
+  }
+}
+
+/* Detail modal */
+.detail-modal {
+  --width: 90%;
+  --height: 85%;
+}
+
+.detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.82rem;
+  margin-bottom: 12px;
+  color: #374151;
+}
+
+/* States / helpers */
+.state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  color: #6b7280;
+  text-align: center;
+
+  ion-icon {
+    font-size: 2rem;
+  }
+}
+
+.muted {
+  color: #6b7280;
+  font-size: 0.82rem;
+  margin: 8px 0 0;
+
+  &.small {
+    font-size: 0.75rem;
+  }
+}

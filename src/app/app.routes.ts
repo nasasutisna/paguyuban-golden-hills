@@ -51,11 +51,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/profile/profile.page').then((m) => m.ProfilePage)
   },
-  // Admin Routes (Require admin role)
+  // Admin Routes. roleGuard is URL-prefix based (see role-access.config.ts) and
+  // resolves per-module roles from the navigated URL, so children don't need
+  // their own role data. breadcrumb:{skip} keeps /admin out of the breadcrumb.
   {
     path: 'admin',
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['ADMIN', 'SUPERADMIN'], breadcrumb: { skip: true }  },
+    data: { breadcrumb: { skip: true } },
     children: [
       {
         path: 'dashboard',
@@ -147,6 +149,37 @@ export const routes: Routes = [
           import('./features/admin/residents/resident-form/resident-form.page').then(
             (m) => m.ResidentFormPage
           )
+      },
+      // Users Routes
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/admin/users/users.page').then((m) => m.UsersPage),
+        data: { breadcrumb: { label: 'Pengguna' } },
+      },
+      {
+        path: 'users/new',
+        loadComponent: () =>
+          import('./features/admin/users/user-form/user-form.page').then(
+            (m) => m.UserFormPage
+          ),
+        data: { breadcrumb: { label: 'Buat Pengguna' } },
+      },
+      {
+        path: 'users/:id',
+        loadComponent: () =>
+          import('./features/admin/users/user-detail/user-detail.page').then(
+            (m) => m.UserDetailPage
+          ),
+        data: { breadcrumb: { label: 'Detail Pengguna' } },
+      },
+      {
+        path: 'users/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/users/user-form/user-form.page').then(
+            (m) => m.UserFormPage
+          ),
+        data: { breadcrumb: { label: 'Edit Pengguna' } },
       },
       // Employees Routes
       {
@@ -307,6 +340,26 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/ipl-payments/ipl-payments.page').then(
             (m) => m.IplPaymentsPage
+          )
+      },
+      // WhatsApp Blast — send reminder WA to delinquent residents. Path matches
+      // the IPL matrix "Blast WA" deep-link (/admin/whatsapp-blast).
+      {
+        path: 'whatsapp-blast',
+        data: { breadcrumb: { label: 'Blast WhatsApp' } },
+        loadComponent: () =>
+          import('./features/admin/whatsapp-blast/whatsapp-blast.page').then(
+            (m) => m.WhatsappBlastPage
+          )
+      },
+      // WhatsApp Settings — dedicated page for the WA connection (QR pairing)
+      // and test message. Shares the same session as the blast page.
+      {
+        path: 'setting-whatsapp',
+        data: { breadcrumb: { label: 'Pengaturan WhatsApp' } },
+        loadComponent: () =>
+          import('./features/admin/whatsapp-settings/whatsapp-settings.page').then(
+            (m) => m.WhatsappSettingsPage
           )
       },
       // IPL Payment Matrix — componentless wrapper so detail pages reached from
@@ -504,8 +557,9 @@ export const routes: Routes = [
     ]
   },
   // Expense Requests Routes (authGuard only — multi-role: PENGURUS/COORDINATOR submit,
-  // ADMIN/ACCOUNTANT approve. Backend enforces per-endpoint authorization. Intentionally
-  // NOT under the `admin` parent because roleGuard currently hardcodes ADMIN.)
+  // ADMIN/ACCOUNTANT approve. Backend enforces per-endpoint authorization. Kept off the
+  // `admin` parent so non-admin roles can reach it; side-menu visibility is gated by the
+  // /expense-requests rule in role-access.config.ts.)
   {
     path: 'expense-requests',
     canActivate: [authGuard],

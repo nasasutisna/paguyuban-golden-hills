@@ -1,0 +1,99 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/users"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detail Pengguna</ion-title>
+    <ion-buttons slot="end">
+      @if (user) {
+        <ion-button (click)="navigateToEdit()">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (loading) {
+    <div class="ion-padding ion-text-center">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else if (user) {
+    <!-- Header card -->
+    <ion-card>
+      <ion-card-content class="header-card">
+        <ion-avatar>
+          <ion-icon name="person-circle" style="font-size:64px;color:var(--ion-color-primary);"></ion-icon>
+        </ion-avatar>
+        <div class="header-info">
+          <h2>{{ fullName }}</h2>
+          <p>@{{ user.username }}</p>
+          <div class="chips">
+            @if (user.role) {
+              <ion-chip color="primary">
+                <ion-icon name="shield-check-outline"></ion-icon>
+                <ion-label>{{ user.role.name }}</ion-label>
+              </ion-chip>
+            }
+            <ion-chip [color]="user.isActive ? 'success' : 'medium'">
+              <ion-icon [name]="user.isActive ? 'checkmark-circle' : 'close-circle'"></ion-icon>
+              <ion-label>{{ user.isActive ? 'Aktif' : 'Nonaktif' }}</ion-label>
+            </ion-chip>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Account info -->
+    <ion-list inset="true">
+      <ion-item>
+        <ion-icon name="mail-outline" slot="start" color="medium"></ion-icon>
+        <ion-label>
+          <h3>Email</h3>
+          <p>{{ user.email }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="call-outline" slot="start" color="medium"></ion-icon>
+        <ion-label>
+          <h3>Telepon</h3>
+          <p>{{ user.phoneNumber || '-' }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="people-outline" slot="start" color="medium"></ion-icon>
+        <ion-label>
+          <h3>Warga Terhubung</h3>
+          <p>{{ residentLabel }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
+        <ion-label>
+          <h3>Login Terakhir</h3>
+          <p>{{ formatDate(user.lastLoginAt) }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="calendar-outline" slot="start" color="medium"></ion-icon>
+        <ion-label>
+          <h3>Dibuat</h3>
+          <p>{{ formatDate(user.createdAt) }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <!-- Actions -->
+    <div class="actions">
+      <ion-button expand="block" color="warning" (click)="openResetPassword()">
+        <ion-icon slot="start" name="key-outline"></ion-icon>
+        Reset Password
+      </ion-button>
+      <ion-button expand="block" fill="outline" color="primary" (click)="navigateToEdit()">
+        <ion-icon slot="start" name="create-outline"></ion-icon>
+        Edit Pengguna
+      </ion-button>
+    </div>
+  }
+</ion-content>

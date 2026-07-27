@@ -1,0 +1,131 @@
+.form-control-wrapper {
+  width: 100%;
+
+  // Label styling (mirrors form-select.component.scss)
+  ion-label {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: #222428 !important;
+
+    &.required::after {
+      content: '*';
+      color: #eb445a;
+      margin-left: 4px;
+    }
+  }
+
+  // Trigger wrapper (distinct class name to avoid cascade collision with form-select-item)
+  .form-searchable-select-item {
+    position: relative;
+    background: #ffffff;
+    margin-bottom: 4px;
+
+    &.with-border {
+      border: 1px solid #92949e;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+
+      &.error {
+        border-color: #eb445a;
+      }
+    }
+
+    button.trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      font-size: 1rem;
+      line-height: 1.2;
+      text-align: left;
+      color: #222428;
+      cursor: pointer;
+      font-family: inherit;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--ion-color-primary, #3880ff);
+        outline-offset: -2px;
+      }
+
+      .trigger-text {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-right: 8px;
+
+        &.placeholder {
+          color: #92949e;
+        }
+      }
+
+      .chevron {
+        color: #92949e;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+      }
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      color: #92949e;
+      cursor: pointer;
+
+      ion-icon {
+        font-size: 1.1rem;
+      }
+
+      &:hover {
+        color: #eb445a;
+      }
+    }
+  }
+
+  // Error message styling (mirrors form-select.component.scss)
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #eb445a;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    padding-left: 16px;
+
+    .error-icon {
+      font-size: 1rem;
+    }
+  }
+
+  // Helper text styling (mirrors form-select.component.scss)
+  .helper-text {
+    display: block;
+    color: #92949e;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    padding-left: 16px;
+    font-style: italic;
+  }
+
+  // Error state
+  &.has-error {
+    ion-label {
+      color: #eb445a !important;
+    }
+  }
+}

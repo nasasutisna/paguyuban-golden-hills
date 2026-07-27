@@ -14,7 +14,12 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '@core/auth/auth.service';
 import { ToastService } from '@services/toast.service';
 import { LoadingService } from '@services/loading.service';
-import { getErrorMessage, REGEX_PATTERNS } from '@validators/validators';
+import {
+  getErrorMessage,
+  REGEX_PATTERNS,
+  strongPassword,
+  matchFields
+} from '@validators/validators';
 import { User } from '@models/auth.model';
 
 /**
@@ -42,10 +47,16 @@ export class ProfilePage implements OnInit, OnDestroy {
   profileForm: FormGroup;
   isSubmitting = false;
 
+  // ---- Change password (non-admin only) ----
+  isChangingPassword = false;
+  passwordForm: FormGroup;
+  isChangingPasswordSubmitting = false;
+
   private authSubscription: Subscription | null = null;
 
   constructor() {
     this.profileForm = this.createProfileForm();
+    this.passwordForm = this.createPasswordForm();
   }
 
   ngOnInit(): void {
@@ -86,6 +97,23 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   /**
+   * Create change-password form with validators.
+   * `newPassword` enforces the strength policy; `confirmPassword` must match
+   * `newPassword` (matchFields resolves the sibling via control.parent, so it
+   * must live on the control, not the group).
+   */
+  private createPasswordForm(): FormGroup {
+    return this.fb.group({
+      currentPassword: ['', [Validators.required]],
+      newPassword: ['', [Validators.required, strongPassword()]],
+      confirmPassword: [
+        '',
+        [Validators.required, matchFields('newPassword', 'confirmPassword')]
+      ]
+    });
+  }
+
+  /**
    * Populate form with user data
    */
   private populateForm(user: User): void {
@@ -107,8 +135,8 @@ export class ProfilePage implements OnInit, OnDestroy {
   /**
    * Load user profile from API
    */
-  private loadUserProfile(): void {
-    this.loadingService.show({ message: 'Loading profile...' });
+  private async loadUserProfile() {
+    await this.loadingService.show({ message: 'Loading profile...' });
 
     this.authService.getCurrentUser().subscribe({
       next: () => {
@@ -157,6 +185,53 @@ export class ProfilePage implements OnInit, OnDestroy {
    */
   isFormValid(): boolean {
     return this.profileForm.valid && !this.isSubmitting;
+  }
+
+  /**
+   * Whether the change-password section should be shown.
+   * Hidden for ADMIN/SUPERADMIN (they manage credentials via the Users page).
+   * Role resolution mirrors role.guard.ts: prefers the nested role name, then
+   * the flat `roleName` returned by /auth/me.
+   */
+  get canChangePassword(): boolean {
+    const u = this.user as any;
+    if (!u) return false;
+    const role = u.role?.name || u.roleName || '';
+    return role !== 'ADMIN' && role !== 'SUPERADMIN';
+  }
+
+  /**
+   * Password form controls (template binding).
+   */
+  get pf(): { [key: string]: AbstractControl } {
+    return this.passwordForm.controls;
+  }
+
+  /**
+   * Check if change-password form is valid.
+   */
+  isPasswordFormValid(): boolean {
+    return this.passwordForm.valid && !this.isChangingPasswordSubmitting;
+  }
+
+  /**
+   * Get error message for a change-password field.
+   */
+  getPasswordErrorMessage(fieldName: string): string {
+    const control = this.passwordForm.get(fieldName);
+    if (!control || !control.errors || !control.touched) {
+      return '';
+    }
+    return getErrorMessage(control.errors, this.getPasswordFieldLabel(fieldName));
+  }
+
+  private getPasswordFieldLabel(fieldName: string): string {
+    const labels: { [key: string]: string } = {
+      currentPassword: 'Current password',
+      newPassword: 'New password',
+      confirmPassword: 'Confirm password'
+    };
+    return labels[fieldName] || fieldName;
   }
 
   /**
@@ -213,6 +288,56 @@ export class ProfilePage implements OnInit, OnDestroy {
       this.isSubmitting = false;
       this.toastService.error('An error occurred');
     }
+  }
+
+  // ------------------------------------------------------------------
+  // Change password (non-admin)
+  // ------------------------------------------------------------------
+
+  /**
+   * Toggle the change-password form open/closed.
+   */
+  toggleChangePassword(): void {
+    if (this.isChangingPassword) {
+      this.isChangingPassword = false;
+      this.passwordForm.reset();
+    } else {
+      this.isChangingPassword = true;
+    }
+  }
+
+  /**
+   * Submit the change-password form.
+   */
+  onChangePassword(): void {
+    if (!this.isPasswordFormValid() || this.isChangingPasswordSubmitting) {
+      // Surface cross-field mismatch on the confirm field.
+      this.passwordForm.get('confirmPassword')?.markAsTouched();
+      return;
+    }
+
+    this.isChangingPasswordSubmitting = true;
+    this.loadingService.show({ message: 'Updating password...' });
+
+    const { currentPassword, newPassword } = this.passwordForm.value;
+
+    this.authService.changePassword(currentPassword, newPassword).subscribe({
+      next: () => {
+        this.loadingService.dismiss();
+        this.isChangingPasswordSubmitting = false;
+        this.toastService.success('Password updated successfully!');
+        this.isChangingPassword = false;
+        this.passwordForm.reset();
+      },
+      error: (error) => {
+        this.loadingService.dismiss();
+        this.isChangingPasswordSubmitting = false;
+        const msg =
+          error?.error?.message || error?.message || 'Failed to update password';
+        this.toastService.error(msg);
+        console.error('Change password error:', error);
+      }
+    });
   }
 
   /**

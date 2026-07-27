@@ -729,6 +729,15 @@ ion-menu.admin-sidebar {
         color: var(--admin-secondary);
       }
     }
+
+    // Pengeluaran (expense request) — red/orange tint to signal outflow
+    &.is-expense {
+      background: rgba(220, 80, 80, 0.15);
+
+      ion-icon {
+        color: #dc2626;
+      }
+    }
   }
 
   .notification-content {
@@ -819,13 +828,14 @@ ion-router-outlet.main-router-outlet {
   min-height: 0;
   overflow-y: auto;
   background: var(--admin-bg-light);
-  max-height: calc(100vh - 64px);
-  margin-top: 105px;
 }
 
-.main-router-outlet-login {
-  max-height: 100% !important;
-  margin-top: 0px !important;
+/* Admin chrome (sticky header + breadcrumb) sits above the outlet, so offset
+   it and clamp the scroll area. The login page has no chrome, so the outlet
+   stays full-screen there. */
+ion-router-outlet.main-router-outlet.is-authenticated {
+  max-height: calc(100vh - 64px);
+  margin-top: 105px;
 }
 
 // ============================================

@@ -1,7 +1,12 @@
 <ion-app>
-  @if (isAuthenticated) {
-  <!-- Modern Admin Layout (only when authenticated) -->
+  <!-- The <ion-router-outlet> below must stay mounted for the whole session.
+       Previously isAuthenticated toggled between two separate outlets (admin
+       shell vs login), so every login/logout destroyed + recreated the outlet.
+       That desynced Ionic's page stack and left a phantom full-size ion-page
+       swallowing every click in the content area (the side menu was unaffected
+       because it lives outside the outlet). Only the chrome toggles now. -->
   <ion-split-pane contentId="main-content" when="lg" class="admin-split-pane">
+    @if (isAuthenticated) {
     <!-- Modern Admin Sidebar Menu -->
     <ion-menu side="start" menuId="admin-menu" contentId="main-content" class="admin-sidebar">
       <ion-header class="sidebar-header">
@@ -26,7 +31,7 @@
             </div>
           </ion-list-header>
 
-          @for (item of mainMenuItems; track item.url) {
+          @for (item of visibleMainMenuItems; track item.url) {
           <ion-menu-toggle auto-hide="false">
             <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
               [class.active]="isActiveMenu(item.url)" [class.has-badge]="item.badge">
@@ -50,7 +55,7 @@
           }
 
           <!-- Pengajuan Section -->
-          @if (canSeeExpenseRequests()) {
+          @if (visibleExpenseMenuItems.length) {
           <ion-list-header class="menu-section-header">
             <div class="section-header-content">
               <ion-icon name="receipt-outline"></ion-icon>
@@ -58,7 +63,7 @@
             </div>
           </ion-list-header>
 
-          @for (item of expenseMenuItems; track item.url) {
+          @for (item of visibleExpenseMenuItems; track item.url) {
           <ion-menu-toggle auto-hide="false">
             <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
               [class.active]="isActiveMenu(item.url)">
@@ -77,6 +82,7 @@
           }
 
           <!-- IPL Section -->
+          @if (visibleIplMenuItems.length) {
           <ion-list-header class="menu-section-header">
             <div class="section-header-content">
               <ion-icon name="wallet"></ion-icon>
@@ -84,7 +90,7 @@
             </div>
           </ion-list-header>
 
-          @for (item of iplMenuItems; track item.url) {
+          @for (item of visibleIplMenuItems; track item.url) {
           <ion-menu-toggle auto-hide="false">
             <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
               [class.active]="isActiveMenu(item.url)">
@@ -103,8 +109,10 @@
             </ion-item>
           </ion-menu-toggle>
           }
+          }
 
           <!-- Keuangan Section -->
+          @if (visibleKeuanganMenuItems.length) {
           <ion-list-header class="menu-section-header">
             <div class="section-header-content">
               <ion-icon name="wallet-outline"></ion-icon>
@@ -112,7 +120,7 @@
             </div>
           </ion-list-header>
 
-          @for (item of keuanganMenuItems; track item.url) {
+          @for (item of visibleKeuanganMenuItems; track item.url) {
           <ion-menu-toggle auto-hide="false">
             <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
               [class.active]="isActiveMenu(item.url)">
@@ -131,8 +139,10 @@
             </ion-item>
           </ion-menu-toggle>
           }
+          }
 
           <!-- Reports Section -->
+          @if (visibleReportsMenuItems.length) {
           <ion-list-header class="menu-section-header">
             <div class="section-header-content">
               <ion-icon name="bar-chart"></ion-icon>
@@ -140,7 +150,7 @@
             </div>
           </ion-list-header>
 
-          @for (item of reportsMenuItems; track item.url) {
+          @for (item of visibleReportsMenuItems; track item.url) {
           <ion-menu-toggle auto-hide="false">
             <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
               [class.active]="isActiveMenu(item.url)">
@@ -156,8 +166,10 @@
             </ion-item>
           </ion-menu-toggle>
           }
+          }
 
           <!-- Management Section -->
+          @if (visibleManagementMenuItems.length) {
           <ion-list-header class="menu-section-header">
             <div class="section-header-content">
               <ion-icon name="cog"></ion-icon>
@@ -165,7 +177,7 @@
             </div>
           </ion-list-header>
 
-          @for (item of managementMenuItems; track item.url) {
+          @for (item of visibleManagementMenuItems; track item.url) {
           <ion-menu-toggle auto-hide="false">
             <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
               [class.active]="isActiveMenu(item.url)">
@@ -184,8 +196,10 @@
             </ion-item>
           </ion-menu-toggle>
           }
+          }
 
           <!-- Settings Section -->
+          @if (visibleSettingsMenuItems.length) {
           <ion-list-header class="menu-section-header">
             <div class="section-header-content">
               <ion-icon name="settings"></ion-icon>
@@ -193,7 +207,7 @@
             </div>
           </ion-list-header>
 
-          @for (item of settingsMenuItems; track item.url) {
+          @for (item of visibleSettingsMenuItems; track item.url) {
           <ion-menu-toggle auto-hide="false">
             <ion-item class="menu-item" (click)="navigateWithSetRoot(item.url)" lines="none" detail="false"
               [class.active]="isActiveMenu(item.url)">
@@ -209,12 +223,15 @@
             </ion-item>
           </ion-menu-toggle>
           }
+          }
         </ion-list>
       </ion-content>
     </ion-menu>
+    }
 
     <!-- Main Content Area -->
     <div class="main-content-wrapper" id="main-content">
+      @if (isAuthenticated) {
       <!-- Top Header -->
       <ion-header class="admin-header">
         <ion-toolbar>
@@ -272,8 +289,11 @@
                         @for (item of pendingApprovals; track item.id) {
                         <button type="button" class="notification-item"
                           (click)="notificationsPopover.dismiss(); navigateToApproval(item.route)">
-                          <div class="notification-icon" [class.is-ipl]="item.type === 'ipl'">
-                            <ion-icon [name]="item.type === 'ipl' ? 'wallet-outline' : 'cash-outline'"></ion-icon>
+                          <div class="notification-icon"
+                            [class.is-ipl]="item.type === 'ipl'"
+                            [class.is-expense]="item.type === 'expense_request'">
+                            <ion-icon
+                              [name]="item.type === 'ipl' ? 'wallet-outline' : item.type === 'expense_request' ? 'receipt-outline' : 'cash-outline'"></ion-icon>
                           </div>
                           <div class="notification-content">
                             <div class="notification-top">
@@ -348,13 +368,11 @@
 
       <!-- Breadcrumb Navigation -->
       <app-breadcrumb></app-breadcrumb>
+      }
 
-      <!-- Router Outlet -->
-      <ion-router-outlet id="main-router-outlet" class="main-router-outlet"></ion-router-outlet>
+      <!-- Persistent Router Outlet — renders both login and admin pages so
+           auth state changes never destroy/recreate it. -->
+      <ion-router-outlet id="main-router-outlet" class="main-router-outlet" [class.is-authenticated]="isAuthenticated"></ion-router-outlet>
     </div>
   </ion-split-pane>
-  } @else {
-  <!-- Login Page Layout (no sidebar/header) -->
-  <ion-router-outlet id="main-router-outlet" class="main-router-outlet-logi"></ion-router-outlet>
-  }
 </ion-app>

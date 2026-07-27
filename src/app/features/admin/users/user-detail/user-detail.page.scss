@@ -1,0 +1,42 @@
+:host {
+  display: block;
+}
+
+.header-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  ion-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+  }
+
+  .header-info {
+    h2 {
+      margin: 0;
+      font-weight: 700;
+    }
+    p {
+      margin: 2px 0;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0 24px;
+}

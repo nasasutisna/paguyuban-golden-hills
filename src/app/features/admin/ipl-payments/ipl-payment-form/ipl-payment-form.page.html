@@ -32,27 +32,31 @@
         <ion-card-subtitle>Informasi Pembayaran</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <app-form-select
+        <app-form-searchable-select
           label="Periode IPL"
           formControlName="periodId"
           placeholder="Pilih periode pembayaran"
           [options]="periodOptions"
           [required]="true"
+          modalTitle="Pilih Periode IPL"
+          searchPlaceholder="Cari periode..."
           [showError]="isFieldInvalid('periodId')"
           [errorMessage]="getErrorMessage('periodId')"
           (ngModelChange)="onPeriodChange()"
-        ></app-form-select>
+        ></app-form-searchable-select>
 
-        <app-form-select
+        <app-form-searchable-select
           label="Warga"
           formControlName="residentId"
           placeholder="Pilih warga yang membayar"
           [options]="residentOptions"
           [required]="true"
+          modalTitle="Pilih Warga"
+          searchPlaceholder="Cari nama / blok warga..."
           [showError]="isFieldInvalid('residentId')"
           [errorMessage]="getErrorMessage('residentId')"
           (ngModelChange)="onResidentChange()"
-        ></app-form-select>
+        ></app-form-searchable-select>
 
         <!-- Month Count Selector -->
         <div class="month-count-selector">

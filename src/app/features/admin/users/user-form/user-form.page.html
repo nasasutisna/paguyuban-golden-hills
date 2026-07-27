@@ -1,0 +1,194 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/users"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <!-- Resident picker -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Data Warga</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        @if (!selectedResident) {
+          <ion-button expand="block" fill="outline" color="primary" (click)="openResidentPicker()">
+            <ion-icon slot="start" name="search-outline"></ion-icon>
+            Pilih Warga
+          </ion-button>
+          <p class="hint">Pilih warga sebagai sumber data akun. Identitas akan terisi otomatis.</p>
+        } @else {
+          <ion-item lines="none" class="resident-item">
+            <ion-icon name="person-circle" slot="start" color="primary" style="font-size:40px;"></ion-icon>
+            <ion-label>
+              <h3>{{ getResidentLabel() }}</h3>
+              @if (selectedResidentPhone) {
+                <p>{{ selectedResidentPhone }}</p>
+              }
+            </ion-label>
+            <ion-button slot="end" fill="clear" size="small" (click)="clearResident()">
+              <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <ion-button expand="block" fill="clear" size="small" (click)="openResidentPicker()">
+            Ganti Warga
+          </ion-button>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Account info -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Informasi Akun</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-input
+          label="Username"
+          formControlName="username"
+          placeholder="contoh: budi.santoso"
+          [maxlength]="50"
+          [required]="true"
+          [showError]="isFieldInvalid('username')"
+          [errorMessage]="getErrorMessage('username')"
+        ></app-form-input>
+
+        <app-form-input
+          label="Email"
+          type="email"
+          formControlName="email"
+          placeholder="contoh: budi@email.com"
+          [required]="true"
+          [showError]="isFieldInvalid('email')"
+          [errorMessage]="getErrorMessage('email')"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nama Depan"
+          formControlName="firstName"
+          [maxlength]="100"
+          [required]="true"
+          [showError]="isFieldInvalid('firstName')"
+          [errorMessage]="getErrorMessage('firstName')"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nama Belakang"
+          formControlName="lastName"
+          [maxlength]="100"
+          [required]="true"
+          [showError]="isFieldInvalid('lastName')"
+          [errorMessage]="getErrorMessage('lastName')"
+        ></app-form-input>
+
+        <app-form-input
+          label="Nomor Telepon"
+          type="tel"
+          formControlName="phoneNumber"
+          placeholder="contoh: 081234567890"
+          [showError]="isFieldInvalid('phoneNumber')"
+          [errorMessage]="getErrorMessage('phoneNumber')"
+        ></app-form-input>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Role & status -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-subtitle>Role & Status</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-form-select
+          label="Role"
+          formControlName="roleId"
+          placeholder="Pilih role"
+          [options]="roleOptions"
+          [required]="true"
+          [showError]="isFieldInvalid('roleId')"
+          [errorMessage]="getErrorMessage('roleId')"
+        ></app-form-select>
+
+        <ion-item class="toggle-item">
+          <ion-label>Status Aktif</ion-label>
+          <ion-toggle formControlName="isActive"></ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Password: create mode inline, edit mode via reset modal -->
+    @if (!isEditMode) {
+      <ion-card class="form-card">
+        <ion-card-header>
+          <ion-card-subtitle>Password</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <app-form-select
+            label="Sumber Password"
+            formControlName="passwordMode"
+            [options]="passwordModeOptions"
+          ></app-form-select>
+
+          @if (passwordMode === 'manual') {
+            <app-form-input
+              label="Password"
+              type="text"
+              formControlName="password"
+              placeholder="Min. 8 (huruf besar/kecil, angka, simbol)"
+              [showError]="isFieldInvalid('password')"
+              errorMessage="Password harus min. 8 karakter dengan huruf besar, kecil, angka & simbol."
+            ></app-form-input>
+          } @else {
+            <p class="hint">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              Password kuat akan dibuat otomatis saat menyimpan.
+            </p>
+          }
+
+          <ion-item lines="none" class="wa-item">
+            <ion-icon name="logo-whatsapp" slot="start" color="success"></ion-icon>
+            <ion-checkbox formControlName="sendViaWhatsapp" labelPlacement="start" justify="space-between">
+              Kirim password via WhatsApp
+            </ion-checkbox>
+          </ion-item>
+          <p class="hint ion-padding-start">Nomor tujuan: {{ phonePreview }}</p>
+        </ion-card-content>
+      </ion-card>
+    } @else {
+      <ion-card class="form-card">
+        <ion-card-content>
+          <ion-button expand="block" fill="outline" color="warning" (click)="openResetPassword()">
+            <ion-icon slot="start" name="key-outline"></ion-icon>
+            Ubah / Reset Password
+          </ion-button>
+          <p class="hint">Reset password dengan opsi generate & kirim via WhatsApp.</p>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Form actions -->
+    <div class="form-actions">
+      <app-form-button
+        text="Batal"
+        variant="outline"
+        color="medium"
+        expand="block"
+        (click)="goBack()"
+      ></app-form-button>
+      <app-form-button
+        [text]="submitButtonText"
+        icon="save-outline"
+        iconSlot="start"
+        variant="solid"
+        color="primary"
+        type="submit"
+        expand="block"
+        [disabled]="!isFormValid()"
+        [loading]="isSubmitting"
+      ></app-form-button>
+    </div>
+  </form>
+</ion-content>

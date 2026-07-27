@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Pilih Warga</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">Tutup</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Cari nama / kode warga..."
+      [debounce]="0"
+      (ionInput)="onSearch($event)"
+      value=""
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list lines="full">
+    <ion-list-header>
+      <ion-label>Hasil Pencarian</ion-label>
+    </ion-list-header>
+
+    @if (loading) {
+      <div class="ion-padding ion-text-center">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Memuat...</p>
+      </div>
+    } @else if (residents.length === 0) {
+      <div class="ion-padding ion-text-center">
+        <ion-icon name="people-outline" style="font-size: 48px; color: var(--ion-color-medium);"></ion-icon>
+        <p color="medium">Tidak ada warga ditemukan.</p>
+      </div>
+    } @else {
+      @for (r of residents; track r.id) {
+        <ion-item button detail (click)="select(r)">
+          <ion-avatar slot="start">
+            <ion-icon name="person-circle" style="font-size: 40px; color: var(--ion-color-medium);"></ion-icon>
+          </ion-avatar>
+          <ion-label>
+            <h3>{{ getResidentName(r) }}</h3>
+            <p>{{ r.residentCode }}{{ r.houseBlock ? ' • ' + r.houseBlock.blockName : '' }}</p>
+            <p>{{ r.phoneNumber || r.email || '' }}</p>
+          </ion-label>
+        </ion-item>
+      }
+    }
+  </ion-list>
+</ion-content>

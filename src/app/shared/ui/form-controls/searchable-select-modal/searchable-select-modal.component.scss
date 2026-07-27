@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+ion-item {
+  --transition: none;
+
+  ion-label {
+    h3 {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--ion-color-dark, #222428);
+    }
+  }
+}

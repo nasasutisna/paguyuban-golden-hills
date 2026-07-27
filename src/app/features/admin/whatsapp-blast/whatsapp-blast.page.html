@@ -1,0 +1,257 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Blast WhatsApp</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="wa-blast-content ion-padding">
+
+  <!-- ===== 1. Connection status (read-only — manage in Pengaturan WhatsApp) ===== -->
+  <ion-card class="wa-card conn-card">
+    <ion-card-content>
+      <div class="conn-row">
+        <div class="conn-status">
+          <ion-badge [color]="connStateColor">
+            <ion-icon [name]="status?.state === 'OPEN' ? 'checkmark-circle' : 'time-outline'"></ion-icon>
+            {{ connStateLabel }}
+          </ion-badge>
+          @if (status?.phoneNumber) {
+            <span class="conn-phone">{{ status?.phoneNumber }}</span>
+          }
+          @if (!status?.connected) {
+            <span class="muted small">Sambungkan di Pengaturan WhatsApp</span>
+          }
+        </div>
+        <ion-button size="small" fill="outline" color="primary" (click)="openSettings()">
+          <ion-icon slot="start" name="cog"></ion-icon>
+          Kelola Koneksi
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- ===== 2. Target preview ===== -->
+  <ion-card class="wa-card">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="alert-circle"></ion-icon>
+        Target Warga Menunggak
+      </ion-card-title>
+      <ion-card-subtitle>Warga dengan tunggakan IPL ≥ 3 bulan</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="filters">
+        <div class="filter-item">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <ion-select [value]="year" interface="popover" placeholder="Tahun" (ionChange)="year = +$any($event).detail.value">
+            @for (y of yearOptions; track y) {
+              <ion-select-option [value]="y">{{ y }}</ion-select-option>
+            }
+          </ion-select>
+        </div>
+        <div class="filter-item">
+          <ion-icon name="business-outline"></ion-icon>
+          <ion-select [value]="selectedBlockId" interface="popover" placeholder="Semua Blok" (ionChange)="selectedBlockId = $any($event).detail.value">
+            <ion-select-option [value]="null">Semua Blok</ion-select-option>
+            @for (b of blocks; track b.id) {
+              <ion-select-option [value]="b.id">{{ b.blockName }}</ion-select-option>
+            }
+          </ion-select>
+        </div>
+        <ion-button size="small" color="primary" (click)="loadPreview()" [disabled]="previewLoading">
+          <ion-icon slot="start" name="search-outline"></ion-icon>
+          Muat Preview
+        </ion-button>
+      </div>
+
+      @if (previewLoading) {
+        <div class="state-box"><ion-spinner name="crescent"></ion-spinner><p>Memuat daftar menunggak...</p></div>
+      } @else if (preview) {
+        <div class="summary-chips">
+          <div class="chip-stat"><span class="lbl">Total</span><span class="val">{{ preview.count }}</span></div>
+          <div class="chip-stat success"><span class="lbl">Dengan HP</span><span class="val">{{ preview.withPhone }}</span></div>
+          <div class="chip-stat warning"><span class="lbl">Tanpa HP</span><span class="val">{{ preview.withoutPhone }}</span></div>
+          <div class="chip-stat"><span class="lbl">Periode s/d</span><span class="val sm">{{ preview.asOfLabel || '-' }}</span></div>
+        </div>
+
+        @if (preview.count === 0) {
+          <div class="state-box">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            <p>Tidak ada warga menunggak ≥ 3 bulan untuk filter ini.</p>
+          </div>
+        } @else {
+          <!-- Desktop/tablet: table -->
+          @if (!(isMobile$ | async)) {
+            <div class="table-scroll">
+              <table class="preview-table">
+                <thead>
+                  <tr>
+                    <th>Unit / Blok</th>
+                    <th>Nama</th>
+                    <th>No. HP</th>
+                    <th>Bln</th>
+                    <th>Nominal</th>
+                    <th>Preview Pesan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of preview.recipients; track r.unitId) {
+                    <tr>
+                      <td>{{ r.blockCode || r.blockName || '-' }} / {{ r.unitNumber || '-' }}</td>
+                      <td>{{ r.residentName || '— Kosong' }}</td>
+                      <td>
+                        @if (r.phoneValid) {
+                          <ion-badge color="success">{{ r.normalizedPhone }}</ion-badge>
+                        } @else {
+                          <ion-badge color="warning" [title]="r.phoneError || ''">invalid</ion-badge>
+                        }
+                      </td>
+                      <td class="text-right">{{ r.outstandingMonths }}</td>
+                      <td class="text-right">{{ formatCurrency(r.outstandingAmount) }}</td>
+                      <td><pre class="msg-preview">{{ r.messagePreview }}</pre></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+
+          <!-- Mobile: cards -->
+          @if (isMobile$ | async) {
+            <div class="preview-cards">
+              @for (r of preview.recipients; track r.unitId) {
+                <div class="preview-card">
+                  <div class="pc-head">
+                    <strong>{{ r.residentName || '— Kosong' }}</strong>
+                    @if (r.phoneValid) {
+                      <ion-badge color="success">{{ r.normalizedPhone }}</ion-badge>
+                    } @else {
+                      <ion-badge color="warning">HP invalid</ion-badge>
+                    }
+                  </div>
+                  <div class="pc-meta">
+                    {{ r.blockCode || r.blockName || '-' }} / {{ r.unitNumber || '-' }} ·
+                    {{ r.outstandingMonths }} bln · {{ formatCurrency(r.outstandingAmount) }}
+                  </div>
+                  <pre class="msg-preview">{{ r.messagePreview }}</pre>
+                </div>
+              }
+            </div>
+          }
+        }
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <!-- ===== Run blast ===== -->
+  <ion-card class="wa-card">
+    <ion-card-header>
+      <ion-card-title><ion-icon name="megaphone-outline"></ion-icon> Jalankan Blast</ion-card-title>
+      <ion-card-subtitle>Kirim reminder ke daftar target di atas</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item lines="none">
+        <ion-toggle [checked]="dryRun" (ionChange)="dryRun = $any($event).detail.checked">
+          Mode Simulasi (dry-run)
+        </ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-textarea label="Catatan (opsional)" labelPlacement="stacked" [autoGrow]="true" rows="2" [(ngModel)]="note"></ion-textarea>
+      </ion-item>
+      <ion-button
+        expand="block"
+        [color]="dryRun ? 'medium' : 'danger'"
+        (click)="runBlast()"
+        [disabled]="blasting || !preview || preview.count === 0">
+        <ion-icon slot="start" [name]="dryRun ? 'document-text-outline' : 'send-outline'"></ion-icon>
+        @if (dryRun) { Simulasikan Blast } @else { Kirim Blast Sekarang }
+      </ion-button>
+      @if (!dryRun) {
+        <p class="muted small">Pastikan sudah <strong>preview</strong> &amp; <strong>kirim pesan uji</strong> sebelum blast nyata.</p>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <!-- ===== 5. History ===== -->
+  <ion-card class="wa-card">
+    <ion-card-header>
+      <ion-card-title><ion-icon name="time"></ion-icon> Riwayat Blast</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <app-table
+        [config]="tableConfig"
+        [dataSource]="dataSource"
+        [statusBadges]="statusBadges"
+        [currentPage]="currentPage"
+        (actionClick)="onAction($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)">
+      </app-table>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- ===== Batch detail modal ===== -->
+  <ion-modal class="detail-modal" [isOpen]="showDetailModal" (didDismiss)="closeDetail()">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar color="primary">
+          <ion-title>Detail Blast</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeDetail()"><ion-icon name="close"></ion-icon></ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        @if (detailLoading) {
+          <div class="state-box"><ion-spinner name="crescent"></ion-spinner><p>Memuat detail...</p></div>
+        } @else if (detailBatch) {
+          <div class="detail-meta">
+            <span><strong>No. Batch:</strong> {{ detailBatch.batchNo }}</span>
+            <span><strong>Jenis:</strong> {{ detailBatch.dryRun ? 'Simulasi' : 'Nyata' }}</span>
+            <span><strong>Status:</strong>
+              <ion-badge [color]="batchBadge(detailBatch.status).color">
+                {{ batchBadge(detailBatch.status).label }}
+              </ion-badge>
+            </span>
+            <span><strong>Dibuat:</strong> {{ formatDate(detailBatch.createdAt) }}</span>
+          </div>
+          <div class="detail-counts">
+            <div class="chip-stat success"><span class="lbl">Terkirim</span><span class="val">{{ detailBatch.successCount }}</span></div>
+            <div class="chip-stat"><span class="lbl">Gagal</span><span class="val">{{ detailBatch.failedCount }}</span></div>
+            <div class="chip-stat warning"><span class="lbl">Tanpa HP</span><span class="val">{{ detailBatch.skippedCount }}</span></div>
+            <div class="chip-stat"><span class="lbl">Total</span><span class="val">{{ detailBatch.totalRecipients }}</span></div>
+          </div>
+
+          @if (detailBatch.recipients?.length) {
+            <div class="table-scroll">
+              <table class="preview-table">
+                <thead>
+                  <tr><th>Unit</th><th>Nama</th><th>HP</th><th>Status</th><th>Catatan</th></tr>
+                </thead>
+                <tbody>
+                  @for (r of detailBatch.recipients; track r.id) {
+                    <tr>
+                      <td>{{ r.blockCode || r.blockName || '-' }} / {{ r.unitNumber || '-' }}</td>
+                      <td>{{ r.residentName || '-' }}</td>
+                      <td>{{ r.normalizedPhone || r.rawPhone || '-' }}</td>
+                      <td>
+                        <ion-badge [color]="recipientBadge(r.status).color">
+                          {{ recipientBadge(r.status).label }}
+                        </ion-badge>
+                      </td>
+                      <td class="err-cell">{{ r.errorMessage || '-' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

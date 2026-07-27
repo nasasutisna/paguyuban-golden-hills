@@ -130,6 +130,53 @@
   --color: var(--ion-color-medium);
 }
 
+// ---- Change password section (non-admin) ----
+.change-password-section {
+  margin-bottom: 1rem;
+}
+
+.change-password-button {
+  --color: var(--ion-color-medium-shade);
+}
+
+.password-form {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+
+  .password-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--ion-color-dark);
+    }
+  }
+
+  .password-hint {
+    margin-top: -0.25rem;
+    margin-bottom: 1rem;
+    padding-left: 16px;
+    font-size: 12px;
+    line-height: 1.4;
+
+    ion-text {
+      font-size: 12px;
+    }
+  }
+
+  // Tighten spacing inside the card.
+  .action-buttons {
+    margin-bottom: 0;
+  }
+}
+
 .logout-button-mobile {
   margin-top: 1rem;
   --border-radius: 8px;

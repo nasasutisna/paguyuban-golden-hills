@@ -7,12 +7,15 @@ import { Observable, Subscription } from 'rxjs';
 import { LayoutService } from '@services/layout.service';
 import { LoadingService } from '@services/loading.service';
 import { ToastService } from '@services/toast.service';
+import { downloadBlob } from '@core/utils/download-blob';
 import { IplPaymentMatrixService } from './ipl-payment-matrix.service';
 import {
   PaymentMatrixData,
   PaymentMatrixRow,
   MatrixMonthCell,
   HouseBlockOption,
+  DelinquentReport,
+  DelinquentUnit,
   MONTH_NAMES_SHORT,
   MONTH_NAMES_LONG,
   MONTH_CELL_STATUS_COLORS,
@@ -42,6 +45,14 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
 
   data: PaymentMatrixData | null = null;
   loading = false;
+
+  /** Delinquent-units report (menunggak ≥ 3 bln berturut-turut, trailing s/d bulan ini). */
+  delinquent: DelinquentReport | null = null;
+  delinquentLoading = false;
+  /** Controls the delinquent-list modal. */
+  showDelinquentModal = false;
+  /** True while the PDF export request is in flight. */
+  exportingPdf = false;
 
   /** Currently selected year (defaults to the current calendar year). */
   year = new Date().getFullYear();
@@ -76,6 +87,7 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadBlocks();
     this.loadMatrix();
+    this.loadDelinquent();
   }
 
   /**
@@ -116,11 +128,32 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Load (or reload) the delinquent-units report for the selected year and block.
+   * Runs in parallel with the matrix; falls back to an empty report on error.
+   */
+  loadDelinquent(): void {
+    this.delinquentLoading = true;
+    this.subscriptions.push(
+      this.matrixService.getDelinquent(this.year, this.selectedBlockId).subscribe({
+        next: (report) => {
+          this.delinquent = report;
+          this.delinquentLoading = false;
+        },
+        error: (error) => {
+          this.delinquentLoading = false;
+          console.error('Error loading delinquent units:', error);
+        }
+      })
+    );
+  }
+
   onYearChange(event: CustomEvent): void {
     const value = (event.detail as { value?: number })?.value;
     if (value != null && value !== this.year) {
       this.year = value;
       this.loadMatrix();
+      this.loadDelinquent();
     }
   }
 
@@ -134,6 +167,7 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
     if (next !== this.selectedBlockId) {
       this.selectedBlockId = next;
       this.loadMatrix();
+      this.loadDelinquent();
     }
   }
 
@@ -184,6 +218,111 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
     const queryParams: Record<string, string> = { periodId: cell.periodId };
     if (row.residentId) queryParams['residentId'] = row.residentId;
     this.router.navigate(['/admin/ipl-payments/new'], { queryParams });
+  }
+
+  // ----- Delinquent-units modal + PDF export -----
+
+  /** Clicking the danger chip opens the delinquent-units list modal. */
+  onChipClick(): void {
+    if (this.delinquent && this.delinquent.count === 0) {
+      this.toastService.info('Tidak ada unit menunggak ≥ 3 bulan');
+      return;
+    }
+    this.showDelinquentModal = true;
+  }
+
+  closeDelinquentModal(): void {
+    this.showDelinquentModal = false;
+  }
+
+  /**
+   * Navigate to the WhatsApp Blast page, carrying the current year/block so the
+   * blast target matches the delinquent list the admin is looking at.
+   */
+  goToBlast(): void {
+    this.closeDelinquentModal();
+    this.router.navigate(['/admin/whatsapp-blast'], {
+      queryParams: {
+        year: this.year,
+        ...(this.selectedBlockId ? { houseBlockId: this.selectedBlockId } : {}),
+      },
+    });
+  }
+
+  /**
+   * Hit the backend PDF endpoint and trigger a browser download. Filename
+   * mirrors the server's `Content-Disposition` so they stay consistent.
+   */
+  exportDelinquentPdf(): void {
+    if (this.exportingPdf) return;
+    this.exportingPdf = true;
+    this.subscriptions.push(
+      this.matrixService
+        .downloadDelinquentReport(this.year, this.selectedBlockId)
+        .subscribe({
+          next: (blob) => {
+            const ymd = this.todayYmd();
+            const blockSlug = this.selectedBlockId ? `-${this.blockSlug()}` : '';
+            downloadBlob(blob, `menunggak-ipl-${this.year}-${ymd}${blockSlug}.pdf`);
+            this.exportingPdf = false;
+            this.toastService.success('PDF daftar menunggak berhasil diunduh');
+          },
+          error: (error) => {
+            this.exportingPdf = false;
+            this.toastService.error('Gagal mengunduh PDF daftar menunggak');
+            console.error('Error exporting delinquent PDF:', error);
+          }
+        })
+    );
+  }
+
+  /** "Mei – Juli" range label for a delinquent unit's unpaid streak. */
+  rangeLabel(unit: DelinquentUnit): string {
+    const start = this.monthNamesLong[unit.streakStartMonth - 1];
+    const end = this.monthNamesLong[unit.asOfMonth - 1];
+    return unit.streakStartMonth === unit.asOfMonth ? end : `${start} – ${end}`;
+  }
+
+  /** CSS class for the obligation badge: full / half / zero. */
+  obligationClass(label?: string): string {
+    if (!label) return 'zero';
+    const upper = label.toUpperCase();
+    if (upper.startsWith('FULL')) return 'full';
+    if (upper.includes('SETENGAH') || upper.includes('%')) return 'half';
+    if (upper === '0%' || upper === '0') return 'zero';
+    return 'half';
+  }
+
+  /** Short chip label, e.g. "Menunggak ≥3 bln (s/d Juli 2026)". */
+  delinquentChipLabel(): string {
+    const asOf = this.delinquent?.asOfLabel;
+    return asOf ? `Menunggak ≥3 bln · s/d ${asOf}` : 'Menunggak ≥3 bln';
+  }
+
+  /** Block label for the modal/PDF sub-info. */
+  delinquentBlockLabel(): string {
+    const first = this.delinquent?.units?.[0];
+    if (this.delinquent?.houseBlockId && first) {
+      return first.blockCode ?? first.blockName ?? 'Blok terpilih';
+    }
+    return 'Semua Blok';
+  }
+
+  private todayYmd(): string {
+    const d = new Date();
+    return (
+      `${d.getFullYear()}` +
+      `${String(d.getMonth() + 1).padStart(2, '0')}` +
+      `${String(d.getDate()).padStart(2, '0')}`
+    );
+  }
+
+  private blockSlug(): string {
+    const first = this.delinquent?.units?.[0];
+    return (first?.blockCode ?? first?.blockName ?? 'blok')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 
   // ----- Trackers & formatters used by the template -----

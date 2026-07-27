@@ -148,3 +148,57 @@ export function emptyMatrixData(year: number): PaymentMatrixData {
     paidCellCount: 0
   };
 }
+
+// ===========================================================================
+// Delinquent units (menunggak ≥ 3 bulan berturut-turut, trailing s/d bulan ini)
+// ===========================================================================
+
+/**
+ * One delinquent house unit. The backend owns the streak computation (see
+ * `IplPaymentsService.getDelinquentUnits`); the frontend only renders it.
+ * Range of unpaid months = streakStartMonth → asOfMonth (the current month).
+ */
+export interface DelinquentUnit {
+  no: number;
+  unitId: string;
+  blockCode: string | null;
+  blockName: string | null;
+  unitNumber: string;
+  unitCode: string;
+  residentName: string | null;
+  phoneNumber: string | null;
+  /** First unpaid month of the trailing streak (1..12). */
+  streakStartMonth: number;
+  /** Last month of the streak = the as-of month for the year. */
+  asOfMonth: number;
+  /** Length of the trailing UNPAID streak (>= 3). */
+  streakCount: number;
+  /** Obligation label e.g. "FULL", "SETENGAH (50%)", "0%". */
+  obligationLabel: string;
+  monthlyRate: number | null;
+}
+
+/**
+ * Delinquency report payload returned by `GET /ipl-payments/matrix/delinquent`.
+ * `asOfLabel` is null for a future year (no months elapsed yet).
+ */
+export interface DelinquentReport {
+  year: number;
+  asOfMonth: number;
+  asOfLabel: string | null;
+  houseBlockId?: string | null;
+  count: number;
+  units: DelinquentUnit[];
+}
+
+/** Empty report fallback (used on error / future year). */
+export function emptyDelinquentReport(year: number): DelinquentReport {
+  return {
+    year,
+    asOfMonth: 0,
+    asOfLabel: null,
+    houseBlockId: null,
+    count: 0,
+    units: []
+  };
+}

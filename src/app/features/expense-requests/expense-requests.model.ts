@@ -75,6 +75,8 @@ export interface ExpenseRequestCategory {
   categoryCode: string;
   categoryName: string;
   categoryType: string;
+  /** 'IPL' | 'WARGA' — which Kas this expense posts to. */
+  fundType?: string | null;
 }
 
 export interface ApprovalHistory {

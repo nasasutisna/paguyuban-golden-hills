@@ -53,6 +53,23 @@
           <span class="summary-chip-label">Cell Lunas</span>
           <span class="summary-chip-value">{{ data.paidCellCount }}</span>
         </div>
+
+        <!-- Delinquent-units chip: click → modal list -->
+        <button
+          type="button"
+          class="summary-chip danger clickable"
+          [class.zero]="!delinquent || delinquent.count === 0"
+          [disabled]="delinquentLoading"
+          (click)="onChipClick()"
+          [title]="(delinquent?.count ?? 0) > 0 ? 'Lihat daftar unit menunggak' : 'Tidak ada unit menunggak'">
+          @if (delinquentLoading) {
+            <ion-spinner name="crescent"></ion-spinner>
+          } @else {
+            <ion-icon name="alert-circle"></ion-icon>
+          }
+          <span class="summary-chip-label">{{ delinquentChipLabel() }}</span>
+          <span class="summary-chip-value">{{ delinquent?.count ?? 0 }}</span>
+        </button>
       </div>
     }
   </div>
@@ -197,4 +214,121 @@
       </div>
     }
   }
+
+  <!-- ===== Modal: delinquent units list + PDF export ===== -->
+  <ion-modal
+    class="delinquent-modal"
+    [isOpen]="showDelinquentModal"
+    (didDismiss)="closeDelinquentModal()">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar color="primary">
+          <ion-title>Daftar Unit Menunggak IPL</ion-title>
+          <ion-buttons slot="end">
+            <ion-button
+              (click)="exportDelinquentPdf()"
+              [disabled]="exportingPdf || !delinquent || delinquent.count === 0">
+              <ion-icon slot="start" name="document-text-outline"></ion-icon>
+              @if (exportingPdf) {
+                <ion-spinner name="crescent"></ion-spinner>
+              } @else {
+                <span>Export PDF</span>
+              }
+            </ion-button>
+            <ion-button
+              (click)="goToBlast()"
+              [disabled]="!delinquent || delinquent.count === 0"
+              title="Kirim reminder WhatsApp ke warga menunggak">
+              <ion-icon slot="start" name="logo-whatsapp"></ion-icon>
+              <span>Blast WA</span>
+            </ion-button>
+            <ion-button (click)="closeDelinquentModal()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        @if (delinquent) {
+          <div class="delinquent-subinfo">
+            <span><strong>Periode:</strong> s/d {{ delinquent.asOfLabel || '-' }}</span>
+            <span><strong>Blok:</strong> {{ delinquentBlockLabel() }}</span>
+            <span><strong>Total:</strong> {{ delinquent.count }} unit</span>
+            <span><strong>Tahun:</strong> {{ delinquent.year }}</span>
+          </div>
+
+          @if (delinquent.count === 0) {
+            <div class="matrix-state">
+              <ion-icon name="checkmark-circle-outline"></ion-icon>
+              <p>Tidak ada unit menunggak ≥ 3 bulan untuk periode &amp; filter ini.</p>
+            </div>
+          } @else {
+            <!-- Desktop / tablet: table -->
+            @if (!(isMobile$ | async)) {
+              <div class="delinquent-scroll">
+                <table class="delinquent-table">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>Blok</th>
+                      <th>No Unit</th>
+                      <th>Nama Pemilik</th>
+                      <th>Menunggak Sejak</th>
+                      <th>s/d</th>
+                      <th>Jml Bln</th>
+                      <th>Keterangan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (u of delinquent.units; track u.unitId) {
+                      <tr>
+                        <td class="text-right">{{ u.no }}</td>
+                        <td>{{ u.blockCode || u.blockName || '-' }}</td>
+                        <td>{{ u.unitNumber || u.unitCode || '-' }}</td>
+                        <td>{{ u.residentName || '— Kosong' }}</td>
+                        <td>{{ monthNamesLong[u.streakStartMonth - 1] }}</td>
+                        <td>{{ monthNamesLong[u.asOfMonth - 1] }}</td>
+                        <td class="text-right danger-strong">{{ u.streakCount }}</td>
+                        <td>
+                          <span class="obligation-badge {{ obligationClass(u.obligationLabel) }}">
+                            {{ u.obligationLabel || '-' }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+
+            <!-- Mobile: cards -->
+            @if (isMobile$ | async) {
+              <div class="delinquent-cards">
+                @for (u of delinquent.units; track u.unitId) {
+                  <div class="delinquent-card">
+                    <div class="dc-header">
+                      <div>
+                        <div class="dc-title">{{ u.residentName || '— Kosong' }}</div>
+                        <div class="dc-subtitle">
+                          {{ u.blockCode || u.blockName || '-' }} / {{ u.unitNumber || u.unitCode || '-' }}
+                        </div>
+                      </div>
+                      <span class="obligation-badge {{ obligationClass(u.obligationLabel) }}">
+                        {{ u.obligationLabel || '-' }}
+                      </span>
+                    </div>
+                    <div class="dc-meta">
+                      <span><strong>Menunggak:</strong> {{ rangeLabel(u) }}</span>
+                      <span class="danger-strong"><strong>{{ u.streakCount }}</strong> bulan</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

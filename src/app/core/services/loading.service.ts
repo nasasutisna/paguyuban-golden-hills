@@ -13,7 +13,7 @@ import { map } from 'rxjs/operators';
 export class LoadingService {
   private loadingElement: HTMLIonLoadingElement | null = null;
 
-  constructor(private loadingController: LoadingController) {}
+  constructor(private loadingController: LoadingController) { }
 
   /**
    * Show a loading indicator
@@ -45,6 +45,7 @@ export class LoadingService {
    * Dismiss the current loading indicator
    */
   async dismiss(): Promise<void> {
+    await new Promise((resolve) => setTimeout(() => resolve(null), 500))
     if (this.loadingElement) {
       try {
         await this.loadingElement.dismiss();
