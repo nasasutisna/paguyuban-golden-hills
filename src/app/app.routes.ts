@@ -368,7 +368,7 @@ export const routes: Routes = [
       // pattern. Each level stays clickable in the breadcrumb.
       {
         path: 'ipl-payment-matrix',
-        data: { breadcrumb: { label: 'Matrix Pembayaran IPL' } },
+        data: { breadcrumb: { label: 'IPL Warga' } },
         children: [
           {
             path: '',

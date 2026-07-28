@@ -7,6 +7,7 @@ import { Observable, Subscription } from 'rxjs';
 import { LayoutService } from '@services/layout.service';
 import { LoadingService } from '@services/loading.service';
 import { ToastService } from '@services/toast.service';
+import { AuthService } from '@core/auth/auth.service';
 import { downloadBlob } from '@core/utils/download-blob';
 import { IplPaymentMatrixService } from './ipl-payment-matrix.service';
 import {
@@ -42,6 +43,7 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
   private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
   private layoutService = inject(LayoutService);
+  private authService = inject(AuthService);
 
   data: PaymentMatrixData | null = null;
   loading = false;
@@ -129,10 +131,28 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Roles permitted to view the delinquent (menunggak) summary & list.
+   * SUPERADMIN is a global bypass (mirrors role.guard.ts / app.component.ts).
+   */
+  private readonly delinquentViewerRoles = ['ADMIN', 'ACCOUNTANT', 'COORDINATOR'];
+
+  /** Whether the current user may view the delinquent (menunggak) data. */
+  get canViewDelinquent(): boolean {
+    const role = this.authService.currentUser?.role?.name || '';
+    return role === 'SUPERADMIN' || this.delinquentViewerRoles.includes(role);
+  }
+
+  /**
    * Load (or reload) the delinquent-units report for the selected year and block.
    * Runs in parallel with the matrix; falls back to an empty report on error.
+   * Skipped entirely for roles not allowed to view delinquent data.
    */
   loadDelinquent(): void {
+    if (!this.canViewDelinquent) {
+      this.delinquent = null;
+      this.delinquentLoading = false;
+      return;
+    }
     this.delinquentLoading = true;
     this.subscriptions.push(
       this.matrixService.getDelinquent(this.year, this.selectedBlockId).subscribe({

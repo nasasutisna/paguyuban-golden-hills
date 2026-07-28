@@ -359,12 +359,37 @@
   }
 
   &.unpaid {
+    position: relative;
     background: #f3f4f6;
     color: #9ca3af;
     border: 1px solid #e5e7eb;
 
-    ion-icon {
+    .cell-icon {
       color: #9ca3af;
+      transition: opacity 0.1s ease;
+    }
+
+    // Hover-only "+" affordance: signals the cell can be clicked to add a payment.
+    // Centered with top/left + translate (robust for ion-icon's shadow-DOM glyph).
+    .cell-add-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 15px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.1s ease;
+    }
+
+    &:hover {
+      .cell-icon {
+        opacity: 0;
+      }
+
+      .cell-add-icon {
+        opacity: 1;
+      }
     }
   }
 }
@@ -480,12 +505,42 @@
   }
 
   &.unpaid {
+    position: relative;
     background: #f3f4f6;
     color: #6b7280;
     border: 1px solid #e5e7eb;
 
-    ion-icon {
+    .cell-icon {
       color: #9ca3af;
+      transition: opacity 0.1s ease;
+    }
+
+    // Hover-only "+" affordance over the icon slot (keeps month name visible).
+    .cell-add-icon {
+      position: absolute;
+      right: 0;
+      left: 0;
+      bottom: 3px;
+      display: flex;
+      justify-content: center;
+      font-size: 13px;
+      color: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.1s ease;
+    }
+
+    &:hover {
+      background: #43A047;
+      border-color: #43A047;
+
+      .cell-icon {
+        opacity: 0;
+      }
+
+      .cell-add-icon {
+        opacity: 1;
+      }
     }
   }
 }

@@ -54,22 +54,25 @@
           <span class="summary-chip-value">{{ data.paidCellCount }}</span>
         </div>
 
-        <!-- Delinquent-units chip: click → modal list -->
-        <button
-          type="button"
-          class="summary-chip danger clickable"
-          [class.zero]="!delinquent || delinquent.count === 0"
-          [disabled]="delinquentLoading"
-          (click)="onChipClick()"
-          [title]="(delinquent?.count ?? 0) > 0 ? 'Lihat daftar unit menunggak' : 'Tidak ada unit menunggak'">
-          @if (delinquentLoading) {
-            <ion-spinner name="crescent"></ion-spinner>
-          } @else {
-            <ion-icon name="alert-circle"></ion-icon>
-          }
-          <span class="summary-chip-label">{{ delinquentChipLabel() }}</span>
-          <span class="summary-chip-value">{{ delinquent?.count ?? 0 }}</span>
-        </button>
+        <!-- Delinquent-units chip: click → modal list.
+             Restricted to ADMIN / SUPERADMIN / ACCOUNTANT / COORDINATOR. -->
+        @if (canViewDelinquent) {
+          <button
+            type="button"
+            class="summary-chip danger clickable"
+            [class.zero]="!delinquent || delinquent.count === 0"
+            [disabled]="delinquentLoading"
+            (click)="onChipClick()"
+            [title]="(delinquent?.count ?? 0) > 0 ? 'Lihat daftar unit menunggak' : 'Tidak ada unit menunggak'">
+            @if (delinquentLoading) {
+              <ion-spinner name="crescent"></ion-spinner>
+            } @else {
+              <ion-icon name="alert-circle"></ion-icon>
+            }
+            <span class="summary-chip-label">{{ delinquentChipLabel() }}</span>
+            <span class="summary-chip-value">{{ delinquent?.count ?? 0 }}</span>
+          </button>
+        }
       </div>
     }
   </div>
@@ -135,9 +138,12 @@
                   <td class="col-month">
                     <span
                       class="cell-badge {{ statusColors[cell.status] }} clickable"
-                      [title]="monthNamesLong[cell.month - 1] + ' — ' + statusLabels[cell.status] + (cell.amount ? ' · ' + formatCurrency(cell.amount) : '') + ' · klik untuk detail'"
+                      [title]="monthNamesLong[cell.month - 1] + ' — ' + statusLabels[cell.status] + (cell.amount ? ' · ' + formatCurrency(cell.amount) : '') + ' · klik untuk bayar ipl'"
                       (click)="onCellClick(row, cell)">
-                      <ion-icon [name]="statusIcons[cell.status]"></ion-icon>
+                      <ion-icon class="cell-icon" [name]="statusIcons[cell.status]"></ion-icon>
+                      @if (cell.status === 'UNPAID') {
+                        <ion-icon class="cell-add-icon" name="add-circle"></ion-icon>
+                      }
                     </span>
                   </td>
                 }
@@ -196,7 +202,10 @@
                   [title]="monthNamesLong[cell.month - 1] + ' — ' + statusLabels[cell.status] + ' · klik untuk detail'"
                   (click)="onCellClick(row, cell)">
                   <span class="month-chip-name">{{ monthNames[cell.month - 1] }}</span>
-                  <ion-icon [name]="statusIcons[cell.status]"></ion-icon>
+                  <ion-icon class="cell-icon" [name]="statusIcons[cell.status]"></ion-icon>
+                  @if (cell.status === 'UNPAID') {
+                    <ion-icon class="cell-add-icon" name="add-circle"></ion-icon>
+                  }
                 </div>
               }
             </div>

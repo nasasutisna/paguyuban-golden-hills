@@ -184,8 +184,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // IPL Menu Items
   iplMenuItems: MenuItem[] = [
-    { title: 'Pembayaran IPL', url: '/admin/ipl-payments', icon: 'wallet-outline', description: 'Daftar Pembayaran IPL' },
-    { title: 'Matrix IPL', url: '/admin/ipl-payment-matrix', icon: 'grid', description: 'Status bayar unit per bulan' },
+    { title: 'IPL Warga', url: '/admin/ipl-payment-matrix', icon: 'wallet-outline', description: 'Daftar Pembayaran IPL' },
+    // { title: 'Matrix IPL', url: '/admin/ipl-payment-matrix', icon: 'grid', description: 'Status bayar unit per bulan' },
     { title: 'Blast WhatsApp', url: '/admin/whatsapp-blast', icon: 'logo-whatsapp', description: 'Kirim reminder WA tunggakan IPL' },
     { title: 'Iuran Warga', url: '/admin/resident-payments', icon: 'card-outline', description: 'Riwayat Pembayaran' },
     { title: 'Matrix Iuran Warga', url: '/admin/resident-payment-matrix', icon: 'grid', description: 'Status bayar warga per bulan' },
