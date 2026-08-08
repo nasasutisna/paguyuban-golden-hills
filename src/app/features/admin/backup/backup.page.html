@@ -1,0 +1,199 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Backup &amp; Restore</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadBackups()">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="backup-content">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="page-wrap">
+    <!-- Section 1: Create Backup -->
+    <ion-card class="section-card">
+      <ion-card-header>
+        <ion-card-title class="section-title">
+          <ion-icon name="cloud-upload-outline"></ion-icon>
+          Buat Backup
+        </ion-card-title>
+        <ion-card-subtitle>Buat arsip .zip dari database &amp; uploads</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="hint">
+          Backup berisi dump database (<code>gh_db</code>) dan opsional folder
+          <code>uploads</code> (foto/dokumen), dikemas menjadi satu file
+          <code>.zip</code>.
+        </p>
+
+        <ion-item lines="none" class="toggle-item">
+          <ion-checkbox
+            labelPlacement="end"
+            justify="start"
+            [(ngModel)]="includeUploads"
+          >Sertakan folder uploads</ion-checkbox>
+        </ion-item>
+
+        <ion-button
+          expand="block"
+          class="action-btn"
+          (click)="createBackup()"
+          [disabled]="creating"
+        >
+          <ion-icon slot="start" name="save-outline"></ion-icon>
+          {{ creating ? 'Membuat backup...' : 'Buat Backup Sekarang' }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Section 2: Restore -->
+    <ion-card class="section-card danger-card">
+      <ion-card-header>
+        <ion-card-title class="section-title">
+          <ion-icon name="cloud-download-outline"></ion-icon>
+          Restore Database
+        </ion-card-title>
+        <ion-card-subtitle class="danger-subtitle">
+          Menimpa seluruh data saat ini
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="hint">
+          Pilih file backup (<code>.zip</code>, <code>.sql</code>, atau
+          <code>.sql.gz</code>). Snapshot otomatis dibuat sebelum restore.
+        </p>
+
+        <input
+          id="restoreFile"
+          type="file"
+          class="file-input"
+          accept=".zip,.sql,.gz,application/zip,application/gzip,text/sql"
+          (change)="onFileSelected($event)"
+          hidden
+        />
+        <label for="restoreFile" class="file-picker" [class.has-file]="!!selectedFile">
+          <ion-icon name="document-attach-outline"></ion-icon>
+          <span class="file-picker-text">
+            @if (selectedFile) {
+              <span class="file-name">{{ selectedFile.name }}</span>
+              <span class="file-size">{{ formatBytes(selectedFile.size) }}</span>
+            } @else {
+              <span class="file-placeholder">Pilih file backup...</span>
+            }
+          </span>
+          @if (selectedFile) {
+            <ion-button
+              fill="clear"
+              size="small"
+              color="medium"
+              (click)="clearFile(); $event.preventDefault(); $event.stopPropagation()"
+            >
+              <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+            </ion-button>
+          }
+        </label>
+
+        <ion-button
+          expand="block"
+          color="danger"
+          class="action-btn"
+          (click)="confirmRestore()"
+          [disabled]="!selectedFile || restoring"
+        >
+          <ion-icon slot="start" name="swap-vertical"></ion-icon>
+          {{ restoring ? 'Merestore...' : 'Restore Database' }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Section 3: Backup List -->
+    <ion-card class="section-card list-card">
+      <ion-card-header>
+        <ion-card-title class="section-title">
+          <ion-icon name="server-outline"></ion-icon>
+          Daftar File Backup
+        </ion-card-title>
+        <ion-card-subtitle>{{ backups.length }} file tersimpan</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Loading -->
+        @if (loading) {
+          <div class="state-block">
+            <ion-spinner name="crescent"></ion-spinner>
+            <p>Memuat daftar backup...</p>
+          </div>
+        }
+
+        <!-- Error -->
+        @if (!loading && error) {
+          <div class="state-block error-block">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <p>{{ error }}</p>
+            <ion-button fill="clear" size="small" (click)="loadBackups()">Coba lagi</ion-button>
+          </div>
+        }
+
+        <!-- Empty -->
+        @if (!loading && !error && backups.length === 0) {
+          <div class="state-block empty-block">
+            <ion-icon name="file-tray-outline"></ion-icon>
+            <p>Belum ada backup. Buat backup pertama Anda di atas.</p>
+          </div>
+        }
+
+        <!-- List -->
+        @if (!loading && !error && backups.length > 0) {
+          <ion-list class="backup-list" lines="full">
+            @for (item of backups; track item.filename) {
+              <ion-item class="backup-item">
+                <div class="item-icon" slot="start">
+                  <ion-icon
+                    [name]="item.kind === 'full' ? 'archive-outline' : 'document-text-outline'"
+                  ></ion-icon>
+                </div>
+                <ion-label>
+                  <h3 class="item-filename">{{ item.filename }}</h3>
+                  <p class="item-meta">
+                    <ion-chip class="kind-chip" [color]="item.kind === 'full' ? 'primary' : 'medium'">
+                      {{ kindLabel(item) }}
+                    </ion-chip>
+                    {{ formatBytes(item.size) }} &middot; {{ formatDate(item.createdAt) }}
+                  </p>
+                </ion-label>
+                <div slot="end" class="item-actions">
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="primary"
+                    title="Download"
+                    (click)="download(item)"
+                  >
+                    <ion-icon slot="icon-only" name="download-outline"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="danger"
+                    title="Hapus"
+                    (click)="confirmDelete(item)"
+                  >
+                    <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                  </ion-button>
+                </div>
+              </ion-item>
+            }
+          </ion-list>
+        }
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

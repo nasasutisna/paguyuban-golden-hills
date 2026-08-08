@@ -3,13 +3,14 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, firstValueFrom } from 'rxjs';
 import { LayoutService } from '@services/layout.service';
 import { LoadingService } from '@services/loading.service';
 import { ToastService } from '@services/toast.service';
 import { AuthService } from '@core/auth/auth.service';
 import { downloadBlob } from '@core/utils/download-blob';
 import { IplPaymentMatrixService } from './ipl-payment-matrix.service';
+import { IplPeriodsService } from '../ipl-payments/ipl-periods.service';
 import {
   PaymentMatrixData,
   PaymentMatrixRow,
@@ -40,6 +41,7 @@ import {
 export class IplPaymentMatrixPage implements OnInit, OnDestroy {
   private router = inject(Router);
   private matrixService = inject(IplPaymentMatrixService);
+  private iplPeriodsService = inject(IplPeriodsService);
   private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
   private layoutService = inject(LayoutService);
@@ -92,10 +94,20 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
     this.loadDelinquent();
   }
 
+  /** True when the signed-in user is a block coordinator (COORDINATOR).
+   *  Coordinators are server-scoped to their own block(s), so the block filter
+   *  is locked for them — they cannot (and need not) pick another block. */
+  get isCoordinator(): boolean {
+    return this.authService.currentUser?.role?.name === 'COORDINATOR';
+  }
+
   /**
    * Load the house-block options for the filter dropdown (once).
+   * Skipped for coordinators: the block filter is locked to their own block(s)
+   * and never rendered as a select, so the block list is never needed.
    */
   loadBlocks(): void {
+    if (this.isCoordinator) return;
     this.subscriptions.push(
       this.matrixService.getBlocks().subscribe({
         next: (blocks) => {
@@ -216,9 +228,9 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
    * Handle a month-cell click:
    *  - PAID / PENDING (a payment exists)  → payment detail
    *  - UNPAID with a period               → payment form, period pre-selected
-   *  - UNPAID without a period            → toast (no IPL period for that month)
+   *  - UNPAID without a period            → auto-create the period, then payment form
    */
-  onCellClick(row: PaymentMatrixRow, cell: MatrixMonthCell): void {
+  async onCellClick(row: PaymentMatrixRow, cell: MatrixMonthCell): Promise<void> {
     if (cell.paymentId) {
       // Nested under the matrix so the breadcrumb keeps the matrix context
       // (mirrors the cash-transactions/:idcash/ipl-payments/:id pattern).
@@ -226,16 +238,33 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
       return;
     }
 
-    if (!cell.periodId) {
-      this.toastService.info(
-        `Periode IPL ${this.monthNamesLong[cell.month - 1]} belum tersedia`
-      );
-      return;
+    // No payment yet. Ensure a period exists for this month/year (auto-create it if
+    // the admin hasn't generated one), then open the input form with it pre-selected.
+    let periodId = cell.periodId;
+    if (!periodId) {
+      const monthLabel = this.monthNamesLong[cell.month - 1];
+      this.loadingService.show({ message: `Menyiapkan periode ${monthLabel}...` });
+      try {
+        const period = await firstValueFrom(
+          this.iplPeriodsService.ensure(cell.month, this.year),
+        );
+        this.loadingService.dismiss().catch(() => undefined);
+        if (!period) {
+          this.toastService.error(`Gagal menyiapkan periode ${monthLabel}`);
+          return;
+        }
+        periodId = period.id;
+      } catch (e) {
+        this.loadingService.dismiss().catch(() => undefined);
+        console.error('Error ensuring period:', e);
+        this.toastService.error(`Gagal menyiapkan periode ${monthLabel}`);
+        return;
+      }
     }
 
-    // No payment yet → open the input form with the period (and resident, if
-    // any) pre-selected via query params (see IplPaymentFormPage.loadData).
-    const queryParams: Record<string, string> = { periodId: cell.periodId };
+    // Open the input form with the period (and resident, if any) pre-selected via
+    // query params (see IplPaymentFormPage.loadData).
+    const queryParams: Record<string, string> = { periodId };
     if (row.residentId) queryParams['residentId'] = row.residentId;
     this.router.navigate(['/admin/ipl-payments/new'], { queryParams });
   }
@@ -317,6 +346,19 @@ export class IplPaymentMatrixPage implements OnInit, OnDestroy {
   delinquentChipLabel(): string {
     const asOf = this.delinquent?.asOfLabel;
     return asOf ? `Menunggak ≥3 bln · s/d ${asOf}` : 'Menunggak ≥3 bln';
+  }
+
+  /**
+   * Label shown inside the locked block filter for coordinators. Derived from
+   * the (already server-scoped) matrix rows; collapses to a generic "Blok Anda"
+   * when the rows span multiple blocks or are empty.
+   */
+  get coordinatorBlockLabel(): string {
+    const rows = this.data?.rows ?? [];
+    const names = new Set(
+      rows.map((r) => r.blockCode ?? r.blockName).filter(Boolean) as string[],
+    );
+    return names.size === 1 ? [...names][0]! : 'Blok Anda';
   }
 
   /** Block label for the modal/PDF sub-info. */

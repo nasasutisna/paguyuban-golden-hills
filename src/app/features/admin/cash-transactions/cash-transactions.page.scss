@@ -1,10 +1,265 @@
-// Date Filter Card
+// =============================================================
+// Cash Transactions — elegant theme (matches admin dashboard)
+// Green & brown palette, white stat cards, gradient saldo cards.
+// =============================================================
+
+// Page wrapper centers + caps the content like the dashboard.
+.ct-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// ---------- Section heading ----------
+.section-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 4px 0 12px;
+
+  h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  .section-hint {
+    font-size: 12px;
+    color: #6b7280;
+  }
+}
+
+// ---------- Summary skeleton ----------
+.summary-skeleton {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  ion-skeleton-text {
+    border-radius: 12px;
+  }
+}
+
+// ---------- Summary grid (Saldo / Pemasukan / Pengeluaran / Pending) ----------
+// Flex (not grid) so the row always fills edge-to-edge regardless of how many
+// cards render (3 when no pending approval, 4 when there is). flex-grow:1 makes
+// a lone card on the last row stretch to full width — no trailing empty slot.
+.summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  > .stat-card {
+    flex: 1 1 160px;
+    min-width: 0;
+  }
+
+  @media (min-width: 768px) {
+    gap: 16px;
+
+    > .stat-card {
+      flex-basis: 200px;
+    }
+  }
+}
+
+// Elegant white stat card with a gradient icon chip (dashboard style).
+.stat-card {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(141, 110, 99, 0.05) 100%);
+  border: 1px solid rgba(76, 175, 80, 0.12);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    ion-icon {
+      font-size: 22px;
+      color: #ffffff;
+    }
+
+    &.icon-primary {
+      background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+    }
+
+    &.icon-success {
+      background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    }
+
+    &.icon-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    }
+
+    &.icon-warning {
+      background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    }
+  }
+
+  .stat-body {
+    .stat-label {
+      font-size: 13px;
+      color: #6b7280;
+      margin: 0 0 6px 0;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0;
+      font-family: 'SF Mono', 'Monaco', monospace;
+      line-height: 1.2;
+      word-break: break-word;
+
+      @media (min-width: 768px) {
+        font-size: 22px;
+      }
+
+      &.text-success {
+        color: #10b981;
+      }
+
+      &.text-danger {
+        color: #ef4444;
+      }
+
+      &.text-warning {
+        color: #f59e0b;
+      }
+    }
+  }
+}
+
+// ---------- Saldo & Pengeluaran per Kas (gradient cards) ----------
+.saldo-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+.saldo-card {
+  border-radius: 16px;
+  padding: 20px;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  .saldo-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+
+    .saldo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      ion-icon {
+        font-size: 24px;
+        color: #ffffff;
+      }
+    }
+
+    .saldo-tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .saldo-label {
+    font-size: 13px;
+    opacity: 0.9;
+    margin: 0 0 6px 0;
+  }
+
+  .saldo-value {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 14px 0;
+    font-family: 'SF Mono', 'Monaco', monospace;
+
+    @media (min-width: 768px) {
+      font-size: 30px;
+    }
+  }
+
+  .saldo-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+
+    .saldo-footer-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      opacity: 0.92;
+
+      ion-icon {
+        font-size: 16px;
+      }
+    }
+
+    .saldo-footer-value {
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'SF Mono', 'Monaco', monospace;
+    }
+  }
+
+  &.saldo-ipl {
+    background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+  }
+
+  &.saldo-warga {
+    background: linear-gradient(135deg, #6d4c41 0%, #8d6e63 100%);
+  }
+}
+
+// ---------- Date Filter Card ----------
 .filter-card {
-  margin: 0px;
+  margin: 0;
   border-radius: 8px;
 
   .filter-card-content ion-col {
-    padding: 0px !important;
+    padding: 0 !important;
   }
 
   .filter-date {
@@ -67,11 +322,6 @@
         color: var(--ion-color-primary-shade);
         font-weight: 500;
         line-height: 1.3;
-
-        &.muted {
-          color: var(--ion-color-medium);
-          font-weight: 400;
-        }
       }
     }
 
@@ -87,7 +337,7 @@
   }
 
   ion-card-content {
-    padding-top: 0px;
+    padding-top: 0;
   }
 
   .filter-actions {
@@ -104,111 +354,6 @@
       font-weight: 600;
       height: 48px;
       width: 160px;
-    }
-  }
-
-  .active-filter-info {
-    margin-top: 12px;
-
-    .filter-info-text {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin: 0;
-      padding: 8px 12px;
-      background: rgba(var(--ion-color-primary-rgb), 0.1);
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ion-color-primary-shade);
-
-      ion-icon {
-        font-size: 16px;
-      }
-    }
-  }
-}
-
-.stats-container {
-  margin-bottom: 24px;
-}
-
-.stats-skeleton {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.stat-card {
-  margin: 0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
-  &.primary {
-    --ion-background-color: var(--ion-color-primary);
-  }
-
-  &.success {
-    --ion-background-color: var(--ion-color-success);
-  }
-
-  &.warning {
-    --ion-background-color: var(--ion-color-warning);
-  }
-
-  &.danger {
-    --ion-background-color: var(--ion-color-danger);
-  }
-
-  ion-card-content {
-    padding: 16px;
-  }
-}
-
-.stat-content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  .stat-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-
-    ion-icon {
-      font-size: 20px;
-      color: white;
-    }
-  }
-
-  .stat-info {
-    flex: 1;
-
-    .stat-value {
-      font-size: 18px;
-      font-weight: 700;
-      color: white;
-      line-height: 1.2;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.8);
-      margin-top: 2px;
     }
   }
 }

@@ -1,26 +1,24 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { Subscription, combineLatest } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ResidentPaymentsService } from '../resident-payments/resident-payments.service';
-import { ResidentInvoicesService } from '../resident-invoices/resident-invoices.service';
 import { ResidentsService } from '../residents/residents.service';
 import {
   ResidentPayment,
   CreateResidentPaymentDto,
   PaymentMethod,
-  BulkPaymentItemDto,
-  CreateBulkResidentPaymentDto
 } from '../resident-payments/resident-payments.model';
-import { ResidentInvoice } from '../resident-invoices/resident-invoices.model';
 import { Resident } from '../residents/residents.model';
 import { LoadingService } from '@services/loading.service';
 import { ToastService } from '@services/toast.service';
+import { AlertModalService, AlertModalRow } from '@services/alert-modal.service';
 import {
   FormDatePickerComponent,
   FormSelectComponent,
+  FormSearchableSelectComponent,
   FormInputComponent,
   FormTextareaComponent,
   FormButtonComponent,
@@ -28,8 +26,17 @@ import {
 } from '@shared/ui/form-controls';
 
 /**
- * Resident Payment Form Page
- * Create or record resident payment
+ * Resident Payment (Iuran Warga) Form Page
+ *
+ * Records a single Iuran Warga payment. Iuran is a flat monthly rate
+ * (`IURAN_MONTHLY_RATE`, Rp20.000): the operator enters any amount (typically a
+ * multiple of the rate), and the matrix divides the total COMPLETED amount by
+ * the rate to mark months covered — see `resident-payment-matrix`.
+ *
+ * The optional "Tagihan" (ResidentInvoice) link and bulk mode were removed:
+ * the invoice feature is vestigial (menu disabled, no auto-generation, free
+ * amounts that don't reconcile with the flat rate) and the matrix no longer
+ * reads invoices.
  */
 @Component({
   selector: 'app-resident-payment-form',
@@ -41,6 +48,7 @@ import {
     FormsModule,
     FormDatePickerComponent,
     FormSelectComponent,
+    FormSearchableSelectComponent,
     FormInputComponent,
     FormTextareaComponent,
     FormButtonComponent
@@ -53,10 +61,10 @@ export class ResidentPaymentFormPage implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private residentPaymentsService = inject(ResidentPaymentsService);
-  private residentInvoicesService = inject(ResidentInvoicesService);
   private residentsService = inject(ResidentsService);
   private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
+  private alertModalService = inject(AlertModalService);
 
   form: FormGroup;
   payment: ResidentPayment | null = null;
@@ -65,14 +73,7 @@ export class ResidentPaymentFormPage implements OnInit {
   loadingData = true;
   error: string | null = null;
 
-  // Bulk payment mode
-  isBulkMode = false;
-  selectedInvoices = new Set<string>();
-  bulkPayments: BulkPaymentItemDto[] = [];
-
   residents: Resident[] = [];
-  invoices: ResidentInvoice[] = [];
-  selectedInvoice: ResidentInvoice | null = null;
 
   // File upload (bukti transfer)
   selectedFile: File | null = null;
@@ -93,12 +94,19 @@ export class ResidentPaymentFormPage implements OnInit {
     PaymentMethod.CARD
   ];
 
+  /**
+   * Flat monthly Iuran Warga rate (IDR). Mirrors the backend
+   * `RESIDENT_IURAN_MONTHLY_RATE` — used here only for the "≈ X bulan iuran"
+   * helper hint under the amount field. The backend remains the single source
+   * of truth for matrix coverage.
+   */
+  readonly IURAN_MONTHLY_RATE = 20000;
+
   private subscriptions: Subscription[] = [];
 
   constructor() {
     this.form = this.fb.group({
       residentId: ['', Validators.required],
-      invoiceId: [''],
       paymentDate: [this.formatDateForInput(new Date()), Validators.required],
       paymentMethod: [PaymentMethod.TRANSFER, Validators.required],
       paymentChannel: [''],
@@ -113,15 +121,10 @@ export class ResidentPaymentFormPage implements OnInit {
   ngOnInit(): void {
     this.loadData();
 
-    // Check if invoiceId is passed in query params
+    // Pre-select resident when opened via deep-link (e.g. from the Iuran Warga
+    // matrix unpaid cell). The form control holds the id; the residents list
+    // (loaded async) supplies the label for the searchable-select trigger.
     this.route.queryParams.subscribe(params => {
-      if (params['invoiceId']) {
-        this.form.get('invoiceId')?.setValue(params['invoiceId']);
-        this.onInvoiceChange();
-      }
-      // Pre-select resident when opened via deep-link (e.g. from the Iuran
-      // Warga matrix unpaid cell). The form control holds the id; the
-      // residents dropdown (loaded async) will display it once available.
       if (params['residentId']) {
         this.form.get('residentId')?.setValue(params['residentId']);
       }
@@ -129,14 +132,13 @@ export class ResidentPaymentFormPage implements OnInit {
   }
 
   /**
-   * Load dropdown data (residents and invoices)
+   * Load dropdown data (residents).
    */
   private loadData(): void {
-    // Load pending invoices only
     this.subscriptions.push(
-      this.residentInvoicesService.getPending().subscribe({
-        next: (invoices) => {
-          this.invoices = invoices;
+      this.residentsService.getAll({ limit: 1000 }).subscribe({
+        next: (residentsData) => {
+          this.residents = residentsData.data;
           this.loadingData = false;
         },
         error: (error) => {
@@ -146,60 +148,12 @@ export class ResidentPaymentFormPage implements OnInit {
         }
       })
     );
-
-    // Load residents
-    this.subscriptions.push(
-      this.residentsService.getAll({ limit: 1000 }).subscribe({
-        next: (residentsData) => {
-          this.residents = residentsData.data;
-        },
-        error: (error) => {
-          console.error('Error loading residents:', error);
-        }
-      })
-    );
-  }
-
-  /**
-   * Handle invoice selection change
-   */
-  onInvoiceChange(): void {
-    const invoiceId = this.form.get('invoiceId')?.value;
-    const invoice = this.invoices.find(inv => inv.id === invoiceId);
-
-    if (invoice) {
-      this.selectedInvoice = invoice;
-      // Auto-fill resident
-      this.form.get('residentId')?.setValue(invoice.residentId);
-      // Auto-fill amount with remaining amount
-      if (invoice.remainingAmount > 0) {
-        this.form.get('amount')?.setValue(invoice.remainingAmount);
-      }
-    } else {
-      this.selectedInvoice = null;
-    }
   }
 
   /**
    * Submit form
    */
   async onSubmit(): Promise<void> {
-    // For bulk mode, check if invoices are selected
-    if (this.isBulkMode) {
-      if (this.selectedInvoices.size === 0) {
-        this.toastService.error('Mohon pilih minimal satu tagihan');
-        return;
-      }
-      if (this.form.invalid) {
-        this.form.markAllAsTouched();
-        this.toastService.error('Mohon lengkapi semua field yang wajib diisi');
-        return;
-      }
-      this.submitBulkPayments(this.form.value);
-      return;
-    }
-
-    // Single mode validation
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.toastService.error('Mohon lengkapi semua field yang wajib diisi');
@@ -228,15 +182,8 @@ export class ResidentPaymentFormPage implements OnInit {
 
     const formValue = this.form.value;
 
-    // Validate amount against remaining (only when linked to an invoice)
-    if (this.selectedInvoice && formValue.amount > this.selectedInvoice.remainingAmount) {
-      this.toastService.error(`Jumlah pembayaran melebihi sisa tagihan (${this.formatCurrency(this.selectedInvoice.remainingAmount)})`);
-      return;
-    }
-
     const dto: CreateResidentPaymentDto = {
       residentId: formValue.residentId,
-      invoiceId: formValue.invoiceId || undefined,
       paymentDate: formValue.paymentDate,
       paymentMethod: formValue.paymentMethod,
       paymentChannel: formValue.paymentChannel || undefined,
@@ -252,56 +199,6 @@ export class ResidentPaymentFormPage implements OnInit {
   }
 
   /**
-   * Submit bulk payments
-   */
-  private submitBulkPayments(formValue: any): void {
-    this.loadingService.show({ message: 'Memproses pembayaran bulk...' });
-
-    // Create bulk payment items from selected invoices
-    const payments: BulkPaymentItemDto[] = Array.from(this.selectedInvoices).map(invoiceId => {
-      const invoice = this.invoices.find(inv => inv.id === invoiceId);
-      return {
-        residentId: invoice?.residentId || '',
-        invoiceId: invoiceId,
-        paymentDate: formValue.paymentDate,
-        paymentMethod: formValue.paymentMethod,
-        paymentChannel: formValue.paymentChannel,
-        referenceNumber: formValue.referenceNumber,
-        amount: invoice?.remainingAmount || 0,
-        bankName: formValue.bankName,
-        accountNumber: formValue.accountNumber,
-        notes: formValue.notes
-      };
-    });
-
-    const bulkDto: CreateBulkResidentPaymentDto = {
-      payments,
-      batchNotes: `Bulk payment created on ${new Date().toISOString()}`
-    };
-
-    this.subscriptions.push(
-      this.residentPaymentsService.createBulk(bulkDto).subscribe({
-        next: (result) => {
-          this.loadingService.dismiss();
-          if (result.failureCount > 0) {
-            this.toastService.warning(
-              `${result.successCount} pembayaran berhasil, ${result.failureCount} gagal`
-            );
-          } else {
-            this.toastService.success('Semua pembayaran berhasil dicatat');
-          }
-          this.router.navigate(['/admin/resident-payments']);
-        },
-        error: (error) => {
-          this.loadingService.dismiss();
-          this.toastService.error('Gagal memproses pembayaran bulk');
-          console.error('Bulk payment error:', error);
-        }
-      })
-    );
-  }
-
-  /**
    * Create new payment
    */
   private createPayment(dto: CreateResidentPaymentDto): void {
@@ -309,11 +206,12 @@ export class ResidentPaymentFormPage implements OnInit {
 
     this.subscriptions.push(
       this.residentPaymentsService.create(dto).subscribe({
-        next: (result) => {
+        next: async (result) => {
           this.loadingService.dismiss();
           if (result) {
-            this.toastService.success('Pembayaran berhasil dicatat');
-            this.router.navigate(['/admin/resident-payments', result.id]);
+            // Show success modal (mirrors the IPL payment form flow) instead of
+            // a plain toast, so the experience stays consistent across features.
+            await this.showSuccessModal(result);
           }
         },
         error: (error) => {
@@ -323,6 +221,66 @@ export class ResidentPaymentFormPage implements OnInit {
         }
       })
     );
+  }
+
+  /**
+   * Show success modal with the payment number and amount.
+   * Uses the reusable AlertModalComponent (rich content) — mirrors the IPL
+   * payment form's success flow. "Lihat Detail" navigates to the payment
+   * detail page; "Tambah Lagi" resets the form to record another payment.
+   */
+  private async showSuccessModal(payment: ResidentPayment): Promise<void> {
+    const rows: AlertModalRow[] = [
+      { label: 'Status', value: 'Menunggu Verifikasi' },
+    ];
+
+    // Total amount (with accent)
+    rows.push({ label: 'Jumlah Pembayaran', value: this.formatCurrency(Number(payment.amount) || 0), emphasis: 'total' });
+
+    const result = await this.alertModalService.open({
+      type: 'success',
+      title: 'Pembayaran Tercatat',
+      message: 'Pembayaran berhasil dicatat dan menunggu verifikasi',
+      highlight: { label: 'Nomor Pembayaran', value: payment.paymentNumber || '-' },
+      rows,
+      dismissable: false,
+      buttons: [
+        { text: 'Tambah Lagi', role: 'cancel', variant: 'outline', value: 'add' },
+        { text: 'Lihat Detail', role: 'confirm', variant: 'solid', value: 'detail' },
+      ],
+    });
+
+    if (result === 'detail') {
+      this.router.navigate(['/admin/resident-payments', payment.id]);
+    } else {
+      // 'add' (or any other dismissal) → reset the form and stay on the page.
+      this.resetFormForAnother();
+    }
+  }
+
+  /**
+   * Reset the form to record another payment. Re-applies the sensible defaults
+   * (today's date + TRANSFER method) so the next entry is ready to go, and
+   * clears the proof file.
+   */
+  private resetFormForAnother(): void {
+    this.form.reset({
+      residentId: '',
+      paymentDate: this.formatDateForInput(new Date()),
+      paymentMethod: PaymentMethod.TRANSFER,
+      paymentChannel: '',
+      referenceNumber: '',
+      amount: 0,
+      bankName: '',
+      accountNumber: '',
+      notes: ''
+    });
+    this.selectedFile = null;
+    this.filePreview = null;
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement | null;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   }
 
   /**
@@ -390,14 +348,6 @@ export class ResidentPaymentFormPage implements OnInit {
   }
 
   /**
-   * Get selected invoice
-   */
-  get selectedInvoiceData(): ResidentInvoice | undefined {
-    const invoiceId = this.form.get('invoiceId')?.value;
-    return this.invoices.find(inv => inv.id === invoiceId);
-  }
-
-  /**
    * Get selected resident
    */
   get selectedResident(): Resident | undefined {
@@ -422,23 +372,23 @@ export class ResidentPaymentFormPage implements OnInit {
   }
 
   /**
-   * Calculate remaining amount after payment
+   * Number of full iuran months the currently entered amount would cover
+   * (floor of amount / monthly rate). Remainders roll over at the matrix level.
    */
-  getRemainingAfterPayment(): number {
-    const selectedInvoice = this.selectedInvoiceData;
-    if (!selectedInvoice) return 0;
-    const paymentAmount = this.form.get('amount')?.value || 0;
-    return Math.max(0, (selectedInvoice.remainingAmount || 0) - paymentAmount);
+  get iuranMonthsPreview(): number {
+    const amount = Number(this.form.get('amount')?.value) || 0;
+    return this.IURAN_MONTHLY_RATE > 0
+      ? Math.floor(amount / this.IURAN_MONTHLY_RATE)
+      : 0;
   }
 
   /**
-   * Convert invoices to select options
+   * Helper text under the amount field: a live "≈ X bulan iuran" estimate, so
+   * the operator enters multiples of the monthly rate and can predict the
+   * matrix coverage.
    */
-  get invoiceOptions(): SelectOption[] {
-    return this.invoices.map(invoice => ({
-      value: invoice.id,
-      label: `${invoice.invoiceNumber} - ${invoice.resident?.firstName || ''} ${invoice.resident?.lastName || ''} - ${this.formatCurrency(invoice.remainingAmount)}`
-    }));
+  get amountHelperText(): string {
+    return `≈ ${this.iuranMonthsPreview} bulan iuran (${this.formatCurrency(this.IURAN_MONTHLY_RATE)}/bln)`;
   }
 
   /**
@@ -463,9 +413,6 @@ export class ResidentPaymentFormPage implements OnInit {
    * Check if form is valid
    */
   isFormValid(): boolean {
-    if (this.isBulkMode) {
-      return this.form.valid && this.selectedInvoices.size > 0;
-    }
     // Bukti transfer is required for non-CASH methods
     if (this.isProofRequired() && !this.selectedFile) {
       return false;
@@ -524,7 +471,8 @@ export class ResidentPaymentFormPage implements OnInit {
   }
 
   /**
-   * Convert residents to select options
+   * Convert residents to select options (value + label for the searchable
+   * select modal). Label includes block + unit so operators can disambiguate.
    */
   get residentOptions(): SelectOption[] {
     return this.residents.map(r => ({
@@ -534,57 +482,16 @@ export class ResidentPaymentFormPage implements OnInit {
   }
 
   /**
-   * Toggle bulk mode
-   */
-  toggleBulkMode(): void {
-    this.isBulkMode = !this.isBulkMode;
-    if (!this.isBulkMode) {
-      this.selectedInvoices.clear();
-    }
-  }
-
-  /**
    * Get page title
    */
   get pageTitle(): string {
-    return this.isBulkMode ? 'Catat Pembayaran Bulk' : 'Catat Pembayaran';
-  }
-
-  /**
-   * Toggle invoice selection for bulk
-   */
-  toggleInvoiceSelection(invoiceId: string): void {
-    if (this.selectedInvoices.has(invoiceId)) {
-      this.selectedInvoices.delete(invoiceId);
-    } else {
-      this.selectedInvoices.add(invoiceId);
-    }
-  }
-
-  /**
-   * Check if invoice is selected
-   */
-  isInvoiceSelected(invoiceId: string): boolean {
-    return this.selectedInvoices.has(invoiceId);
-  }
-
-  /**
-   * Get total amount for selected invoices
-   */
-  getSelectedTotalAmount(): number {
-    return Array.from(this.selectedInvoices).reduce((total, invoiceId) => {
-      const invoice = this.invoices.find(inv => inv.id === invoiceId);
-      return total + (invoice?.remainingAmount || 0);
-    }, 0);
+    return 'Catat Pembayaran Iuran';
   }
 
   /**
    * Get submit button text
    */
   get submitButtonText(): string {
-    if (this.isBulkMode && this.selectedInvoices.size > 0) {
-      return `Catat ${this.selectedInvoices.size} Pembayaran`;
-    }
     return 'Catat Pembayaran';
   }
 

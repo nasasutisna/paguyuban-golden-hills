@@ -50,6 +50,25 @@ export const EXPENSE_PAYMENT_METHOD_LABELS: Record<ExpensePaymentMethod, string>
   [ExpensePaymentMethod.CARD]: 'Kartu',
 };
 
+/**
+ * Fund type — which Kas (Kas IPL / Kas Warga) the expense posts to on approval.
+ * Mirrors backend FUND_TYPES ('IPL' | 'WARGA') in src/common/constants/cash-accounts.ts.
+ */
+export enum ExpenseFundType {
+  IPL = 'IPL',
+  WARGA = 'WARGA',
+}
+
+export const EXPENSE_FUND_TYPE_LABELS: Record<ExpenseFundType, string> = {
+  [ExpenseFundType.IPL]: 'Operasional IPL',
+  [ExpenseFundType.WARGA]: 'Iuran Warga',
+};
+
+export const EXPENSE_FUND_TYPE_COLORS: Record<ExpenseFundType, string> = {
+  [ExpenseFundType.IPL]: 'primary',
+  [ExpenseFundType.WARGA]: 'tertiary',
+};
+
 // ------------------------------------------------------------------
 // Sub-interfaces (relations returned by backend)
 // ------------------------------------------------------------------
@@ -109,6 +128,8 @@ export interface ExpenseRequest {
   description?: string | null;
   amount: number | string;
   categoryId?: string | null;
+  /** 'IPL' | 'WARGA' — which Kas this expense posts to on approval. */
+  fundType?: string;
   requestedById: string;
   residentId?: string | null;
   transactionDate: string;
@@ -144,6 +165,8 @@ export interface CreateExpenseRequestDto {
   description?: string;
   amount: number;
   categoryId?: string;
+  /** 'IPL' | 'WARGA' — defaults to WARGA when omitted (back-compat). */
+  fundType?: ExpenseFundType | string;
   transactionDate: string; // YYYY-MM-DD
   paymentMethod?: ExpensePaymentMethod | string;
   residentId?: string;
@@ -172,6 +195,7 @@ export interface ExpenseRequestQueryParams {
   search?: string;
   status?: ExpenseRequestStatus | string;
   categoryId?: string;
+  fundType?: ExpenseFundType | string;
   requestedById?: string;
   residentId?: string;
   dateFrom?: string; // YYYY-MM-DD

@@ -1,19 +1,21 @@
 /**
  * Resident Payment (Iuran Warga) Matrix Models
  *
- * Read-only matrix that shows, per house unit, the monthly Iuran Warga
- * payment status for a whole year (Jan..Dec). The matrix is composed on the
- * backend by the `GET /resident-payments/matrix?year=` endpoint: each cell
- * aggregates every ResidentPayment of that unit whose paymentDate falls in
- * the given month.
+ * Read-only coverage matrix that shows, per house unit, which months of the
+ * selected year (Jan..Des) are covered by Iuran Warga payments. Built by the
+ * backend `GET /resident-payments/matrix?year=` endpoint.
  *
- * A cell is "paid" when at least one ResidentPayment(unit, month) exists with
- * status COMPLETED. PENDING (not yet verified) shows as "Proses" and is
- * excluded from totals.
+ * Iuran is a FLAT monthly rate (`monthlyRate`, Rp20.000) — the same for every
+ * unit, unlike IPL which varies by land area. A unit's total COMPLETED
+ * payments for the year are divided by the rate to get the number of covered
+ * months; those months are filled sequentially from January
+ * (oldest-unpaid-first), exactly like the IPL matrix marks months PAID. So
+ * paying a multiple of the rate (e.g. 3 × 20.000) covers that many months in
+ * a row, and any later payment ("bayar lagi") rolls into the next month.
  *
- * Mirrors the IPL payment matrix (`ipl-payment-matrix.model.ts`), minus the
- * IPL-specific rate/obligation fields (resident payments have no fixed
- * monthly rate).
+ * A cell is "paid" when its month index is within the unit's covered months.
+ * PENDING (not-yet-verified) payments do not count toward coverage; they
+ * surface as a row-level `pendingCount` badge instead.
  */
 
 /**
@@ -89,11 +91,17 @@ export interface PaymentMatrixRow {
   phoneNumber?: string;
   /** Whether the unit is active. */
   isActive: boolean;
+  /** Flat monthly Iuran Warga rate (IDR), e.g. 20000. */
+  monthlyRate?: number;
+  /** Total COMPLETED amount the unit paid this year (actual cash, IDR). */
+  totalPaid?: number;
+  /** Full months covered = floor(totalPaid / monthlyRate). May exceed 12. */
+  coveredMonths?: number;
   /** 12 cells, index 0 = January. */
   cells: MatrixMonthCell[];
-  /** Count of PAID cells. */
+  /** Count of PAID cells (covered months, capped at 12). */
   paidCount: number;
-  /** Count of PENDING cells. */
+  /** Number of PENDING (unverified) payments for the unit — row-level only. */
   pendingCount: number;
 }
 
@@ -102,6 +110,8 @@ export interface PaymentMatrixRow {
  */
 export interface PaymentMatrixData {
   year: number;
+  /** Flat monthly Iuran Warga rate (IDR) used to compute coverage. */
+  monthlyRate?: number;
   rows: PaymentMatrixRow[];
   /** Per-month total of COMPLETED amounts, index 0 = January. */
   monthTotals: number[];

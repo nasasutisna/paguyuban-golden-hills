@@ -158,7 +158,7 @@ export class ResidentFormPage implements OnInit, OnDestroy {
       ],
       lastName: [
         '',
-        [Validators.required, Validators.maxLength(100)]
+        [Validators.maxLength(100)]
       ],
       email: [
         '',
@@ -249,9 +249,11 @@ export class ResidentFormPage implements OnInit, OnDestroy {
    */
   get unitNumberOptions(): SelectOption[] {
     const blockId = this.residentForm.get('houseBlockId')?.value;
+    // Only list units that belong to the selected block; keep the dropdown
+    // empty until a block is chosen so a unit from another block can't be picked.
     const units = blockId
       ? this.houseUnits.filter((u) => u.houseBlockId === blockId)
-      : this.houseUnits;
+      : [];
     return units
       .slice()
       .sort((a, b) => a.unitNumber.localeCompare(b.unitNumber))

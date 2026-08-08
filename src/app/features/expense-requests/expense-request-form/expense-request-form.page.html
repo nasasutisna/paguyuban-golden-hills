@@ -15,6 +15,14 @@
         <ion-card-subtitle>Detail Pengeluaran</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
+        <app-form-select
+          label="Jenis Pengeluaran"
+          formControlName="fundType"
+          placeholder="Pilih jenis pengeluaran"
+          [options]="fundTypeOptions"
+          [required]="true"
+        ></app-form-select>
+
         <app-form-input
           label="Judul"
           formControlName="title"

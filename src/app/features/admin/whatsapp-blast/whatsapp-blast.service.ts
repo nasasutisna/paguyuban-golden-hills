@@ -4,6 +4,7 @@ import { map, catchError } from 'rxjs/operators';
 import { ApiService } from '@core/api/api.service';
 import {
   WhatsAppStatus,
+  WhatsAppBotStatus,
   DelinquentPreview,
   TriggerBlastDto,
   BlastResult,
@@ -35,6 +36,19 @@ export class WhatsappBlastService {
     );
   }
 
+  /** GET /whatsapp-blast/bot/status — CS bot observability snapshot. */
+  getBotStatus(): Observable<WhatsAppBotStatus | null> {
+    return this.apiService
+      .get<WhatsAppBotStatus>('/whatsapp-blast/bot/status')
+      .pipe(
+        map((response) => response.data || null),
+        catchError((error) => {
+          console.error('Error fetching WhatsApp bot status:', error);
+          return of(null);
+        }),
+      );
+  }
+
   /** POST /whatsapp-blast/connect — returns the new connection state. */
   connect(): Observable<{ state: string } | null> {
     return this.apiService.post<{ state: string }>('/whatsapp-blast/connect', {}).pipe(
@@ -52,6 +66,17 @@ export class WhatsappBlastService {
       map((response) => response.data || null),
       catchError((error) => {
         console.error('Error disconnecting WhatsApp:', error);
+        throw error;
+      }),
+    );
+  }
+
+  /** POST /whatsapp-blast/reset-pairing — wipe old session & issue a fresh QR (ganti nomor). */
+  resetPairing(): Observable<{ state: string } | null> {
+    return this.apiService.post<{ state: string }>('/whatsapp-blast/reset-pairing', {}).pipe(
+      map((response) => response.data || null),
+      catchError((error) => {
+        console.error('Error resetting WhatsApp pairing:', error);
         throw error;
       }),
     );

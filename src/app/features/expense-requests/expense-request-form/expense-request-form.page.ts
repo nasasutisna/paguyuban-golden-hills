@@ -11,6 +11,8 @@ import {
   CreateExpenseRequestDto,
   ExpensePaymentMethod,
   EXPENSE_PAYMENT_METHOD_LABELS,
+  ExpenseFundType,
+  EXPENSE_FUND_TYPE_LABELS,
 } from '../expense-requests.model';
 import { SelectOption } from '@shared/ui/form-controls/form.model';
 import { LoadingService } from '@services/loading.service';
@@ -76,6 +78,7 @@ export class ExpenseRequestFormPage implements OnDestroy {
 
   constructor() {
     this.form = this.fb.group({
+      fundType: [ExpenseFundType.IPL, Validators.required],
       title: ['', [Validators.required, Validators.maxLength(200)]],
       description: [''],
       amount: ['', [Validators.required, Validators.min(0.01)]],
@@ -145,6 +148,7 @@ export class ExpenseRequestFormPage implements OnDestroy {
       title: formValue.title?.trim(),
       description: formValue.description?.trim() || undefined,
       amount,
+      fundType: formValue.fundType || ExpenseFundType.WARGA,
       transactionDate,
       paymentMethod: formValue.paymentMethod || undefined,
     };
@@ -237,6 +241,7 @@ export class ExpenseRequestFormPage implements OnDestroy {
 
   resetForm(): void {
     this.form.reset({
+      fundType: ExpenseFundType.WARGA,
       title: '',
       description: '',
       amount: '',
@@ -269,6 +274,13 @@ export class ExpenseRequestFormPage implements OnDestroy {
     return (Object.values(ExpensePaymentMethod) as ExpensePaymentMethod[]).map((method) => ({
       value: method,
       label: EXPENSE_PAYMENT_METHOD_LABELS[method] || method,
+    }));
+  }
+
+  get fundTypeOptions(): SelectOption[] {
+    return (Object.values(ExpenseFundType) as ExpenseFundType[]).map((fund) => ({
+      value: fund,
+      label: EXPENSE_FUND_TYPE_LABELS[fund] || fund,
     }));
   }
 

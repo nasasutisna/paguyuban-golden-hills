@@ -121,15 +121,18 @@ export class ProfilePage implements OnInit, OnDestroy {
       username: user.username,
       email: user.email,
       firstName: user.firstName || '',
-      role: this.formatRole(user.roleId)
+      role: this.getRoleName(user)
     });
   }
 
   /**
-   * Format role for display
+   * Resolve the role's display name.
+   * Mirrors role.guard.ts: prefers the nested `role.name`, then the flat
+   * `roleName` returned by /auth/me. `roleId` is a UUID and must NOT be shown.
    */
-  formatRole(role: string): string {
-    return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+  getRoleName(user?: User | null): string {
+    const u = (user ?? this.user) as any;
+    return u?.role?.name || u?.roleName || '';
   }
 
   /**
@@ -405,10 +408,14 @@ export class ProfilePage implements OnInit, OnDestroy {
    */
   getRoleColor(role: string): string {
     const colors: { [key: string]: string } = {
-      admin: 'danger',
-      moderator: 'warning',
-      user: 'success'
+      ADMIN: 'danger',
+      SUPERADMIN: 'danger',
+      MANAGER: 'tertiary',
+      ACCOUNTANT: 'primary',
+      COORDINATOR: 'warning',
+      PENGURUS: 'success',
+      STAFF: 'medium'
     };
-    return colors[role.toLowerCase()] || 'medium';
+    return colors[role] || 'medium';
   }
 }

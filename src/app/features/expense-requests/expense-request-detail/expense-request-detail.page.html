@@ -39,6 +39,11 @@
       <ion-chip [color]="getStatusColor(request.status)">
         <ion-label>{{ STATUS_LABELS[request.status] }}</ion-label>
       </ion-chip>
+      @if (request.fundType) {
+      <ion-chip [color]="getFundTypeColor()">
+        <ion-label>{{ getFundTypeLabel() }}</ion-label>
+      </ion-chip>
+      }
       @if (request.paymentMethod) {
       <ion-chip color="primary">
         <ion-label>{{ getMethodLabel() }}</ion-label>
@@ -86,6 +91,13 @@
     </ion-card-header>
     <ion-card-content>
       <ion-list lines="full" class="info-list">
+        <ion-item>
+          <ion-icon name="layers-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h2>Jenis Pengeluaran</h2>
+            <p>{{ getFundTypeLabel() }}</p>
+          </ion-label>
+        </ion-item>
         <ion-item>
           <ion-icon name="pricetag-outline" slot="start"></ion-icon>
           <ion-label>

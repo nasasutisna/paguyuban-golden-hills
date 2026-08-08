@@ -1,4 +1,4 @@
-<!-- Modern Register Page -->
+<!-- Modern Register Page — WhatsApp OTP flow -->
 <ion-content class="register-page">
   <div class="register-wrapper">
     <!-- Left Side - Brand/Design -->
@@ -6,7 +6,7 @@
       <div class="brand-content">
         <!-- Logo -->
         <div class="brand-logo-large">
-          <ion-icon name="leaf"></ion-icon>
+          <img src="assets/icon/icon-paguyuban.jpeg" alt="Golden Hills" />
         </div>
 
         <!-- Brand Text -->
@@ -46,223 +46,189 @@
       <div class="form-container">
         <!-- Mobile Logo (only visible on small screens) -->
         <div class="mobile-brand">
-          <ion-icon name="leaf"></ion-icon>
+          <img src="assets/icon/icon-paguyuban.jpeg" alt="Golden Hills" />
           <span>Golden Hills</span>
         </div>
 
-        <!-- Form Header -->
-        <div class="form-header">
-          <h2>Create Account</h2>
-          <p>Join us today and get started</p>
-        </div>
-
-        <!-- Register Form -->
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-          <!-- Username Field -->
-          <div class="form-group">
-            <label class="form-label">
-              Username
-            </label>
-            <div class="input-wrapper" [class.focused]="usernameFocused" [class.error]="f['username'].invalid && f['username'].touched">
-              <ion-input
-                type="text"
-                formControlName="username"
-                autocomplete="username"
-                placeholder="Choose a username"
-                (ionFocus)="usernameFocused = true"
-                (ionBlur)="usernameFocused = false"
-              ></ion-input>
-              @if (f['username'].valid && f['username'].touched) {
-                <ion-icon name="checkmark-circle" class="input-icon success"></ion-icon>
-              } @if (f['username'].invalid && f['username'].touched) {
-                <ion-icon name="alert-circle" class="input-icon error"></ion-icon>
-              }
-            </div>
-            @if (getErrorMessage('username')) {
-              <span class="error-text">{{ getErrorMessage('username') }}</span>
-            }
+        <!-- ============ STEP 1: REQUEST OTP ============ -->
+        @if (step === 'request') {
+          <!-- Form Header -->
+          <div class="form-header">
+            <h2>Daftar Akun</h2>
+            <p>Masukkan unit rumah & nomor WhatsApp terdaftar. Kami akan mengirim kode verifikasi ke WhatsApp Anda.</p>
           </div>
 
-          <!-- Email Field -->
-          <div class="form-group">
-            <label class="form-label">
-              Email
-            </label>
-            <div class="input-wrapper" [class.focused]="emailFocused" [class.error]="f['email'].invalid && f['email'].touched">
-              <ion-input
-                type="email"
-                formControlName="email"
-                autocomplete="email"
-                placeholder="Enter your email"
-                (ionFocus)="emailFocused = true"
-                (ionBlur)="emailFocused = false"
-              ></ion-input>
-              @if (f['email'].valid && f['email'].touched) {
-                <ion-icon name="checkmark-circle" class="input-icon success"></ion-icon>
-              } @if (f['email'].invalid && f['email'].touched) {
-                <ion-icon name="alert-circle" class="input-icon error"></ion-icon>
-              }
-            </div>
-            @if (getErrorMessage('email')) {
-              <span class="error-text">{{ getErrorMessage('email') }}</span>
-            }
-          </div>
-
-          <!-- First Name & Last Name Row -->
-          <div class="form-row">
-            <!-- First Name Field -->
+          <form [formGroup]="requestForm" (ngSubmit)="onRequest()">
+            <!-- Unit Field -->
             <div class="form-group">
               <label class="form-label">
-                First Name
+                <ion-icon name="home"></ion-icon>
+                Unit Rumah
               </label>
-              <div class="input-wrapper" [class.focused]="firstNameFocused" [class.error]="f['firstName'].invalid && f['firstName'].touched">
+              <div class="input-wrapper" [class.focused]="unitFocused" [class.error]="fReq['unitNumber'].invalid && fReq['unitNumber'].touched">
                 <ion-input
                   type="text"
-                  formControlName="firstName"
-                  autocomplete="given-name"
-                  placeholder="First name"
-                  (ionFocus)="firstNameFocused = true"
-                  (ionBlur)="firstNameFocused = false"
+                  formControlName="unitNumber"
+                  placeholder="Mis. A-101"
+                  autocomplete="off"
+                  (ionFocus)="unitFocused = true"
+                  (ionBlur)="unitFocused = false"
                 ></ion-input>
-                @if (f['firstName'].valid && f['firstName'].touched) {
-                  <ion-icon name="checkmark-circle" class="input-icon success"></ion-icon>
-                } @if (f['firstName'].invalid && f['firstName'].touched) {
-                  <ion-icon name="alert-circle" class="input-icon error"></ion-icon>
-                }
               </div>
-              @if (getErrorMessage('firstName')) {
-                <span class="error-text">{{ getErrorMessage('firstName') }}</span>
+              @if (fieldError(requestForm, 'unitNumber', 'Unit rumah')) {
+                <span class="error-text">{{ fieldError(requestForm, 'unitNumber', 'Unit rumah') }}</span>
               }
             </div>
 
-            <!-- Last Name Field -->
+            <!-- WhatsApp Field -->
             <div class="form-group">
               <label class="form-label">
-                Last Name
+                <ion-icon name="logo-whatsapp"></ion-icon>
+                Nomor WhatsApp
               </label>
-              <div class="input-wrapper" [class.focused]="lastNameFocused" [class.error]="f['lastName'].invalid && f['lastName'].touched">
+              <div class="input-wrapper" [class.focused]="phoneFocused" [class.error]="fReq['phoneNumber'].invalid && fReq['phoneNumber'].touched">
                 <ion-input
-                  type="text"
-                  formControlName="lastName"
-                  autocomplete="family-name"
-                  placeholder="Last name"
-                  (ionFocus)="lastNameFocused = true"
-                  (ionBlur)="lastNameFocused = false"
+                  type="tel"
+                  inputmode="numeric"
+                  formControlName="phoneNumber"
+                  placeholder="08xxxxxxxxxx"
+                  autocomplete="tel"
+                  (ionFocus)="phoneFocused = true"
+                  (ionBlur)="phoneFocused = false"
                 ></ion-input>
-                @if (f['lastName'].valid && f['lastName'].touched) {
-                  <ion-icon name="checkmark-circle" class="input-icon success"></ion-icon>
-                } @if (f['lastName'].invalid && f['lastName'].touched) {
-                  <ion-icon name="alert-circle" class="input-icon error"></ion-icon>
-                }
               </div>
-              @if (getErrorMessage('lastName')) {
-                <span class="error-text">{{ getErrorMessage('lastName') }}</span>
+              @if (fieldError(requestForm, 'phoneNumber', 'Nomor WhatsApp')) {
+                <span class="error-text">{{ fieldError(requestForm, 'phoneNumber', 'Nomor WhatsApp') }}</span>
               }
             </div>
+
+            <!-- Submit Button -->
+            <ion-button
+              type="submit"
+              expand="block"
+              size="large"
+              [disabled]="!isRequestValid()"
+              class="submit-button"
+            >
+              <span>Kirim Kode</span>
+              <ion-icon slot="end" name="arrow-forward"></ion-icon>
+            </ion-button>
+          </form>
+        }
+
+        <!-- ============ STEP 2: VERIFY OTP + NEW PASSWORD ============ -->
+        @if (step === 'complete') {
+          <!-- Form Header -->
+          <div class="form-header">
+            <h2>Verifikasi Kode</h2>
+            <p>
+              Kode telah dikirim ke WhatsApp Anda
+              @if (maskedPhone && maskedPhone !== '••••') {
+                <strong>{{ maskedPhone }}</strong>
+              } . Masukkan kode & buat password.
+            </p>
           </div>
 
-          <!-- Phone Number Field (Optional) -->
-          <div class="form-group">
-            <label class="form-label">
-              Phone Number
-              <span class="optional-badge">(Optional)</span>
-            </label>
-            <div class="input-wrapper" [class.focused]="phoneNumberFocused" [class.error]="f['phoneNumber'].invalid && f['phoneNumber'].touched">
-              <ion-input
-                type="tel"
-                formControlName="phoneNumber"
-                autocomplete="tel"
-                placeholder="+6281234567890"
-                (ionFocus)="phoneNumberFocused = true"
-                (ionBlur)="phoneNumberFocused = false"
-              ></ion-input>
+          <form [formGroup]="completeForm" (ngSubmit)="onComplete()">
+            <!-- OTP Field -->
+            <div class="form-group">
+              <label class="form-label">
+                <ion-icon name="shield-checkmark"></ion-icon>
+                Kode Verifikasi (6 digit)
+              </label>
+              <div class="input-wrapper otp-wrapper" [class.focused]="otpFocused" [class.error]="fCmp['otp'].invalid && fCmp['otp'].touched">
+                <ion-input
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="6"
+                  formControlName="otp"
+                  placeholder="123456"
+                  (ionFocus)="otpFocused = true"
+                  (ionBlur)="otpFocused = false"
+                ></ion-input>
+              </div>
+              @if (fieldError(completeForm, 'otp', 'Kode verifikasi')) {
+                <span class="error-text">{{ fieldError(completeForm, 'otp', 'Kode verifikasi') }}</span>
+              }
             </div>
-            @if (getErrorMessage('phoneNumber')) {
-              <span class="error-text">{{ getErrorMessage('phoneNumber') }}</span>
-            }
-          </div>
 
-          <!-- Password Field -->
-          <div class="form-group">
-            <label class="form-label">
-              Password
-            </label>
-            <div class="input-wrapper" [class.focused]="passwordFocused" [class.error]="f['password'].invalid && f['password'].touched">
-              <ion-input
-                [type]="showPassword ? 'text' : 'password'"
-                formControlName="password"
-                autocomplete="new-password"
-                placeholder="Create a password"
-                (ionFocus)="passwordFocused = true"
-                (ionBlur)="passwordFocused = false"
-              ></ion-input>
-              <ion-icon
-                [name]="showPassword ? 'eye-off' : 'eye'"
-                class="input-icon toggle"
-                (click)="togglePasswordVisibility()"
-              ></ion-icon>
+            <!-- New Password Field -->
+            <div class="form-group">
+              <label class="form-label">
+                <ion-icon name="lock-closed"></ion-icon>
+                Password
+              </label>
+              <div class="input-wrapper" [class.focused]="newPwdFocused" [class.error]="fCmp['newPassword'].invalid && fCmp['newPassword'].touched">
+                <ion-input
+                  [type]="showNewPassword ? 'text' : 'password'"
+                  formControlName="newPassword"
+                  autocomplete="new-password"
+                  placeholder="Min. 8 karakter (huruf besar/kecil, angka, simbol)"
+                  (ionFocus)="newPwdFocused = true"
+                  (ionBlur)="newPwdFocused = false"
+                ></ion-input>
+                <ion-icon
+                  [name]="showNewPassword ? 'eye-off' : 'eye'"
+                  class="input-icon toggle"
+                  (click)="showNewPassword = !showNewPassword"
+                ></ion-icon>
+              </div>
+              @if (fieldError(completeForm, 'newPassword', 'Password')) {
+                <span class="error-text">{{ fieldError(completeForm, 'newPassword', 'Password') }}</span>
+              }
             </div>
-            @if (getErrorMessage('password')) {
-              <span class="error-text">{{ getErrorMessage('password') }}</span>
-            }
-            <div class="password-hint">
-              <ion-icon name="information-circle"></ion-icon>
-              <span>Must contain uppercase, lowercase, number & special character</span>
+
+            <!-- Confirm Password Field -->
+            <div class="form-group">
+              <label class="form-label">
+                <ion-icon name="lock-closed"></ion-icon>
+                Konfirmasi Password
+              </label>
+              <div class="input-wrapper" [class.focused]="confirmPwdFocused" [class.error]="fCmp['confirmPassword'].invalid && fCmp['confirmPassword'].touched">
+                <ion-input
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  formControlName="confirmPassword"
+                  autocomplete="new-password"
+                  placeholder="Ulangi password"
+                  (ionFocus)="confirmPwdFocused = true"
+                  (ionBlur)="confirmPwdFocused = false"
+                ></ion-input>
+                <ion-icon
+                  [name]="showConfirmPassword ? 'eye-off' : 'eye'"
+                  class="input-icon toggle"
+                  (click)="showConfirmPassword = !showConfirmPassword"
+                ></ion-icon>
+              </div>
+              @if (fieldError(completeForm, 'confirmPassword', 'Konfirmasi password')) {
+                <span class="error-text">{{ fieldError(completeForm, 'confirmPassword', 'Konfirmasi password') }}</span>
+              }
             </div>
-          </div>
 
-          <!-- Confirm Password Field -->
-          <div class="form-group">
-            <label class="form-label">
-              <ion-icon name="lock-closed"></ion-icon>
-              Confirm Password
-            </label>
-            <div class="input-wrapper" [class.focused]="confirmPasswordFocused" [class.error]="showConfirmPasswordError">
-              <ion-input
-                [type]="showConfirmPassword ? 'text' : 'password'"
-                formControlName="confirmPassword"
-                autocomplete="new-password"
-                placeholder="Confirm your password"
-                (ionFocus)="confirmPasswordFocused = true"
-                (ionBlur)="confirmPasswordFocused = false"
-              ></ion-input>
-              <ion-icon
-                [name]="showConfirmPassword ? 'eye-off' : 'eye'"
-                class="input-icon toggle"
-                (click)="toggleConfirmPasswordVisibility()"
-              ></ion-icon>
+            <!-- Submit Button -->
+            <ion-button
+              type="submit"
+              expand="block"
+              size="large"
+              [disabled]="!isCompleteValid()"
+              class="submit-button"
+            >
+              <span>Daftar Sekarang</span>
+              <ion-icon slot="end" name="checkmark"></ion-icon>
+            </ion-button>
+
+            <div class="step-links">
+              <ion-button fill="clear" size="small" class="text-link" (click)="onResend()">
+                Kirim ulang kode
+              </ion-button>
             </div>
-            @if (showConfirmPasswordError) {
-              <span class="error-text">{{ getErrorMessage('confirmPassword') }}</span>
-            }
-          </div>
-
-          <!-- Terms Checkbox -->
-          <div class="terms-section">
-            <label class="checkbox-label">
-              <ion-checkbox id="agree-terms"></ion-checkbox>
-              <span>I agree to the <a href="#" class="link">Terms of Service</a> and <a href="#" class="link">Privacy Policy</a></span>
-            </label>
-          </div>
-
-          <!-- Submit Button -->
-          <ion-button
-            type="submit"
-            expand="block"
-            size="large"
-            [disabled]="!isFormValid()"
-            class="submit-button"
-          >
-            <span>Create Account</span>
-            <ion-icon slot="end" name="arrow-forward"></ion-icon>
-          </ion-button>
-        </form>
+          </form>
+        }
 
         <!-- Login Link -->
         <div class="login-section">
-          <p>Already have an account?</p>
+          <p>Sudah punya akun?</p>
           <ion-button fill="clear" size="small" class="login-link" (click)="goToLogin()">
-            Sign In
+            Masuk
           </ion-button>
         </div>
       </div>

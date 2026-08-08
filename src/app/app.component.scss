@@ -119,15 +119,18 @@ ion-menu.admin-sidebar {
   width: 44px;
   height: 44px;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: var(--admin-radius-lg);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 
-  ion-icon {
-    font-size: 28px;
-    color: #fff;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--admin-radius-lg);
   }
 }
 
@@ -370,7 +373,14 @@ ion-menu.admin-sidebar {
   border-radius: var(--admin-radius-lg);
   padding: 0.625rem 1rem;
   width: 260px;
+  position: relative;
   transition: all 0.2s ease;
+
+  // Raise the whole box above the backdrop while the dropdown is open so the
+  // input stays clickable.
+  &.is-open {
+    z-index: 10000;
+  }
 
   &:focus-within {
     border-color: var(--admin-primary);
@@ -394,6 +404,94 @@ ion-menu.admin-sidebar {
     &::placeholder {
       color: var(--admin-text-secondary);
     }
+  }
+}
+
+// ============================================
+// Global Header Search Dropdown
+// ============================================
+.search-dropdown {
+  position: fixed;
+  width: 340px;
+  min-width: 300px;
+  background: #fff;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 10001;
+}
+
+.search-state {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  font-size: 0.8125rem;
+  color: var(--admin-text-secondary);
+
+  ion-spinner {
+    width: 16px;
+    height: 16px;
+  }
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--admin-border);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--admin-bg-light);
+  }
+
+  .result-icon {
+    font-size: 28px;
+    color: var(--admin-text-secondary);
+    flex-shrink: 0;
+  }
+
+  .result-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .result-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--admin-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .result-unit {
+    font-size: 0.75rem;
+    color: var(--admin-text-secondary);
+  }
+
+  .result-chevron {
+    font-size: 14px;
+    color: var(--admin-text-secondary);
+    flex-shrink: 0;
   }
 }
 

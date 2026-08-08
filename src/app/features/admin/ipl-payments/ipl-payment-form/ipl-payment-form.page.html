@@ -9,13 +9,16 @@
 
 <ion-content class="ion-padding">
   <!-- Loading Data State -->
-  <div *ngIf="loadingData" class="ion-padding ion-text-center">
+  @if (loadingData) {
+  <div class="ion-padding ion-text-center">
     <ion-spinner name="crescent"></ion-spinner>
     <p class="ion-margin-top">Memuat data...</p>
   </div>
+  }
 
   <!-- Error State -->
-  <div *ngIf="error && !loadingData" class="ion-padding ion-text-center">
+  @if (error && !loadingData) {
+  <div class="ion-padding ion-text-center">
     <ion-icon name="alert-circle-outline" size="large" color="danger"></ion-icon>
     <p class="ion-margin-top">{{ error }}</p>
     <ion-button fill="outline" (click)="loadData()">
@@ -23,9 +26,11 @@
       Coba Lagi
     </ion-button>
   </div>
+  }
 
   <!-- Form -->
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingData && !error">
+  @if (!loadingData && !error) {
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <!-- Pilih Periode & Warga -->
     <ion-card class="form-card">
       <ion-card-header>
@@ -90,7 +95,8 @@
         </div>
 
         <!-- Calculated Amount Display -->
-        <div *ngIf="selectedResident && selectedPeriod" class="calculated-amount-card">
+        @if (selectedResident && selectedPeriod) {
+        <div class="calculated-amount-card">
           <div class="calc-header">
             <ion-icon name="calculator-outline"></ion-icon>
             <span>Kalkulasi IPL</span>
@@ -119,6 +125,7 @@
             </div>
           </div>
         </div>
+        }
       </ion-card-content>
     </ion-card>
 
@@ -147,22 +154,72 @@
           [errorMessage]="getErrorMessage('paymentMethod')"
         ></app-form-select>
 
-        <!-- Iuran Kegiatan Warga (Optional) -->
+        <!-- Iuran Kegiatan Warga (opsional, nominal tetap sesuai ketentuan) -->
         <div class="kegiatan-section">
           <div class="kegiatan-header">
             <ion-icon name="cash-outline"></ion-icon>
-            <span>Iuran Kegiatan Warga (Opsional)</span>
+            <span>Iuran Kegiatan Warga</span>
+            <ion-toggle
+              class="kegiatan-toggle"
+              [checked]="isKegiatanEnabled()"
+              (ionChange)="toggleKegiatan($event)"
+              aria-label="Termasukkan Iuran Kegiatan">
+            </ion-toggle>
           </div>
-          <app-form-input
-            formControlName="kegiatanAmount"
-            type="number"
-            placeholder="0"
-            label="Nominal"
-            helperText="Masukkan nominal iuran kegiatan warga (jika ada)"
-          ></app-form-input>
-          <div class="kegiatan-preview" *ngIf="getKegiatanAmount() > 0">
-            <span>+ Iuran Kegiatan: {{ formatCurrency(getKegiatanAmount()) }}</span>
+          <div class="kegiatan-status-helper">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            @if (isKegiatanEnabled()) {
+              <span>Aktif — iuran kegiatan Rp 20.000/bulan ikut dibayarkan</span>
+            } @else {
+              <span>Nonaktif — iuran kegiatan tidak diikutsertakan dalam pembayaran ini</span>
+            }
           </div>
+
+          @if (isKegiatanEnabled()) {
+            <app-form-input
+              formControlName="kegiatanAmount"
+              type="number"
+              [readonly]="true"
+              placeholder="20000"
+              label="Nominal per Bulan"
+              helperText="Nominal tetap Rp 20.000/bulan sesuai ketentuan"
+            ></app-form-input>
+
+            <!-- Kegiatan Month Count Selector -->
+            <div class="month-count-selector">
+              <label class="field-label">
+                Jumlah Bulan Iuran Kegiatan
+              </label>
+              <div class="month-count-buttons">
+                <ion-button
+                  fill="clear"
+                  color="danger"
+                  [disabled]="getKegiatanMonthCount() <= 1"
+                  (click)="decrementKegiatanMonthCount()">
+                  <ion-icon name="remove-circle-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+                <div class="month-count-display">
+                  <span class="count">{{ getKegiatanMonthCount() }}</span>
+                  <span class="label">bulan</span>
+                </div>
+                <ion-button
+                  fill="clear"
+                  color="primary"
+                  [disabled]="getKegiatanMonthCount() >= 24"
+                  (click)="incrementKegiatanMonthCount()">
+                  <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+              <div class="month-count-helper">
+                <ion-icon name="information-circle-outline"></ion-icon>
+                <span>Iuran kegiatan untuk berapa bulan, mulai dari periode yang dipilih (1-24 bulan)</span>
+              </div>
+            </div>
+
+            <div class="kegiatan-preview">
+              <span>+ Iuran Kegiatan: {{ formatCurrency(getKegiatanAmount()) }} × {{ getKegiatanMonthCount() }} bulan = {{ formatCurrency(getKegiatanTotal()) }}</span>
+            </div>
+          }
         </div>
       </ion-card-content>
     </ion-card>
@@ -188,35 +245,43 @@
               <ion-icon name="cloud-upload-outline"></ion-icon>
             </div>
             <div class="upload-text">
-              <p *ngIf="!selectedFile">Klik untuk upload bukti transfer</p>
-              <p *ngIf="selectedFile" class="file-name">{{ selectedFile.name }}</p>
-              <span *ngIf="selectedFile" class="file-size">{{ formatFileSize(selectedFile.size || 0) }}</span>
-              <span *ngIf="!selectedFile" class="file-formats">JPG, PNG, PDF (Max 5MB)</span>
+              @if (selectedFile) {
+                <p class="file-name">{{ selectedFile.name }}</p>
+                <span class="file-size">{{ formatFileSize(selectedFile.size || 0) }}</span>
+              } @else {
+                <p>Klik untuk upload bukti transfer</p>
+                <span class="file-formats">JPG, PNG, PDF (Max 5MB)</span>
+              }
             </div>
           </label>
 
           <!-- Remove File Button -->
-          <ion-button
-            *ngIf="selectedFile"
-            size="small"
-            fill="clear"
-            color="danger"
-            (click)="removeFile()"
-            class="remove-file-btn">
-            <ion-icon name="close-circle" slot="icon-only"></ion-icon>
-          </ion-button>
+          @if (selectedFile) {
+            <ion-button
+              size="small"
+              fill="clear"
+              color="danger"
+              (click)="removeFile()"
+              class="remove-file-btn">
+              <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+            </ion-button>
+          }
         </div>
 
         <!-- File Preview (for images) -->
-        <div *ngIf="filePreview" class="file-preview">
-          <img [src]="filePreview" alt="Preview bukti transfer" />
-        </div>
+        @if (filePreview) {
+          <div class="file-preview">
+            <img [src]="filePreview" alt="Preview bukti transfer" />
+          </div>
+        }
 
         <!-- Validation Message -->
-        <div *ngIf="!selectedFile && form.touched" class="validation-message">
-          <ion-icon name="alert-circle-outline"></ion-icon>
-          <span>Bukti transfer wajib diupload</span>
-        </div>
+        @if (!selectedFile && form.touched) {
+          <div class="validation-message">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span>Bukti transfer wajib diupload</span>
+          </div>
+        }
       </ion-card-content>
     </ion-card>
 
@@ -236,7 +301,8 @@
     </ion-card>
 
     <!-- Summary Card -->
-    <ion-card class="summary-card" *ngIf="selectedResident && selectedPeriod">
+    @if (selectedResident && selectedPeriod) {
+    <ion-card class="summary-card">
       <ion-card-header>
         <ion-card-title>Ringkasan</ion-card-title>
       </ion-card-header>
@@ -253,10 +319,18 @@
           <span>Periode</span>
           <strong>{{ selectedPeriod.periodName }}</strong>
         </div>
-        <div class="summary-row" *ngIf="isMultiMonthPayment()">
-          <span>Jumlah Bulan</span>
-          <strong>{{ getMonthCount() }} bulan</strong>
-        </div>
+        @if (isMultiMonthPayment()) {
+          <div class="summary-row">
+            <span>Jumlah Bulan IPL</span>
+            <strong>{{ getMonthCount() }} bulan</strong>
+          </div>
+        }
+        @if (getKegiatanAmount() > 0) {
+          <div class="summary-row">
+            <span>Iuran Kegiatan ({{ getKegiatanMonthCount() }} bln)</span>
+            <strong>{{ formatCurrency(getKegiatanTotal()) }}</strong>
+          </div>
+        }
         <div class="summary-divider"></div>
         <div class="summary-row total">
           <span>Total Pembayaran</span>
@@ -264,15 +338,19 @@
         </div>
         <div class="summary-note ion-margin-top">
           <ion-icon name="information-circle-outline"></ion-icon>
-          <span *ngIf="isMultiMonthPayment()">
-            Pembayaran untuk {{ getMonthCount() }} bulan. Memerlukan persetujuan admin/keuangan.
-          </span>
-          <span *ngIf="!isMultiMonthPayment()">
-            Pembayaran memerlukan persetujuan admin/keuangan
-          </span>
+          @if (isMultiMonthPayment()) {
+            <span>
+              Pembayaran untuk {{ getMonthCount() }} bulan. Memerlukan persetujuan admin/keuangan.
+            </span>
+          } @else {
+            <span>
+              Pembayaran memerlukan persetujuan admin/keuangan
+            </span>
+          }
         </div>
       </ion-card-content>
     </ion-card>
+    }
 
     <!-- Form Actions -->
     <div class="form-actions">
@@ -297,6 +375,7 @@
       ></app-form-button>
     </div>
   </form>
+  }
 </ion-content>
 
 <style>
@@ -614,11 +693,30 @@
   gap: 8px;
   font-weight: 600;
   color: var(--ion-color-success);
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .kegiatan-header ion-icon {
   font-size: 20px;
+}
+
+.kegiatan-toggle {
+  margin-left: auto;
+}
+
+.kegiatan-status-helper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ion-color-medium);
+  margin-bottom: 12px;
+}
+
+.kegiatan-status-helper ion-icon {
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 .kegiatan-preview {

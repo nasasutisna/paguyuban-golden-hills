@@ -10,7 +10,9 @@ import {
   RefreshTokenRequest,
   User,
   AuthState,
-  LoginResponseData
+  LoginResponseData,
+  ForgotPasswordResponseData,
+  RegisterOtpResponseData
 } from '@models/auth.model';
 import { environment } from 'src/environments/environment';
 
@@ -318,6 +320,69 @@ export class AuthService implements OnDestroy {
       newPassword
     }).pipe(
       map(() => void 0)
+    );
+  }
+
+  /**
+   * Forgot password — step 1: request a WhatsApp OTP.
+   * The backend always responds 200 (generic) to prevent account enumeration;
+   * an unknown unit/phone returns a dummy token and sends nothing.
+   */
+  requestPasswordReset(unitNumber: string, phoneNumber: string): Observable<ForgotPasswordResponseData> {
+    return this.apiService.post<ForgotPasswordResponseData>(
+      '/auth/forgot-password/request',
+      { unitNumber, phoneNumber }
+    ).pipe(
+      map(response => response.data)
+    );
+  }
+
+  /**
+   * Forgot password — step 2: verify the OTP and set a new password.
+   */
+  resetPassword(resetToken: string, otp: string, newPassword: string): Observable<void> {
+    return this.apiService.post('/auth/forgot-password/reset', {
+      resetToken,
+      otp,
+      newPassword
+    }).pipe(
+      map(() => void 0)
+    );
+  }
+
+  /**
+   * Register — step 1: request a WhatsApp OTP.
+   * Backend matches the unit + registered WhatsApp. If the unit already has an
+   * account it returns 409; otherwise it sends a 6-digit OTP and returns a
+   * `registerToken` + masked phone.
+   */
+  requestRegistration(unitNumber: string, phoneNumber: string): Observable<RegisterOtpResponseData> {
+    return this.apiService.post<RegisterOtpResponseData>(
+      '/auth/register/request',
+      { unitNumber, phoneNumber }
+    ).pipe(
+      map(response => response.data)
+    );
+  }
+
+  /**
+   * Register — step 2: verify the OTP and create the account.
+   * On success the backend returns auth tokens; we save them so the user is
+   * auto-logged-in (same as the legacy register flow).
+   */
+  completeRegistration(registerToken: string, otp: string, newPassword: string): Observable<LoginResponseData> {
+    return this.apiService.post<LoginResponseData>(
+      '/auth/register/complete',
+      { registerToken, otp, newPassword }
+    ).pipe(
+      concatMap(async (response: ApiResponse<LoginResponseData>) => {
+        await this.saveAuthData(response.data.user, response.data, false, response.data.user.username);
+        return response.data;
+      }),
+      catchError(error => {
+        console.error('Register error:', error);
+        throw error;
+      })
     );
   }
 

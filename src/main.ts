@@ -4,11 +4,15 @@ import { APP_INITIALIZER } from '@angular/core';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
 import { ModalController } from '@ionic/angular';
 import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { Chart, registerables } from 'chart.js';
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { JwtInterceptor } from '@interceptors/jwt.interceptor';
 import { AuthService } from '@core/auth/auth.service';
+
+// Register Chart.js once globally (used by the admin dashboard charts).
+Chart.register(...registerables);
 
 function initializeAuth(authService: AuthService) {
   return () => authService.initializeAuth();

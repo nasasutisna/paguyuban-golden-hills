@@ -85,6 +85,38 @@ export class IplPeriodsService {
   }
 
   /**
+   * Ensure the IPL period for the current month exists (auto-created server-side
+   * if missing). Used by the payment form so the period dropdown is never empty
+   * when a user wants to pay before periods have been generated. Returns the
+   * current period, or null if the call failed (non-blocking).
+   */
+  ensureCurrent(): Observable<IplPeriod | null> {
+    return this.apiService.post<IplPeriod>('/ipl-periods/ensure-current', {}).pipe(
+      map((response) => response.data || null),
+      catchError((error) => {
+        console.error('Error ensuring current IPL period:', error);
+        return of(null);
+      })
+    );
+  }
+
+  /**
+   * Ensure an IPL period exists for a specific month/year (auto-created server-side
+   * if missing). Used by the payment matrix: clicking a month cell whose period
+   * hasn't been generated creates it on demand and proceeds to the payment form.
+   * Returns the period, or null if the call failed (non-blocking).
+   */
+  ensure(month: number, year: number): Observable<IplPeriod | null> {
+    return this.apiService.post<IplPeriod>('/ipl-periods/ensure', { month, year }).pipe(
+      map((response) => response.data || null),
+      catchError((error) => {
+        console.error('Error ensuring IPL period:', error);
+        return of(null);
+      })
+    );
+  }
+
+  /**
    * Get periods with statistics (paginated, server-side pagination)
    * @param params - Query parameters (page, limit, filters, sort)
    */

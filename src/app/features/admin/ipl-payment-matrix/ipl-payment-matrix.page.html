@@ -24,18 +24,25 @@
         </ion-select>
       </div>
 
-      <div class="block-filter">
+      <div class="block-filter" [class.locked]="isCoordinator">
         <ion-icon name="business-outline"></ion-icon>
-        <ion-select
-          [value]="selectedBlockId"
-          interface="popover"
-          placeholder="Semua Blok"
-          (ionChange)="onBlockChange($any($event))">
-          <ion-select-option [value]="null">Semua Blok</ion-select-option>
-          @for (b of blocks; track b.id) {
-            <ion-select-option [value]="b.id">{{ b.blockName }}</ion-select-option>
-          }
-        </ion-select>
+        @if (isCoordinator) {
+          <!-- Koordinator blok hanya boleh melihat bloknya sendiri (backend
+               memaksa scope ini), jadi filter dikunci & tidak bisa diganti. -->
+          <span class="block-locked">{{ coordinatorBlockLabel }}</span>
+          <ion-icon class="lock-icon" name="lock-closed"></ion-icon>
+        } @else {
+          <ion-select
+            [value]="selectedBlockId"
+            interface="popover"
+            placeholder="Semua Blok"
+            (ionChange)="onBlockChange($any($event))">
+            <ion-select-option [value]="null">Semua Blok</ion-select-option>
+            @for (b of blocks; track b.id) {
+              <ion-select-option [value]="b.id">{{ b.blockName }}</ion-select-option>
+            }
+          </ion-select>
+        }
       </div>
     </div>
 

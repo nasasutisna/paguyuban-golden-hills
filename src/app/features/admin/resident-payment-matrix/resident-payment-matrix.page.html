@@ -59,8 +59,14 @@
 
   <!-- Legend -->
   <div class="matrix-legend">
+    @if (data?.monthlyRate) {
+      <span class="legend-item legend-rate">
+        <ion-icon name="pricetag-outline"></ion-icon>
+        Iuran {{ formatCurrency(data!.monthlyRate!) }}/bln
+      </span>
+    }
     <span class="legend-item"><span class="cell-badge paid"></span> Lunas</span>
-    <span class="legend-item"><span class="cell-badge pending"></span> Proses</span>
+    <span class="legend-item"><span class="cell-badge pending"></span> Proses (verifikasi)</span>
     <span class="legend-item"><span class="cell-badge unpaid"></span> Belum</span>
   </div>
 
@@ -107,16 +113,26 @@
                     (click)="onResidentClick(row)">
                     {{ row.residentName || '— Kosong' }}
                   </div>
-                  <div class="unit-secondary">{{ blockLabel(row) }}</div>
+                  <div class="unit-secondary">
+                    {{ blockLabel(row) }}
+                    @if (row.pendingCount > 0) {
+                      <span class="row-pending-badge" title="{{ row.pendingCount }} pembayaran menunggu verifikasi">
+                        <ion-icon name="time"></ion-icon> {{ row.pendingCount }}
+                      </span>
+                    }
+                  </div>
                 </td>
                 <td class="col-area text-right">{{ formatArea(row.landArea) }}</td>
                 @for (cell of row.cells; track cell.month) {
                   <td class="col-month">
                     <span
                       class="cell-badge {{ statusColors[cell.status] }} clickable"
-                      [title]="monthNamesLong[cell.month - 1] + ' — ' + statusLabels[cell.status] + (cell.amount ? ' · ' + formatCurrency(cell.amount) : '') + ' · klik untuk detail'"
+                      [title]="monthNamesLong[cell.month - 1] + ' — ' + statusLabels[cell.status] + (cell.amount ? ' · ' + formatCurrency(cell.amount) : '') + ' · klik untuk bayar iuran warga'"
                       (click)="onCellClick(row, cell)">
-                      <ion-icon [name]="statusIcons[cell.status]"></ion-icon>
+                      <ion-icon class="cell-icon" [name]="statusIcons[cell.status]"></ion-icon>
+                      @if (cell.status === 'UNPAID') {
+                        <ion-icon class="cell-add-icon" name="add-circle"></ion-icon>
+                      }
                     </span>
                   </td>
                 }
@@ -156,12 +172,15 @@
                 </div>
                 <div class="card-subtitle">{{ blockLabel(row) }}</div>
               </div>
-              <span class="card-obligation">{{ row.paidCount }}/12 Lunas</span>
             </div>
 
             <div class="matrix-card-meta">
               <span><strong>LT:</strong> {{ formatArea(row.landArea) }}</span>
               <span><strong>Telp:</strong> {{ row.phoneNumber || '-' }}</span>
+              <span><strong>Lunas:</strong> {{ row.paidCount }}/12</span>
+              @if (row.pendingCount > 0) {
+                <span class="row-pending-badge"><ion-icon name="time"></ion-icon> {{ row.pendingCount }} proses</span>
+              }
             </div>
 
             <div class="matrix-card-months">
@@ -171,7 +190,10 @@
                   [title]="monthNamesLong[cell.month - 1] + ' — ' + statusLabels[cell.status] + ' · klik untuk detail'"
                   (click)="onCellClick(row, cell)">
                   <span class="month-chip-name">{{ monthNames[cell.month - 1] }}</span>
-                  <ion-icon [name]="statusIcons[cell.status]"></ion-icon>
+                  <ion-icon class="cell-icon" [name]="statusIcons[cell.status]"></ion-icon>
+                  @if (cell.status === 'UNPAID') {
+                    <ion-icon class="cell-add-icon" name="add-circle"></ion-icon>
+                  }
                 </div>
               }
             </div>

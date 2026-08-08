@@ -12,11 +12,11 @@
       <ion-header class="sidebar-header">
         <div class="brand-container">
           <div class="brand-logo">
-            <ion-icon name="leaf"></ion-icon>
+            <img src="assets/icon/icon-paguyuban.jpeg" alt="Golden Hills" />
           </div>
           <div class="brand-info">
-            <h1 class="brand-name">Golden Hills</h1>
-            <p class="brand-subtitle">Admin Panel</p>
+            <h1 class="brand-name">GH Family</h1>
+            <p class="brand-subtitle">warga golden hills</p>
           </div>
         </div>
       </ion-header>
@@ -247,11 +247,22 @@
             </div>
 
             <div class="header-right">
-              <!-- Search -->
-              <div class="header-search">
+              <!-- Search (resident/unit quick-find) — staff roles only.
+                   Visible only to roles that can open the resident detail page
+                   (ADMIN/MANAGER/SUPERADMIN); see canUseGlobalSearch(). -->
+              @if (canUseGlobalSearch()) {
+              <div class="header-search" [class.is-open]="searchOpen">
                 <ion-icon name="search"></ion-icon>
-                <input type="text" placeholder="Cari..." />
+                <input #searchInput
+                       type="text"
+                       placeholder="Cari warga / unit..."
+                       autocomplete="off"
+                       [value]="searchTerm"
+                       (input)="onSearchInput($event)"
+                       (focus)="onSearchFocus()"
+                       (keydown.escape)="closeSearch()" />
               </div>
+              }
 
               <!-- Notifications -->
               <ion-button class="header-action-btn" fill="clear" id="notifications-trigger">
@@ -375,4 +386,36 @@
       <ion-router-outlet id="main-router-outlet" class="main-router-outlet" [class.is-authenticated]="isAuthenticated"></ion-router-outlet>
     </div>
   </ion-split-pane>
+
+  <!-- Global search dropdown — rendered at the ion-app ROOT, NOT inside
+       ion-header. ion-header has position:sticky + z-index:100 which forms a
+       stacking context, so a dropdown living inside it gets trapped at that
+       layer and hidden behind page content. Root placement lets z-index 10001
+       win at the root context. position:fixed anchors it to the search box. -->
+  @if (searchOpen && canUseGlobalSearch()) {
+  <div #searchDropdown class="search-dropdown" [style.top]="dropdownPos.top" [style.left]="dropdownPos.left">
+    @if (searchLoading) {
+    <div class="search-state">
+      <ion-spinner name="crescent"></ion-spinner>
+      <span>Mencari...</span>
+    </div>
+    } @else if (searchResults.length === 0) {
+    <div class="search-state">
+      <ion-icon name="search-outline"></ion-icon>
+      <span>Warga / unit tidak ditemukan</span>
+    </div>
+    } @else {
+    @for (r of searchResults; track r.id) {
+    <button type="button" class="search-result-item" (click)="selectSearchResult(r)">
+      <ion-icon name="person-circle-outline" class="result-icon"></ion-icon>
+      <div class="result-info">
+        <span class="result-name">{{ residentDisplayName(r) }}</span>
+        <span class="result-unit">{{ r.unitNumber }}</span>
+      </div>
+      <ion-icon name="chevron-forward" class="result-chevron"></ion-icon>
+    </button>
+    }
+    }
+  </div>
+  }
 </ion-app>

@@ -77,6 +77,25 @@
     font-weight: 600;
     color: #1f2937;
   }
+
+  // Coordinator lock: read-only label instead of a select.
+  &.locked {
+    background: #f3f4f6;
+    cursor: default;
+  }
+
+  .block-locked {
+    min-width: 110px;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+  }
+
+  .lock-icon {
+    font-size: 16px;
+    color: #9ca3af;
+    margin-left: 2px;
+  }
 }
 
 .summary-chips {

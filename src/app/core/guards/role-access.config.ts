@@ -40,6 +40,7 @@ export const ROUTE_ROLE_RULES: RouteRoleRule[] = [
   { path: '/admin/ipl-periods', roles: ['ADMIN', 'ACCOUNTANT'] },
   { path: '/admin/whatsapp-blast', roles: ['ADMIN', 'ACCOUNTANT'] },
   { path: '/admin/setting-whatsapp', roles: ['ADMIN', 'ACCOUNTANT'] },
+  { path: '/admin/whatsapp-bot-tester', roles: ['ADMIN', 'ACCOUNTANT'] },
   { path: '/admin/ipl-payment-matrix', roles: ['PENGURUS', 'COORDINATOR', 'ADMIN', 'ACCOUNTANT', 'MANAGER', 'STAFF'] },
   { path: '/admin/resident-payment-matrix', roles: ['ADMIN', 'ACCOUNTANT'] },
 

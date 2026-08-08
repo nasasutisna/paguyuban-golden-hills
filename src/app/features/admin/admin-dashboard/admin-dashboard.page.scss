@@ -10,6 +10,23 @@
   margin: 0 auto;
 }
 
+// When the current user can't follow the dashboard shortcuts (not
+// ADMIN/ACCOUNTANT/SUPERADMIN), neutralise the interactive affordances so the
+// cards read as plain figures rather than dead links.
+.dashboard-wrapper.no-nav {
+  .saldo-card,
+  .unit-tile,
+  .delinquent-alert,
+  .stat-card.clickable,
+  .transaction-item {
+    cursor: default;
+
+    &:active {
+      transform: none;
+    }
+  }
+}
+
 // Loading Wrapper
 .loading-wrapper {
   display: flex;
@@ -261,109 +278,382 @@
   }
 }
 
-// Main Content Grid
-.content-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
+// Section Heading
+.section-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 8px 0 12px;
 
-  @media (min-width: 1024px) {
-    grid-template-columns: 2fr 1fr;
+  h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  .section-hint {
+    font-size: 12px;
+    color: #6b7280;
   }
 }
 
-// Chart Section
-.chart-section {
-  background: linear-gradient(145deg, rgba(141, 110, 99, 0.95) 0%, rgba(161, 136, 127, 0.95) 100%);
-  border-radius: 16px;
-  padding: 20px;
-  color: white;
-  box-shadow: 0 4px 16px rgba(141, 110, 99, 0.2);
+.group-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 8px 0 12px;
+}
 
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+// Section heading with a trailing control (year select) — row layout.
+.section-heading-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 
-    ion-button {
-      --color: white;
-      color: white;
+  // Title block takes the remaining space and keeps its heading on one line,
+  // so the trailing year-select can't push it to wrap.
+  > div {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    h4 {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.chart-year-select {
+  width: 116px;
+  flex-shrink: 0;
+  --padding-start: 10px;
+  --padding-end: 6px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  // Dorong ikon chevron (arrow) ke tepi kanan dalam box select.
+  &::part(icon) {
+    margin-inline-start: auto;
+  }
+}
+
+// Kas bulan-ini grids: 3 cards always fill the full available width.
+.kas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+
+  @media (min-width: 768px) {
+    gap: 16px;
+  }
+
+  // Compact so 3 currency values fit even on narrow screens.
+  .stat-card {
+    padding: 14px;
+
+    .stat-header {
+      margin-bottom: 8px;
+
+      .stat-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 20px;
+        border-radius: 9px;
+      }
+    }
+
+    .stat-body {
+      .stat-label {
+        font-size: 12px;
+        margin: 0 0 4px 0;
+      }
+
+      .stat-value {
+        font-size: 14px;
+        line-height: 1.2;
+        word-break: break-word;
+      }
     }
   }
 
-  .chart-container {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 20px;
+  @media (min-width: 768px) {
+    .stat-card {
+      padding: 16px;
+
+      .stat-body .stat-value {
+        font-size: 20px;
+      }
+    }
   }
 }
 
-// Quick Actions Section
-.quick-actions-section {
-  background: linear-gradient(145deg, #43a047 0%, #66bb6a 40%, #8d6e63 100%);
+// Saldo Kas (all-time)
+.saldo-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+.saldo-card {
   border-radius: 16px;
   padding: 20px;
-  color: white;
-  box-shadow: 0 4px 16px rgba(67, 160, 71, 0.2);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease;
 
-  .section-header {
-    margin-bottom: 16px;
+  &:active {
+    transform: scale(0.98);
   }
 
-  .quick-actions-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+  .saldo-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+
+    .saldo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      ion-icon {
+        font-size: 24px;
+        color: #ffffff;
+      }
+    }
+
+    .saldo-tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .saldo-label {
+    font-size: 13px;
+    opacity: 0.9;
+    margin: 0 0 6px 0;
+  }
+
+  .saldo-value {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+    font-family: 'SF Mono', 'Monaco', monospace;
+
+    @media (min-width: 768px) {
+      font-size: 30px;
+    }
+  }
+
+  &.saldo-ipl {
+    background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+  }
+
+  &.saldo-warga {
+    background: linear-gradient(135deg, #6d4c41 0%, #8d6e63 100%);
   }
 }
 
-.quick-action-item {
-  background: rgba(255, 255, 255, 0.15);
+// Status Pembayaran Unit
+.unit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+}
+
+.unit-tile {
+  background: #ffffff;
   border-radius: 12px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease;
 
   &:active {
-    transform: scale(0.95);
-    background: rgba(255, 255, 255, 0.25);
+    transform: scale(0.97);
   }
 
-  .quick-action-icon {
-    width: 48px;
-    height: 48px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
+  ion-icon {
+    font-size: 26px;
+    margin-bottom: 4px;
+  }
+
+  .unit-count {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    font-family: 'SF Mono', 'Monaco', monospace;
+  }
+
+  .unit-name {
+    font-size: 12px;
+    color: #6b7280;
+    text-align: center;
+  }
+
+  &.tile-full ion-icon {
+    color: #10b981;
+  }
+
+  &.tile-half ion-icon {
+    color: #f59e0b;
+  }
+
+  &.tile-vacant ion-icon {
+    color: #6b7280;
+  }
+
+  &.tile-buyback ion-icon {
+    color: #ef4444;
+  }
+}
+
+// Alert Tunggakan IPL
+.delinquent-alert {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  border-radius: 14px;
+  padding: 16px 18px;
+  color: #ffffff;
+  margin-bottom: 24px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.22);
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &.alert-empty {
+    background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+    box-shadow: 0 6px 18px rgba(46, 125, 50, 0.18);
+  }
+
+  .alert-icon {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
     display: flex;
     align-items: center;
     justify-content: center;
 
     ion-icon {
       font-size: 24px;
-      color: white;
+      color: #ffffff;
     }
   }
 
-  .quick-action-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: white;
-    text-align: center;
+  .alert-body {
+    flex: 1;
+    min-width: 0;
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 4px 0;
+    }
+
+    p {
+      font-size: 13px;
+      opacity: 0.92;
+      margin: 0;
+    }
   }
 
-  ion-badge {
-    --background: rgba(255, 255, 255, 0.9);
-    --color: #4caf50;
-    font-size: 11px;
+  .alert-arrow {
+    font-size: 20px;
+    opacity: 0.85;
   }
+}
+
+// Chart IPL (pemasukan & pengeluaran per bulan)
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.chart-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  .chart-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    ion-icon {
+      font-size: 20px;
+    }
+
+    h5 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0;
+    }
+  }
+
+  &:nth-child(1) .chart-card-header ion-icon {
+    color: #10b981;
+  }
+
+  &:nth-child(2) .chart-card-header ion-icon {
+    color: #ef4444;
+  }
+}
+
+.chart-canvas-wrap {
+  position: relative;
+  height: 260px;
+  width: 100%;
 }
 
 // Transactions Section
@@ -565,113 +855,6 @@
   }
 }
 
-// Bar Chart
-.bar-chart {
-  .chart-bars {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 8px;
-    height: 200px;
-    margin-bottom: 16px;
-  }
-
-  .bar-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .bar-wrapper {
-    display: flex;
-    gap: 4px;
-    align-items: flex-end;
-    height: 100%;
-    flex: 1;
-    justify-content: center;
-  }
-
-  .bar {
-    flex: 1;
-    min-width: 8px;
-    max-width: 20px;
-    border-radius: 4px 4px 0 0;
-    position: relative;
-    transition: height 0.3s ease;
-
-    @media (min-width: 768px) {
-      min-width: 10px;
-      max-width: 24px;
-    }
-
-    .bar-tooltip {
-      position: absolute;
-      bottom: calc(100% + 8px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 500;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-      z-index: 10;
-    }
-
-    &:hover .bar-tooltip {
-      opacity: 1;
-    }
-
-    &.bar-income {
-      background: linear-gradient(180deg, #81c784 0%, #4caf50 100%);
-    }
-
-    &.bar-expense {
-      background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
-    }
-  }
-
-  .bar-x-label {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.8);
-    text-align: center;
-  }
-}
-
-.chart-legend {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.9);
-
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-
-      &.income {
-        background: linear-gradient(180deg, #81c784 0%, #4caf50 100%);
-      }
-
-      &.expense {
-        background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
-      }
-    }
-  }
-}
-
 // ============ Admin Header ============
 .admin-header {
   ion-toolbar {
@@ -738,10 +921,13 @@
     padding: 20px 16px;
     text-align: center;
 
-    ion-icon {
-      font-size: 48px;
-      color: #81c784;
+    img {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
       margin-bottom: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
     }
 
     h2 {
@@ -831,8 +1017,12 @@
     gap: 12px;
   }
 
-  .content-grid {
+  .chart-grid {
     gap: 12px;
+  }
+
+  .chart-canvas-wrap {
+    height: 220px;
   }
 
   .transactions-list-wrapper {

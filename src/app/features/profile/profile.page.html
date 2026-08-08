@@ -19,8 +19,8 @@
         </div>
         <div class="user-info">
           <h2>{{ user.firstName || user.username }}</h2>
-          <ion-chip [color]="getRoleColor(user.roleId)">
-            <ion-label>{{ formatRole(user.roleId) }}</ion-label>
+          <ion-chip [color]="getRoleColor(getRoleName())">
+            <ion-label>{{ getRoleName() || '-' }}</ion-label>
           </ion-chip>
         </div>
       </div>

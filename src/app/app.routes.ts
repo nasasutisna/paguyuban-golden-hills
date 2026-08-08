@@ -362,6 +362,25 @@ export const routes: Routes = [
             (m) => m.WhatsappSettingsPage
           )
       },
+      // WhatsApp Bot Tester — one-screen convenience for testing & debugging
+      // the CS bot: connection + live bot status + send-test. Reuses the same
+      // session as the settings/blast pages.
+      {
+        path: 'whatsapp-bot-tester',
+        data: { breadcrumb: { label: 'WhatsApp Bot Tester' } },
+        loadComponent: () =>
+          import('./features/admin/whatsapp-bot-tester/whatsapp-bot-tester.page').then(
+            (m) => m.WhatsappBotTesterPage
+          )
+      },
+      // Backup & Restore — admin-only (covered by /admin/settings rule).
+      // Menu entry already exists in the sidebar at /admin/settings/backup.
+      {
+        path: 'settings/backup',
+        data: { breadcrumb: { label: 'Backup & Restore' } },
+        loadComponent: () =>
+          import('./features/admin/backup/backup.page').then((m) => m.BackupPage)
+      },
       // IPL Payment Matrix — componentless wrapper so detail pages reached from
       // the matrix (payment detail, resident detail) keep the matrix as their
       // breadcrumb parent, mirroring the cash-transactions/:idcash nested-detail

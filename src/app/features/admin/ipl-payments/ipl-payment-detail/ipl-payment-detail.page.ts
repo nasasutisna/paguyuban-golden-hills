@@ -72,6 +72,12 @@ export class IplPaymentDetailPage implements OnInit {
       return;
     }
 
+    // Reset derived state so a reload reflects fresh data (e.g. after approve/reject)
+    this.error = null;
+    this.receipt = null;
+    this.kegiatanReceipt = null;
+    this.receiptLoading = false;
+
     await this.loadingService.show({ message: 'Memuat detail pembayaran...' });
 
     this.subscriptions.push(
@@ -177,24 +183,18 @@ export class IplPaymentDetailPage implements OnInit {
   /**
    * Handle approve action
    */
-  private handleApprove(comments: string): void {
+  private async handleApprove(comments: string) {
     if (!this.payment) return;
 
-    this.loadingService.show({ message: 'Memproses persetujuan...' });
+    await this.loadingService.show({ message: 'Memproses persetujuan...' });
 
     this.subscriptions.push(
       this.iplPaymentsService.approve(this.payment.id, { comments }).subscribe({
-        next: (updated) => {
-          this.loadingService.dismiss();
-          if (updated) {
-            this.payment = updated;
-            this.toastService.success('Pembayaran disetujui');
-            // Load receipt after approval
-            this.loadReceipt(this.payment.id);
-            if (this.payment.kegiatanPayment) {
-              this.loadKegiatanReceipt(this.payment.kegiatanPayment.id);
-            }
-          }
+        next: () => {
+          this.toastService.success('Pembayaran disetujui');
+          // Reload full detail so status, approval info, and receipt reflect the new state.
+          // loadPayment() manages its own loading overlay (and dismisses this one via show()).
+          this.loadPayment();
         },
         error: (error) => {
           this.loadingService.dismiss();
@@ -255,12 +255,11 @@ export class IplPaymentDetailPage implements OnInit {
 
     this.subscriptions.push(
       this.iplPaymentsService.reject(this.payment.id, { rejectionReason }).subscribe({
-        next: (updated) => {
-          this.loadingService.dismiss();
-          if (updated) {
-            this.payment = updated;
-            this.toastService.success('Pembayaran ditolak');
-          }
+        next: () => {
+          this.toastService.success('Pembayaran ditolak');
+          // Reload full detail so status, rejection reason, and approval info reflect the new state.
+          // loadPayment() manages its own loading overlay (and dismisses this one via show()).
+          this.loadPayment();
         },
         error: (error) => {
           this.loadingService.dismiss();
@@ -538,12 +537,24 @@ export class IplPaymentDetailPage implements OnInit {
   }
 
   /**
+   * Build a fully-qualified asset URL from a (possibly slash-less) file path.
+   * Backend stores proof-of-payment paths without a leading slash
+   * (e.g. `uploads/c12a/BTF-...jpg`) while receipt paths have one
+   * (`/uploads/c12a/KWT-...pdf`). Normalize so we always emit exactly one `/`
+   * between the host and the path — otherwise `<img src>` resolves to an
+   * invalid URL like `http://hostuploads/...` and the image silently fails.
+   */
+  private buildAssetUrl(filePath: string): string {
+    const baseUrl = environment.apiUrl.replace('/api/v1', '');
+    const normalized = filePath.startsWith('/') ? filePath : `/${filePath}`;
+    return `${baseUrl}${normalized}`;
+  }
+
+  /**
    * Get full file URL
    */
   getFileUrl(file: FileAttachment): string {
-    // Use the base URL from environment and append file path
-    const baseUrl = environment.apiUrl.replace('/api/v1', '');
-    return `${baseUrl}${file.filePath}`;
+    return this.buildAssetUrl(file.filePath);
   }
 
   /**
@@ -618,8 +629,7 @@ export class IplPaymentDetailPage implements OnInit {
    */
   getReceiptUrl(): string {
     if (!this.receipt) return '';
-    const baseUrl = environment.apiUrl.replace('/api/v1', '');
-    return `${baseUrl}${this.receipt.filePath}`;
+    return this.buildAssetUrl(this.receipt.filePath);
   }
 
   /**
@@ -732,8 +742,7 @@ export class IplPaymentDetailPage implements OnInit {
    */
   getKegiatanReceiptUrl(): string {
     if (!this.kegiatanReceipt) return '';
-    const baseUrl = environment.apiUrl.replace('/api/v1', '');
-    return `${baseUrl}${this.kegiatanReceipt.filePath}`;
+    return this.buildAssetUrl(this.kegiatanReceipt.filePath);
   }
 
   /**
@@ -758,7 +767,7 @@ export class IplPaymentDetailPage implements OnInit {
     // Fallback calculation
     const iplTotal = this.payment?.calculatedAmount || 0;
     const kegiatanTotal = this.getKegiatanAmount();
-    return iplTotal + kegiatanTotal;
+    return Number(iplTotal) + Number(kegiatanTotal);
   }
 
   /**

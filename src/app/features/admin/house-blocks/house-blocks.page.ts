@@ -35,7 +35,7 @@ export class HouseBlocksPage implements OnInit, OnDestroy {
 
   // Pagination
   currentPage = 1;
-  pageSize = 2;
+  pageSize = 10;
   totalItems = 0;
 
   // Loading states

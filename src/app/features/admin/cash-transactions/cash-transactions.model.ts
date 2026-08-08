@@ -147,6 +147,9 @@ export interface AccountBalance {
   openingBalance: number;
   /** All-time balance: openingBalance + Σincome − Σexpense (transfers included). */
   balance: number;
+  /** All-time income/expense per Kas (same basis as `balance`, transfers included). */
+  totalIncome: number;
+  totalExpense: number;
   periodIncome: number;
   periodExpense: number;
   periodBalance: number;
@@ -257,6 +260,10 @@ export interface CashTransactionQueryParams {
   startDate?: string;
   endDate?: string;
   search?: string;
+  /** Backend field to order by (e.g. transactionDate, createdAt, updatedAt). */
+  sortBy?: string;
+  /** 'asc' | 'desc'. */
+  sortOrder?: 'asc' | 'desc';
 }
 
 /**

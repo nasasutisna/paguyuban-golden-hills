@@ -51,10 +51,13 @@
   justify-content: center;
   margin: 0 auto 2rem;
   backdrop-filter: blur(10px);
+  overflow: hidden;
 
-  ion-icon {
-    font-size: 64px;
-    color: #fff;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
   }
 }
 
@@ -166,9 +169,11 @@
   gap: 0.75rem;
   margin-bottom: 2rem;
 
-  ion-icon {
-    font-size: 40px;
-    color: var(--admin-primary);
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
   }
 
   span {
@@ -298,6 +303,22 @@
     ::ng-deep .native-input::placeholder {
       color: #9CA3AF;
       opacity: 1;
+    }
+  }
+
+  // OTP entry — larger, letter-spaced, centered
+  &.otp-wrapper {
+    ion-input {
+      --padding-top: 0.9rem;
+      --padding-bottom: 0.9rem;
+      font-size: 1.4rem;
+      letter-spacing: 0.5rem;
+      text-align: center;
+
+      ::ng-deep .native-input {
+        text-align: center;
+        letter-spacing: 0.5rem;
+      }
     }
   }
 }
@@ -432,6 +453,22 @@
 .login-link {
   --color: var(--admin-primary);
   font-weight: 600;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+// Step links (resend OTP, etc.)
+.step-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.text-link {
+  --color: var(--admin-primary);
+  font-weight: 600;
+  text-transform: none;
   --padding-start: 0;
   --padding-end: 0;
 }

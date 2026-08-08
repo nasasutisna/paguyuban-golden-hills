@@ -32,6 +32,22 @@ export interface DashboardFundFlow {
   balance: number;
 }
 
+/** IPL delinquency summary (units with a trailing streak of ≥3 unpaid months). */
+export interface DashboardDelinquent {
+  count: number;
+  asOfLabel: string | null;
+}
+
+/** House-unit occupancy breakdown. */
+export interface DashboardOccupancy {
+  totalUnits: number;
+  fullyOccupied: number;
+  occasionally: number;
+  vacant: number;
+  rented: number;
+  bankBuyback: number;
+}
+
 /** Aggregated payload returned by the dashboard overview endpoint. */
 export interface DashboardOverview {
   houseUnits: { total: number; active: number };
@@ -39,7 +55,13 @@ export interface DashboardOverview {
   iplFund: DashboardFundFlow;
   wargaFund: DashboardFundFlow;
   balances: { ipl: number; warga: number };
+  /** Consolidated (both Kas) income vs expense per month — legacy. */
   monthlyChart: MonthlyChartData[];
+  /** Per-Kas monthly series for the dashboard charts. */
+  iplMonthlyChart: MonthlyChartData[];
+  wargaMonthlyChart: MonthlyChartData[];
+  delinquent: DashboardDelinquent;
+  occupancy: DashboardOccupancy;
   recentTransactions: RecentTransaction[];
 }
 
@@ -66,16 +88,6 @@ export interface DashboardCard {
     direction: 'up' | 'down';
   };
   route?: string;
-}
-
-/** Quick menu item. */
-export interface QuickMenuItem {
-  id: string;
-  title: string;
-  icon: string;
-  color: string;
-  route: string;
-  badge?: number;
 }
 
 /** Monthly chart data point. */

@@ -4,11 +4,6 @@
       <ion-back-button defaultHref="/admin/resident-payments"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ pageTitle }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="toggleBulkMode()">
-        <ion-icon slot="icon-only" name="list-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -25,113 +20,28 @@
     <p class="ion-margin-top">{{ error }}</p>
   </div>
 
-  <!-- Empty State (bulk mode only — single mode allows payment without invoice) -->
-  <ion-alert
-    *ngIf="!loadingData && !error && isBulkMode && invoices.length === 0"
-    header="Info"
-    message="Tidak ada tagihan yang menunggu pembayaran"
-    [buttons]="['OK']">
-  </ion-alert>
-
   <!-- Form -->
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingData && !error && (invoices.length > 0 || !isBulkMode)">
-    <!-- Tagihan & Warga -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingData && !error">
+    <!-- Warga -->
     <ion-card class="form-card">
       <ion-card-header>
-        <ion-card-subtitle>
-          {{ isBulkMode ? 'Pilih Tagihan (Multiple)' : 'Pilih Tagihan' }}
-        </ion-card-subtitle>
-        <p *ngIf="isBulkMode" class="ion-text-wrap">
-          <small>Ketuk pada tagihan untuk memilih ({{ selectedInvoices.size }} dipilih)</small>
-        </p>
+        <ion-card-subtitle>Informasi Pembayar</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <!-- Single Mode: Resident (required) + Invoice (optional) -->
-        <app-form-select
-          *ngIf="!isBulkMode"
+        <app-form-searchable-select
           label="Warga"
           formControlName="residentId"
-          placeholder="Pilih warga"
+          placeholder="Pilih warga yang membayar"
           [options]="residentOptions"
           [required]="true"
+          modalTitle="Pilih Warga"
+          searchPlaceholder="Cari nama / blok warga..."
           [showError]="isFieldInvalid('residentId')"
           [errorMessage]="getErrorMessage('residentId')"
-        ></app-form-select>
-
-        <app-form-select
-          *ngIf="!isBulkMode"
-          label="Tagihan (Opsional)"
-          formControlName="invoiceId"
-          placeholder="Pilih tagihan (kosongkan jika tanpa tagihan)"
-          [options]="invoiceOptions"
-          [required]="false"
-          (ngModelChange)="onInvoiceChange()"
-        ></app-form-select>
-
-        <!-- Bulk Mode: Invoice List with Selection -->
-        <div *ngIf="isBulkMode" class="bulk-invoice-list">
-          <ion-list>
-            <ion-item *ngFor="let invoice of invoices" [class.selected]="isInvoiceSelected(invoice.id)" (click)="toggleInvoiceSelection(invoice.id)" class="invoice-item">
-              <ion-checkbox slot="start" [checked]="isInvoiceSelected(invoice.id)"></ion-checkbox>
-              <ion-label>
-                <h3>{{ invoice.invoiceNumber }}</h3>
-                <p>{{ invoice.resident?.firstName }} {{ invoice.resident?.lastName }}</p>
-                <p class="amount">{{ formatCurrency(invoice.remainingAmount) }}</p>
-              </ion-label>
-            </ion-item>
-          </ion-list>
-        </div>
-
-        <!-- Bulk Mode: Summary -->
-        <ion-card *ngIf="isBulkMode && selectedInvoices.size > 0" class="bulk-summary-card">
-          <ion-card-content>
-            <div class="info-row">
-              <span>Jumlah Tagihan</span>
-              <strong>{{ selectedInvoices.size }}</strong>
-            </div>
-            <div class="info-row total-row">
-              <span>Total Pembayaran</span>
-              <strong class="total-amount">{{ formatCurrency(getSelectedTotalAmount()) }}</strong>
-            </div>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Selected Invoice Info Card (Single Mode Only) -->
-        <ion-card *ngIf="!isBulkMode && selectedInvoiceData" class="invoice-info-card">
-          <ion-card-header>
-            <ion-card-title>Detail Tagihan</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="info-row">
-              <span>No. Tagihan</span>
-              <strong>{{ selectedInvoiceData.invoiceNumber }}</strong>
-            </div>
-            <div class="info-row">
-              <span>Jenis Iuran</span>
-              <strong>{{ selectedInvoiceData.feeType?.feeName || '-' }}</strong>
-            </div>
-            <div class="info-row">
-              <span>Periode</span>
-              <strong>{{ selectedInvoiceData.periodStartDate | date:'dd MMM yyyy' }} - {{ selectedInvoiceData.periodEndDate | date:'dd MMM yyyy' }}</strong>
-            </div>
-            <div class="info-divider"></div>
-            <div class="info-row total-row">
-              <span>Total Tagihan</span>
-              <strong class="total-amount">{{ formatCurrency(selectedInvoiceData.totalAmount) }}</strong>
-            </div>
-            <div class="info-row">
-              <span>Sudah Dibayar</span>
-              <strong class="paid-amount">{{ formatCurrency(selectedInvoiceData.paidAmount) }}</strong>
-            </div>
-            <div class="info-row remaining-row">
-              <span>Sisa Tagihan</span>
-              <strong class="remaining-amount">{{ formatCurrency(selectedInvoiceData.remainingAmount) }}</strong>
-            </div>
-          </ion-card-content>
-        </ion-card>
+        ></app-form-searchable-select>
 
         <!-- Resident Display (Auto-filled) -->
-        <div *ngIf="!isBulkMode && selectedResident" class="resident-info">
+        <div *ngIf="selectedResident" class="resident-info">
           <p>
             <ion-icon name="person-outline"></ion-icon>
             {{ selectedResident.firstName }} {{ selectedResident.lastName }}
@@ -206,8 +116,8 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Bukti Transfer (single mode only — bulk doesn't support files) -->
-    <ion-card class="form-card" *ngIf="!isBulkMode">
+    <!-- Bukti Transfer -->
+    <ion-card class="form-card">
       <ion-card-header>
         <ion-card-subtitle>
           Bukti Transfer
@@ -262,7 +172,7 @@
     </ion-card>
 
     <!-- Jumlah Pembayaran -->
-    <ion-card class="form-card" *ngIf="!isBulkMode">
+    <ion-card class="form-card">
       <ion-card-header>
         <ion-card-subtitle>Jumlah Pembayaran</ion-card-subtitle>
       </ion-card-header>
@@ -276,24 +186,8 @@
           [required]="true"
           [showError]="isFieldInvalid('amount')"
           [errorMessage]="getErrorMessage('amount')"
-          [helperText]="selectedInvoiceData ? 'Maksimal: ' + formatCurrency(selectedInvoiceData.remainingAmount) : ''"
+          [helperText]="amountHelperText"
         ></app-form-input>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Bulk Mode: Amount Info (Read-only) -->
-    <ion-card class="form-card" *ngIf="isBulkMode">
-      <ion-card-header>
-        <ion-card-subtitle>Informasi Jumlah</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="bulk-amount-info">
-          <p>Pembayaran akan menggunakan sisa tagihan dari setiap tagihan yang dipilih.</p>
-          <div class="info-row total-row" *ngIf="selectedInvoices.size > 0">
-            <span>Total Semua</span>
-            <strong class="total-amount">{{ formatCurrency(getSelectedTotalAmount()) }}</strong>
-          </div>
-        </div>
       </ion-card-content>
     </ion-card>
 
@@ -313,7 +207,7 @@
     </ion-card>
 
     <!-- Summary Card -->
-    <ion-card class="summary-card" *ngIf="!isBulkMode && form.get('amount')?.value > 0">
+    <ion-card class="summary-card" *ngIf="form.get('amount')?.value > 0">
       <ion-card-header>
         <ion-card-title>Ringkasan Pembayaran</ion-card-title>
       </ion-card-header>
@@ -327,31 +221,9 @@
           <span>Jumlah Dibayar</span>
           <strong>{{ formatCurrency(form.get('amount')?.value || 0) }}</strong>
         </div>
-        <div class="summary-row remaining" *ngIf="selectedInvoiceData">
-          <span>Sisa Setelah Bayar</span>
-          <strong>{{ formatCurrency(getRemainingAfterPayment()) }}</strong>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Bulk Mode: Summary -->
-    <ion-card class="summary-card" *ngIf="isBulkMode && selectedInvoices.size > 0">
-      <ion-card-header>
-        <ion-card-title>Ringkasan Pembayaran Bulk</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="summary-row">
-          <span>Jumlah Tagihan</span>
-          <strong>{{ selectedInvoices.size }}</strong>
-        </div>
-        <div class="summary-row">
-          <span>Metode</span>
-          <strong>{{ getPaymentMethodLabel() }}</strong>
-        </div>
-        <div class="summary-divider"></div>
-        <div class="summary-row total">
-          <span>Total Pembayaran</span>
-          <strong>{{ formatCurrency(getSelectedTotalAmount()) }}</strong>
+        <div class="summary-row remaining" *ngIf="iuranMonthsPreview > 0">
+          <span>Cakupan Iuran</span>
+          <strong>≈ {{ iuranMonthsPreview }} bulan</strong>
         </div>
       </ion-card-content>
     </ion-card>

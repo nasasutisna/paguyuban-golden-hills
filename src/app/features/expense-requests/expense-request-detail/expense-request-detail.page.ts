@@ -15,6 +15,9 @@ import {
   EXPENSE_REQUEST_STATUS_LABELS,
   EXPENSE_REQUEST_STATUS_COLORS,
   EXPENSE_PAYMENT_METHOD_LABELS,
+  EXPENSE_FUND_TYPE_LABELS,
+  EXPENSE_FUND_TYPE_COLORS,
+  ExpenseFundType,
   FileAttachment,
 } from '../expense-requests.model';
 
@@ -52,7 +55,10 @@ export class ExpenseRequestDetailPage implements OnInit, OnDestroy {
   readonly STATUS_LABELS = EXPENSE_REQUEST_STATUS_LABELS;
   readonly STATUS_COLORS = EXPENSE_REQUEST_STATUS_COLORS;
   readonly METHOD_LABELS = EXPENSE_PAYMENT_METHOD_LABELS;
+  readonly FUND_TYPE_LABELS = EXPENSE_FUND_TYPE_LABELS;
+  readonly FUND_TYPE_COLORS = EXPENSE_FUND_TYPE_COLORS;
   readonly ExpenseRequestStatus = ExpenseRequestStatus;
+  readonly ExpenseFundType = ExpenseFundType;
 
   private subscriptions: Subscription[] = [];
 
@@ -302,6 +308,18 @@ export class ExpenseRequestDetailPage implements OnInit, OnDestroy {
     const m = this.request?.paymentMethod as ExpensePaymentMethod | undefined;
     if (!m) return '-';
     return this.METHOD_LABELS[m] || m;
+  }
+
+  getFundTypeLabel(): string {
+    const f = this.request?.fundType as ExpenseFundType | undefined;
+    if (!f) return '-';
+    return this.FUND_TYPE_LABELS[f] || f;
+  }
+
+  getFundTypeColor(): string {
+    const f = this.request?.fundType as ExpenseFundType | undefined;
+    if (!f) return 'medium';
+    return this.FUND_TYPE_COLORS[f] || 'medium';
   }
 
   getRequesterName(): string {

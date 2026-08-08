@@ -90,6 +90,18 @@
       </ion-segment-button>
     </ion-segment>
 
+    <ion-segment class="view-toggle" [(ngModel)]="fundTypeFilter" (ionChange)="onFundTypeFilterChange($event.detail.value)">
+      <ion-segment-button [value]="''">
+        <ion-label>Semua Jenis</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ExpenseFundType.IPL">
+        <ion-label>IPL</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ExpenseFundType.WARGA">
+        <ion-label>Iuran Warga</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
     @if (canViewAll) {
     <ion-segment class="view-toggle" [(ngModel)]="viewMode" (ionChange)="onViewModeChange($event.detail.value)">
       <ion-segment-button [value]="'all'">
@@ -107,7 +119,7 @@
     <app-table
       [config]="tableConfig"
       [dataSource]="dataSource"
-      [statusBadges]="statusBadges"
+      [statusBadges]="allBadges"
       [currentPage]="currentPage"
       (actionClick)="onAction($event)"
       (filterChange)="onFilterChange($event)"

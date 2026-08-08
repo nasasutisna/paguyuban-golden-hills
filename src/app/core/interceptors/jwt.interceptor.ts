@@ -82,7 +82,15 @@ export class JwtInterceptor implements HttpInterceptor {
    */
   private needsAuth(url: string): boolean {
     // Skip auth for public endpoints
-    const publicEndpoints = ['/auth/login', '/auth/register', '/auth/refresh'];
+    const publicEndpoints = [
+      '/auth/login',
+      '/auth/register',
+      '/auth/register/request',
+      '/auth/register/complete',
+      '/auth/refresh',
+      '/auth/forgot-password/request',
+      '/auth/forgot-password/reset'
+    ];
     return !publicEndpoints.some(endpoint => url.includes(endpoint));
   }
 

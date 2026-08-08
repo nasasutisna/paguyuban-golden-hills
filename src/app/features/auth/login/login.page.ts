@@ -84,8 +84,9 @@ export class LoginPage implements OnInit {
       const value = control.value;
       if (!value) return null;
 
-      // Allow alphanumeric characters and underscores
-      const isValid = /^[a-zA-Z0-9_]+$/.test(value);
+      // Allow alphanumeric characters, underscores, dash & dot (unit codes
+      // like "A-101" are valid usernames under the OTP register flow).
+      const isValid = /^[a-zA-Z0-9_.-]+$/.test(value);
       return isValid ? null : { pattern: true };
     };
   }

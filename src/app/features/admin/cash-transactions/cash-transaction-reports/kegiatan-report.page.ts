@@ -10,8 +10,8 @@ import { LoadingService } from '@services/loading.service';
 import { downloadBlob } from '@core/utils/download-blob';
 
 /**
- * Kegiatan Report Page
- * Displays financial report for Iuran Kegiatan Warga
+ * Iuran Warga Report Page
+ * Displays financial report for Iuran Warga (Kas Warga)
  * Shows income, expenses, balance, and category breakdown
  */
 @Component({
@@ -68,7 +68,7 @@ export class KegiatanReportPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Load Kegiatan report data
+   * Load Iuran Warga report data
    */
   private loadReport(): void {
     const { startDate, endDate } = this.dateForm.value;
@@ -84,8 +84,8 @@ export class KegiatanReportPage implements OnInit, OnDestroy {
           this.loadingService.dismiss();
         },
         error: (error) => {
-          console.error('Error loading Kegiatan report:', error);
-          this.toastService.error('Gagal memuat laporan Kegiatan');
+          console.error('Error loading Iuran Warga report:', error);
+          this.toastService.error('Gagal memuat laporan Iuran Warga');
           this.isLoading = false;
           this.loadingService.dismiss();
         }
@@ -144,15 +144,15 @@ export class KegiatanReportPage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.cashTransactionsService.exportKegiatanReport(startDate, endDate).subscribe({
         next: (blob) => {
-          const filename = `Laporan-Kegiatan_${startDate || ''}_${endDate || ''}.xlsx`;
+          const filename = `Laporan-Iuran-Warga_${startDate || ''}_${endDate || ''}.xlsx`;
           downloadBlob(blob, filename);
           this.loadingService.dismiss();
-          this.toastService.success('Laporan Kas Warga berhasil diekspor');
+          this.toastService.success('Laporan Iuran Warga berhasil diekspor');
         },
         error: (error) => {
-          console.error('Error exporting Kegiatan report:', error);
+          console.error('Error exporting Iuran Warga report:', error);
           this.loadingService.dismiss();
-          this.toastService.error('Gagal mengekspor laporan Kegiatan');
+          this.toastService.error('Gagal mengekspor laporan Iuran Warga');
         }
       })
     );

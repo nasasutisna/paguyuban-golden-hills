@@ -14,6 +14,7 @@ import {
   EXPENSE_REQUEST_STATUS_LABELS,
   EXPENSE_REQUEST_STATUS_COLORS,
   ExpenseRequestQueryParams,
+  ExpenseFundType,
 } from './expense-requests.model';
 import { LoadingService } from '@services/loading.service';
 import { ToastService } from '@services/toast.service';
@@ -59,6 +60,7 @@ export class ExpenseRequestsPage implements OnInit, OnDestroy {
   // View state
   viewMode: ViewMode = 'mine';
   statusFilter: ExpenseRequestStatus | '' = '';
+  fundTypeFilter: ExpenseFundType | '' = '';
 
   // Table
   dataSource: TableDataSource<ExpenseRequest> = { data: [], loading: false };
@@ -71,9 +73,19 @@ export class ExpenseRequestsPage implements OnInit, OnDestroy {
     { value: ExpenseRequestStatus.CANCELLED, label: 'Dibatalkan', color: 'medium', icon: 'close-circle' },
   ];
 
+  readonly fundTypeBadges = [
+    { value: ExpenseFundType.IPL, label: 'IPL', color: 'primary', icon: 'cash-outline' },
+    { value: ExpenseFundType.WARGA, label: 'Iuran Warga', color: 'tertiary', icon: 'people-outline' },
+  ];
+
+  /** Table statusBadges lookup is value-keyed and shared across all status
+   *  columns; status and fund-type value sets don't collide, so we union them. */
+  readonly allBadges = [...this.statusBadges, ...this.fundTypeBadges];
+
   readonly STATUS_LABELS = EXPENSE_REQUEST_STATUS_LABELS;
   readonly STATUS_COLORS = EXPENSE_REQUEST_STATUS_COLORS;
   readonly ExpenseRequestStatus = ExpenseRequestStatus;
+  readonly ExpenseFundType = ExpenseFundType;
 
   private subscriptions: Subscription[] = [];
 
@@ -94,6 +106,7 @@ export class ExpenseRequestsPage implements OnInit, OnDestroy {
         { key: 'requestNumber', header: 'No. Request', type: 'text', sortable: true },
         { key: 'title', header: 'Judul', type: 'text' },
         { key: 'requesterName', header: 'Pemohon', type: 'text' },
+        { key: 'fundType', header: 'Jenis', type: 'status' },
         { key: 'categoryName', header: 'Kategori', type: 'text' },
         { key: 'transactionDate', header: 'Tanggal', type: 'date', sortable: true },
         { key: 'amount', header: 'Jumlah', type: 'currency', align: 'right' },
@@ -148,6 +161,7 @@ export class ExpenseRequestsPage implements OnInit, OnDestroy {
       limit: this.pageSize,
     };
     if (this.statusFilter) params.status = this.statusFilter;
+    if (this.fundTypeFilter) params.fundType = this.fundTypeFilter;
 
     const source$ = this.viewMode === 'all' && this.canViewAll
       ? this.expenseRequestsService.getAll(params)
@@ -207,6 +221,12 @@ export class ExpenseRequestsPage implements OnInit, OnDestroy {
     this.loadRequests();
   }
 
+  onFundTypeFilterChange(fundType: any): void {
+    this.fundTypeFilter = fundType || '';
+    this.currentPage = 1;
+    this.loadRequests();
+  }
+
   onViewModeChange(mode: any): void {
     this.viewMode = (mode as ViewMode) || 'mine';
     this.currentPage = 1;
@@ -232,6 +252,7 @@ export class ExpenseRequestsPage implements OnInit, OnDestroy {
       search: query?.trim() || undefined,
     };
     if (this.statusFilter) params.status = this.statusFilter;
+    if (this.fundTypeFilter) params.fundType = this.fundTypeFilter;
 
     const source$ = this.viewMode === 'all' && this.canViewAll
       ? this.expenseRequestsService.getAll(params)

@@ -16,6 +16,24 @@ export interface WhatsAppStatus {
   qrDataUrl: string | null;
 }
 
+/** Last inbound personal message captured by the CS bot. */
+export interface WhatsAppBotLastIncoming {
+  jid: string;
+  /** Epoch milliseconds. */
+  at: number;
+  preview: string;
+}
+
+/** GET /whatsapp-blast/bot/status — CS bot observability snapshot. */
+export interface WhatsAppBotStatus {
+  enabled: boolean;
+  socketConnected: boolean;
+  phoneNumber: string | null;
+  connectionState: string;
+  activeSessions: number;
+  lastIncoming: WhatsAppBotLastIncoming | null;
+}
+
 /** One delinquent recipient + computed reminder message. */
 export interface BlastRecipientPreview {
   unitId: string;

@@ -1,0 +1,237 @@
+:host {
+  --section-radius: 18px;
+  --section-shadow: 0 6px 24px rgba(17, 24, 39, 0.08);
+}
+
+.backup-content {
+  --background: #f4f6fb;
+}
+
+.page-wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 16px 14px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.section-card {
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+  margin: 0;
+  background: #ffffff;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ion-color-dark, #1f2937);
+
+  ion-icon {
+    font-size: 1.4rem;
+    color: var(--ion-color-primary, #3880ff);
+  }
+}
+
+.danger-card .section-title ion-icon {
+  color: var(--ion-color-danger, #eb445a);
+}
+
+.danger-subtitle {
+  color: var(--ion-color-danger, #eb445a) !important;
+}
+
+.hint {
+  margin: 0 0 14px;
+  color: var(--ion-color-medium-shade, #6b7280);
+  font-size: 0.88rem;
+  line-height: 1.45;
+
+  code {
+    background: rgba(var(--ion-color-dark-rgb, 31, 41, 55), 0.06);
+    padding: 1px 5px;
+    border-radius: 5px;
+    font-size: 0.82em;
+  }
+}
+
+.toggle-item {
+  --background: transparent;
+  --padding-start: 0;
+  margin-bottom: 6px;
+
+  ion-checkbox {
+    --size: 22px;
+    font-size: 0.95rem;
+  }
+}
+
+.action-btn {
+  margin-top: 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  --box-shadow: none;
+}
+
+/* File picker (restore upload) */
+.file-input {
+  display: none;
+}
+
+.file-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1.5px dashed var(--ion-color-medium-tint, #c4c9d4);
+  border-radius: 12px;
+  background: rgba(var(--ion-color-medium-rgb, 148, 154, 163), 0.08);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover,
+  &.has-file {
+    border-color: var(--ion-color-primary, #3880ff);
+    background: rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.06);
+  }
+
+  > ion-icon {
+    font-size: 1.5rem;
+    color: var(--ion-color-medium-shade, #6b7280);
+    flex-shrink: 0;
+  }
+
+  .file-picker-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .file-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ion-color-dark, #1f2937);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .file-size {
+    font-size: 0.78rem;
+    color: var(--ion-color-medium-shade, #6b7280);
+  }
+
+  .file-placeholder {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium-shade, #6b7280);
+  }
+}
+
+/* State blocks (loading / error / empty) */
+.state-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 36px 16px;
+  text-align: center;
+  color: var(--ion-color-medium-shade, #6b7280);
+
+  ion-icon {
+    font-size: 2.4rem;
+  }
+
+  ion-spinner {
+    --color: var(--ion-color-primary, #3880ff);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  &.error-block ion-icon {
+    color: var(--ion-color-danger, #eb445a);
+  }
+
+  &.empty-block ion-icon {
+    color: var(--ion-color-medium, #92949c);
+  }
+}
+
+/* Backup list */
+.backup-list {
+  background: transparent;
+  padding: 0;
+}
+
+.backup-item {
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  --inner-padding-end: 6px;
+  --border-color: rgba(var(--ion-color-medium-rgb, 148, 154, 163), 0.25);
+
+  .item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.1);
+    margin-right: 6px;
+
+    ion-icon {
+      font-size: 1.3rem;
+      color: var(--ion-color-primary, #3880ff);
+    }
+  }
+
+  .item-filename {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ion-color-dark, #1f2937);
+    word-break: break-all;
+  }
+
+  .item-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--ion-color-medium-shade, #6b7280);
+  }
+
+  .kind-chip {
+    --height: 20px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    margin: 0;
+    min-height: 20px;
+  }
+
+  .item-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+}
+
+/* Small screens */
+@media (max-width: 540px) {
+  .page-wrap {
+    padding: 12px 10px 40px;
+  }
+
+  .section-title {
+    font-size: 1.02rem;
+  }
+}

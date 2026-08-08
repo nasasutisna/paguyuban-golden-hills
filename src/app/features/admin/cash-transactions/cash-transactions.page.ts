@@ -22,7 +22,7 @@ import {
 
 // Table component and types
 import { TableComponent } from '@shared/ui/table/table.component';
-import { TableConfig, TableDataSource, TableAction } from '@shared/ui/table/table.model';
+import { TableConfig, TableDataSource, TableAction, TableSort } from '@shared/ui/table/table.model';
 import { FormDatePickerComponent } from '@shared/ui/form-controls/form-date-picker/form-date-picker.component';
 import { FormSelectComponent } from '@shared/ui/form-controls/form-select/form-select.component';
 import { SelectOption } from '@shared/ui/form-controls/form.model';
@@ -66,6 +66,11 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
   // Pagination state (server-side)
   currentPage = 1;
   pageSize = 10;
+
+  // Server-side sort state. Default to most-recently-modified first so newly
+  // added/edited/approved transactions surface at the top of the list.
+  sortColumn: string = 'updatedAt';
+  sortDirection: 'asc' | 'desc' = 'desc';
 
   // Quick date presets
   datePresets: { key: string; label: string }[] = [
@@ -164,7 +169,9 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
             item.transactionType === TransactionType.EXPENSE ? 'cell-danger' : ''
         },
         { key: 'paymentMethod', header: 'Metode', type: 'status' },
-        { key: 'approvalStatus', header: 'Status', type: 'status', sortable: true }
+        { key: 'approvalStatus', header: 'Status', type: 'status', sortable: true },
+        { key: 'createdAt', header: 'Dibuat', type: 'date', sortable: true },
+        { key: 'updatedAt', header: 'Diperbarui', type: 'date', sortable: true }
       ],
       actions: [
         {
@@ -332,7 +339,9 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
         categoryId: this.selectedCategoryId || undefined,
         cashAccountId: this.selectedCashAccountId || undefined,
         startDate: this.startDate || undefined,
-        endDate: this.endDate || undefined
+        endDate: this.endDate || undefined,
+        sortBy: this.sortColumn,
+        sortOrder: this.sortDirection
       }).subscribe({
         next: (response: CashTransactionsResponse) => {
           // Create a new object to trigger ngOnChanges in table component
@@ -459,13 +468,6 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Check if stats data exists
-   */
-  hasStats(): boolean {
-    return this.summary !== null || this.statsLoading;
-  }
-
-  /**
    * Toggle the date filter panel visibility
    */
   toggleFilter(): void {
@@ -502,6 +504,23 @@ export class CashTransactionsPage implements OnInit, OnDestroy {
    */
   onPageSizeChange(size: number): void {
     this.pageSize = size;
+    this.currentPage = 1;
+    this.loadTransactions();
+  }
+
+  /**
+   * Handle table sort change (server-side sorting). The table toggles
+   * asc → desc → null; a null direction resets to the default (updatedAt desc)
+   * so the list always has a deterministic order.
+   */
+  onSortChange(sort: TableSort): void {
+    if (!sort.direction) {
+      this.sortColumn = 'updatedAt';
+      this.sortDirection = 'desc';
+    } else {
+      this.sortColumn = sort.column;
+      this.sortDirection = sort.direction;
+    }
     this.currentPage = 1;
     this.loadTransactions();
   }

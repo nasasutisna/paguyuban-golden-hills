@@ -227,6 +227,7 @@ export class IplPaymentsService {
       // Add optional fields
       if (dto.kegiatanAmount) {
         formData.append('kegiatanAmount', dto.kegiatanAmount.toString());
+        formData.append('kegiatanMonthCount', (dto.kegiatanMonthCount ?? 1).toString());
       }
       if (dto.notes) {
         formData.append('notes', dto.notes);

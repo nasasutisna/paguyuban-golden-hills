@@ -1,0 +1,185 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>WhatsApp Bot Tester</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="wa-bot-content ion-padding">
+
+  <!-- ===================== KARTU KONEKSI ===================== -->
+  <ion-card class="wa-card conn-card">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="chatbubbles"></ion-icon>
+        Koneksi WhatsApp
+      </ion-card-title>
+      <ion-card-subtitle>Sambungkan nomor admin yang dipakai bot</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="conn-row">
+        <div class="conn-status">
+          <ion-badge [color]="connStateColor">
+            <ion-icon [name]="status?.state === 'OPEN' ? 'checkmark-circle' : 'time-outline'"></ion-icon>
+            {{ connStateLabel }}
+          </ion-badge>
+          @if (status?.phoneNumber) {
+            <span class="conn-phone">{{ status?.phoneNumber }}</span>
+          }
+        </div>
+        <div class="conn-actions">
+          @if (status?.state !== 'OPEN') {
+            <ion-button size="small" color="primary" (click)="connect()" [disabled]="connecting || statusLoading">
+              <ion-icon slot="start" name="link-outline"></ion-icon>
+              @if (connecting) { Menghubungkan... } @else { Sambungkan }
+            </ion-button>
+          } @else {
+            <ion-button size="small" color="medium" fill="outline" (click)="disconnect()">
+              <ion-icon slot="start" name="close-outline"></ion-icon>
+              Putuskan
+            </ion-button>
+          }
+          <ion-button size="small" color="warning" fill="outline" (click)="resetPairing()" [disabled]="resetting">
+            <ion-icon slot="start" name="swap-horizontal"></ion-icon>
+            @if (resetting) { Mereset... } @else { Ganti Nomor }
+          </ion-button>
+        </div>
+      </div>
+
+      @if (status?.qrDataUrl; as qrDataUrl) {
+        <div class="qr-box">
+          <img [src]="qrDataUrl | safeUrl" alt="WhatsApp QR" class="qr-img" />
+          <p class="qr-hint">
+            <ion-icon name="scan"></ion-icon>
+            Scan QR ini dengan WhatsApp di HP (nomor admin), menu: Setelan → Perangkat tertaut.
+          </p>
+        </div>
+      } @else if (status?.state === 'QR') {
+        <p class="muted">Menyiapkan QR... tunggu sebentar.</p>
+      } @else if (!status?.connected) {
+        <p class="muted">Klik <strong>Sambungkan</strong> untuk memunculkan QR pairing.</p>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <!-- ===================== KARTU STATUS BOT ===================== -->
+  <ion-card class="wa-card bot-card">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="hardware-chip-outline"></ion-icon>
+        Status Bot CS
+      </ion-card-title>
+      <ion-card-subtitle>Pantau apakah bot aktif & pesan warga masuk (refresh tiap {{ '4' }} dtk)</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      @if (botLoading && !botStatus) {
+        <div class="state-box">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Memuat status bot...</p>
+        </div>
+      } @else if (botStatus) {
+        <div class="bot-row">
+          <ion-badge [color]="botEnabledColor">
+            <ion-icon [name]="botStatus.enabled ? 'flash' : 'flash-off'"></ion-icon>
+            {{ botEnabledLabel }}
+          </ion-badge>
+          <span class="bot-meta">
+            <ion-icon name="server-outline"></ion-icon>
+            Socket: {{ botStatus.socketConnected ? 'Terhubung' : 'Terputus' }}
+          </span>
+        </div>
+
+        <div class="bot-grid">
+          <div class="bot-stat">
+            <span class="bot-stat-label">Sesi Aktif</span>
+            <span class="bot-stat-value">{{ botStatus.activeSessions }}</span>
+          </div>
+          <div class="bot-stat">
+            <span class="bot-stat-label">Nomor Admin</span>
+            <span class="bot-stat-value small">{{ botStatus.phoneNumber || '-' }}</span>
+          </div>
+        </div>
+
+        <div class="last-incoming">
+          <div class="li-title">
+            <ion-icon name="download-outline"></ion-icon>
+            Pesan Terakhir Masuk
+          </div>
+          @if (botStatus.lastIncoming) {
+            <div class="li-preview">"{{ botStatus.lastIncoming.preview }}"</div>
+            <div class="li-meta">
+              dari <strong>{{ lastIncomingPhone }}</strong> · pukul {{ lastIncomingTime }}
+            </div>
+          } @else {
+            <div class="li-preview muted">Belum ada pesan masuk. Coba chat nomor admin dari nomor warga.</div>
+          }
+        </div>
+
+        <!-- Checklist debugging 3 kondisi -->
+        <div class="debug-checklist">
+          <p class="dc-title">Bot diam? Pastikan ketiganya centang:</p>
+          <ul>
+            <li class="{{ botStatus.enabled ? 'ok' : 'no' }}">
+              <ion-icon [name]="botStatus.enabled ? 'checkmark-circle' : 'close-circle'"></ion-icon>
+              Bot aktif (WHATSAPP_BOT_ENABLED=true)
+            </li>
+            <li class="{{ botStatus.socketConnected ? 'ok' : 'no' }}">
+              <ion-icon [name]="botStatus.socketConnected ? 'checkmark-circle' : 'close-circle'"></ion-icon>
+              Socket WhatsApp terhubung (scan QR)
+            </li>
+            <li class="{{ botStatus.lastIncoming ? 'ok' : 'no' }}">
+              <ion-icon [name]="botStatus.lastIncoming ? 'checkmark-circle' : 'close-circle'"></ion-icon>
+              Pesan warga sampai (chat dari nomor berbeda)
+            </li>
+          </ul>
+        </div>
+      } @else {
+        <p class="muted">Gagal memuat status bot. Pastikan backend berjalan.</p>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <!-- ===================== KARTU TES KIRIM ===================== -->
+  <ion-card class="wa-card">
+    <ion-card-header>
+      <ion-card-title><ion-icon name="send-outline"></ion-icon> Tes Kirim Pesan</ion-card-title>
+      <ion-card-subtitle>Cek nomor & koneksi dengan mengirim pesan manual</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-input label="Nomor HP" labelPlacement="stacked" placeholder="08xxx / +62xxx" [(ngModel)]="testPhone"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-textarea label="Pesan (opsional)" labelPlacement="stacked" [autoGrow]="true" rows="2" [(ngModel)]="testMessage"></ion-textarea>
+      </ion-item>
+      <ion-button expand="block" color="secondary" (click)="sendTest()" [disabled]="sendingTest || !status?.connected">
+        <ion-icon slot="start" name="send-outline"></ion-icon>
+        @if (sendingTest) { Mengirim... } @else { Kirim Pesan Uji }
+      </ion-button>
+      @if (!status?.connected) {
+        <p class="muted small">Sambungkan WhatsApp dulu untuk mengirim.</p>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <!-- ===================== KARTU PANDUAN ===================== -->
+  <ion-card class="wa-card guide-card">
+    <ion-card-header>
+      <ion-card-title><ion-icon name="bulb-outline"></ion-icon> Panduan Tes Cepat</ion-card-title>
+      <ion-card-subtitle>Dari nomor <strong>warga</strong>, chat nomor admin yang ter-pair</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ol class="guide-list">
+        <li>Kirim <strong>"Hi Admin"</strong> → bot balas menu.</li>
+        <li>Ketik <strong>"1"</strong> → cek tagihan IPL (atau bot minta kode rumah bila nomor belum dikenal).</li>
+        <li>Kirim <strong>foto/dokumen</strong> → bot konfirmasi bukti diterima.</li>
+        <li>Ketik <strong>"0"</strong> → hand-off ke admin.</li>
+        <li>Ketik <strong>"menu"</strong> kapan saja untuk reset.</li>
+      </ol>
+      <p class="muted small">Bot hanya membalas chat personal, bukan grup. Pantau panel <em>Pesan Terakhir Masuk</em> di atas — kalau tidak berubah, pesan tidak sampai ke server.</p>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

@@ -17,13 +17,13 @@
   </ion-refresher>
 
   @if (!isLoading) {
-  <div class="dashboard-wrapper">
-    <!-- Welcome Banner with Gradient -->
+  <div class="dashboard-wrapper" [class.no-nav]="!canNavigate">
+    <!-- Welcome Banner (slim) -->
     <div class="welcome-banner">
       <div class="banner-content">
-        <h2>Welcome back, Admin!</h2>
+        <h2>Ringkasan Paguyuban</h2>
         <p class="banner-subtitle">
-          @if (iplPeriodLabel) { Periode IPL: {{ iplPeriodLabel }} } @else { Ringkasan komunitas Anda hari ini }
+          @if (iplPeriodLabel) { Periode IPL berjalan: {{ iplPeriodLabel }} } @else { Ringkasan keuangan komunitas Anda }
         </p>
         <div class="banner-stats">
           <div class="banner-stat">
@@ -31,17 +31,9 @@
             <span class="stat-label">Total Unit Rumah</span>
           </div>
           <div class="banner-divider"></div>
-
           <div class="banner-stat">
-            <span class="stat-value">{{ iplPaidUnits }}</span>
-            <span class="stat-label">Sudah Bayar IPL</span>
-          </div>
-          <div class="banner-divider"></div>
-
-          <!-- Jumlah warga yang belum bayar IPL periode berjalan -->
-          <div class="banner-stat">
-            <span class="stat-value">{{ iplUnpaidUnits }}</span>
-            <span class="stat-label">Belum Bayar IPL</span>
+            <span class="stat-value">{{ delinquentCount }}</span>
+            <span class="stat-label">Unit Menunggak IPL</span>
           </div>
         </div>
       </div>
@@ -50,149 +42,143 @@
       </div>
     </div>
 
-    <!-- Kas IPL — Stats Cards Grid -->
-    <div>
-      <h4>Kas IPL Bulan Ini</h4>
+    <!-- Saldo Kas Paguyuban (semua tahun) -->
+    <div class="section-heading">
+      <h4>Saldo Kas Paguyuban</h4>
+      <span class="section-hint">Total pemasukan dikurangi pengeluaran (semua tahun)</span>
     </div>
-    <div class="stats-grid">
-      @for (card of dashboardCards; track card.id) {
-        <div class="stat-card stat-card-primary" [class.clickable]="card.route"
-          (click)="navigateToCard(card.route)">
-          <div class="stat-header">
-            <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
-            @if (card.trend) {
-              <div class="stat-trend" [ngClass]="'trend-' + card.trend.direction">
-                <ion-icon [name]="card.trend.direction === 'up' ? 'arrow-up' : 'arrow-down'"></ion-icon>
-                <span>{{ card.trend.value }}%</span>
-              </div>
-            }
-          </div>
-          <div class="stat-body">
-            <p class="stat-label">{{ card.title }}</p>
-            <h3 class="stat-value">{{ card.value }}</h3>
-          </div>
-          @if (card.route) {
-            <div class="stat-footer">
-              <span class="view-link">View Details</span>
-              <ion-icon name="chevron-forward"></ion-icon>
-            </div>
-          }
+    <div class="saldo-grid">
+      <div class="saldo-card saldo-ipl" (click)="navigateTo('/admin/cash-transactions')">
+        <div class="saldo-top">
+          <div class="saldo-icon"><ion-icon name="leaf"></ion-icon></div>
+          <span class="saldo-tag">Kas IPL</span>
         </div>
-      }
+        <p class="saldo-label">Saldo Kas IPL</p>
+        <h3 class="saldo-value">{{ formatCurrency(saldoIpl) }}</h3>
+      </div>
+      <div class="saldo-card saldo-warga" (click)="navigateTo('/admin/cash-transactions')">
+        <div class="saldo-top">
+          <div class="saldo-icon"><ion-icon name="people"></ion-icon></div>
+          <span class="saldo-tag">Kas Iuran Warga</span>
+        </div>
+        <p class="saldo-label">Saldo Kas Iuran</p>
+        <h3 class="saldo-value">{{ formatCurrency(saldoWarga) }}</h3>
+      </div>
     </div>
 
-    <!-- Kas Warga — Stats Cards Grid -->
-    <div>
-      <h4>Kas Warga Bulan Ini</h4>
+    <!-- Status Pembayaran Unit -->
+    <div class="section-heading">
+      <h4>Status Pembayaran Unit</h4>
+      <span class="section-hint">Berdasarkan kewajiban IPL (status hunian)</span>
     </div>
-    <div class="stats-grid">
-      @for (card of dashboardIuranCards; track card.id) {
-        <div class="stat-card stat-card-primary" [class.clickable]="card.route"
-          (click)="navigateToCard(card.route)">
-          <div class="stat-header">
-            <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
-            @if (card.trend) {
-              <div class="stat-trend" [ngClass]="'trend-' + card.trend.direction">
-                <ion-icon [name]="card.trend.direction === 'up' ? 'arrow-up' : 'arrow-down'"></ion-icon>
-                <span>{{ card.trend.value }}%</span>
-              </div>
-            }
-          </div>
-          <div class="stat-body">
-            <p class="stat-label">{{ card.title }}</p>
-            <h3 class="stat-value">{{ card.value }}</h3>
-          </div>
-          @if (card.route) {
-            <div class="stat-footer">
-              <span class="view-link">View Details</span>
-              <ion-icon name="chevron-forward"></ion-icon>
-            </div>
-          }
-        </div>
-      }
+    <div class="unit-grid">
+      <div class="unit-tile tile-full" (click)="navigateTo('/admin/house-units')">
+        <ion-icon name="checkmark-done-circle"></ion-icon>
+        <span class="unit-count">{{ unitFull }}</span>
+        <span class="unit-name">Bayar Full</span>
+      </div>
+      <div class="unit-tile tile-half" (click)="navigateTo('/admin/house-units')">
+        <ion-icon name="speedometer"></ion-icon>
+        <span class="unit-count">{{ unitSetengah }}</span>
+        <span class="unit-name">Bayar Setengah</span>
+      </div>
+      <div class="unit-tile tile-vacant" (click)="navigateTo('/admin/house-units')">
+        <ion-icon name="home-outline"></ion-icon>
+        <span class="unit-count">{{ unitKosong }}</span>
+        <span class="unit-name">Tidak Berpenghuni</span>
+      </div>
+      <div class="unit-tile tile-buyback" (click)="navigateTo('/admin/house-units')">
+        <ion-icon name="business"></ion-icon>
+        <span class="unit-count">{{ unitBuyback }}</span>
+        <span class="unit-name">Buyback Bank</span>
+      </div>
     </div>
 
-    <!-- Main Content Grid -->
-    <div class="content-grid">
-      <!-- Chart Section -->
-      <div class="chart-section card-nature">
-        <div class="section-header">
-          <div class="section-title">
-            <ion-icon name="bar-chart"></ion-icon>
-            <h3>Monthly Overview</h3>
-          </div>
-          <ion-button fill="clear" size="small" routerLink="/reports">
-            View All
-            <ion-icon slot="end" name="chevron-forward"></ion-icon>
-          </ion-button>
-        </div>
+    <!-- Alert Tunggakan IPL (≥3 bulan) -->
+    <div class="delinquent-alert" [class.alert-empty]="delinquentCount === 0"
+      (click)="navigateTo('/admin/ipl-payment-matrix')">
+      <div class="alert-icon"><ion-icon name="warning"></ion-icon></div>
+      <div class="alert-body">
+        <h3>{{ delinquentCount }} Unit Menunggak IPL ≥ 3 Bulan</h3>
+        <p>
+          @if (delinquentAsOfLabel) { Status per {{ delinquentAsOfLabel }} } @else { Tidak ada tunggakan }
+        </p>
+      </div>
+      <ion-icon name="chevron-forward" class="alert-arrow"></ion-icon>
+    </div>
 
-        @if (!isLoadingChart && hasChartData()) {
-          <div class="chart-container">
-            <div class="bar-chart">
-              <div class="chart-bars">
-                @for (data of monthlyChartData; track data.month) {
-                  <div class="bar-group">
-                    <div class="bar-wrapper">
-                      <div class="bar bar-income" [style.height.%]="getBarHeight(data.income)">
-                        @if (data.income > 0) {
-                          <span class="bar-tooltip">
-                            Income: {{ formatCurrency(data.income) }}
-                          </span>
-                        }
-                      </div>
-                      <div class="bar bar-expense" [style.height.%]="getBarHeight(data.expense)">
-                        @if (data.expense > 0) {
-                          <span class="bar-tooltip">
-                            Expense: {{ formatCurrency(data.expense) }}
-                          </span>
-                        }
-                      </div>
-                    </div>
-                    <span class="bar-x-label">{{ data.month }}</span>
-                  </div>
-                }
-              </div>
-            </div>
-            <div class="chart-legend">
-              <div class="legend-item">
-                <div class="legend-color income"></div>
-                <span>Income</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color expense"></div>
-                <span>Expenses</span>
-              </div>
-            </div>
-          </div>
-        } @else {
-          <ng-container [ngTemplateOutlet]="noChartTemplate"></ng-container>
+    <!-- Chart Pemasukan & Pengeluaran IPL per Bulan -->
+    <div class="section-heading section-heading-row">
+      <div>
+        <h4>Tren IPL Tahun {{ chartYear }}</h4>
+        <span class="section-hint">Pemasukan & pengeluaran per bulan</span>
+      </div>
+      <ion-select
+        class="chart-year-select"
+        [value]="chartYear"
+        interface="popover"
+        (ionChange)="onChartYearChange($event)"
+      >
+        @for (y of yearOptions; track y) {
+          <ion-select-option [value]="y">{{ y }}</ion-select-option>
         }
+      </ion-select>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <ion-icon name="trending-up"></ion-icon>
+          <h5>Pemasukan IPL</h5>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart [type]="barChartType" [data]="iplIncomeChartData" [options]="barChartOptions"></canvas>
+        </div>
       </div>
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <ion-icon name="trending-down"></ion-icon>
+          <h5>Pengeluaran IPL</h5>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart [type]="barChartType" [data]="iplExpenseChartData" [options]="barChartOptions"></canvas>
+        </div>
+      </div>
+    </div>
 
-      <!-- Quick Actions -->
-      <div class="quick-actions-section card-gradient">
-        <div class="section-header">
-          <div class="section-title">
-            <ion-icon name="flash"></ion-icon>
-            <h3>Quick Actions</h3>
+    <!-- Kas IPL — Bulan Ini -->
+    <div>
+      <h4 class="group-title">Kas IPL Bulan Ini</h4>
+    </div>
+    <div class="kas-grid">
+      @for (card of dashboardCards; track card.id) {
+        <div class="stat-card stat-card-primary clickable" (click)="navigateTo(card.route)">
+          <div class="stat-header">
+            <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
+          </div>
+          <div class="stat-body">
+            <p class="stat-label">{{ card.title }}</p>
+            <h3 class="stat-value">{{ card.value }}</h3>
           </div>
         </div>
+      }
+    </div>
 
-        <div class="quick-actions-grid">
-          @for (item of quickMenuItems; track item.id) {
-            <div class="quick-action-item" (click)="navigateToMenuItem(item)">
-              <div class="quick-action-icon">
-                <ion-icon [name]="item.icon"></ion-icon>
-              </div>
-              <span class="quick-action-label">{{ item.title }}</span>
-              @if (item.badge) {
-                <ion-badge>{{ item.badge }}</ion-badge>
-              }
-            </div>
-          }
+    <!-- Kas Iuran — Bulan Ini -->
+    <div>
+      <h4 class="group-title">Kas Iuran Warga Bulan Ini</h4>
+    </div>
+    <div class="kas-grid">
+      @for (card of dashboardIuranCards; track card.id) {
+        <div class="stat-card stat-card-primary clickable" (click)="navigateTo(card.route)">
+          <div class="stat-header">
+            <ion-icon [name]="card.icon" class="stat-icon"></ion-icon>
+          </div>
+          <div class="stat-body">
+            <p class="stat-label">{{ card.title }}</p>
+            <h3 class="stat-value">{{ card.value }}</h3>
+          </div>
         </div>
-      </div>
+      }
     </div>
 
     <!-- Recent Transactions Section -->
@@ -201,17 +187,19 @@
         <div class="section-title-large">
           <ion-icon name="receipt"></ion-icon>
           <div>
-            <h3>Recent Transactions</h3>
-            <p>Latest financial activities</p>
+            <h3>Transaksi Terakhir</h3>
+            <p>Aktivitas keuangan terbaru</p>
           </div>
         </div>
-        <ion-button fill="outline" size="small" routerLink="/admin/cash-transactions">
-          View All
-          <ion-icon slot="end" name="chevron-forward"></ion-icon>
-        </ion-button>
+        @if (canNavigate) {
+          <ion-button fill="outline" size="small" routerLink="/admin/cash-transactions">
+            Lihat Semua
+            <ion-icon slot="end" name="chevron-forward"></ion-icon>
+          </ion-button>
+        }
       </div>
 
-      @if (!isLoadingTransactions && hasTransactions()) {
+      @if (hasTransactions()) {
         <div class="transactions-list-wrapper">
           @for (transaction of recentTransactions; track transaction.id) {
             <div class="transaction-item" (click)="navigateToTransaction(transaction.id)">
@@ -238,7 +226,10 @@
           }
         </div>
       } @else {
-        <ng-container [ngTemplateOutlet]="noTransactionsTemplate"></ng-container>
+        <div class="empty-state-card">
+          <ion-icon name="receipt"></ion-icon>
+          <p>Belum ada transaksi terbaru</p>
+        </div>
       }
     </div>
   </div>
@@ -250,27 +241,7 @@
   <ng-template #loadingTemplate>
     <div class="loading-wrapper">
       <ion-spinner name="crescent"></ion-spinner>
-      <p>Loading dashboard...</p>
-    </div>
-  </ng-template>
-
-  <!-- No Chart Template -->
-  <ng-template #noChartTemplate>
-    <div class="empty-state-card" *ngIf="!isLoadingChart">
-      <ion-icon name="bar-chart"></ion-icon>
-      <p>No data available for this period</p>
-    </div>
-  </ng-template>
-
-  <!-- No Transactions Template -->
-  <ng-template #noTransactionsTemplate>
-    <div class="empty-state-card" *ngIf="!isLoadingTransactions">
-      <ion-icon name="receipt"></ion-icon>
-      <p>No recent transactions</p>
-      <ion-button fill="outline" size="small" routerLink="/admin/cash-transactions/create">
-        <ion-icon slot="start" name="add"></ion-icon>
-        Add Transaction
-      </ion-button>
+      <p>Memuat dashboard...</p>
     </div>
   </ng-template>
 </ion-content>
@@ -280,7 +251,7 @@
   <ion-header class="menu-header">
     <ion-toolbar>
       <div class="menu-brand">
-        <ion-icon name="leaf"></ion-icon>
+        <img src="assets/icon/icon-paguyuban.jpeg" alt="Golden Hills" />
         <h2>Golden Hills</h2>
         <p>Admin Panel</p>
       </div>

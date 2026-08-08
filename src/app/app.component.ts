@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { Router, NavigationEnd, RouterLink } from '@angular/router';
-import { filter, Subject, takeUntil, forkJoin } from 'rxjs';
+import { filter, Subject, takeUntil, forkJoin, debounceTime, distinctUntilChanged, switchMap, of, map, catchError } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import {
   IonApp, IonMenu, IonHeader, IonToolbar, IonContent, IonList,
@@ -83,7 +83,20 @@ import {
   megaphoneOutline,
   pauseCircleOutline,
   playCircleOutline,
-  person
+  person,
+  hardwareChipOutline,
+  flash,
+  flashOff,
+  serverOutline,
+  downloadOutline,
+  bulbOutline,
+  checkmarkDoneCircle,
+  warning,
+  arrowUpCircle,
+  arrowDownCircle,
+  speedometer,
+  eyeOff,
+  eye
 } from 'ionicons/icons';
 import { AuthService } from '@core/auth/auth.service';
 import { User } from '@models/auth.model';
@@ -95,6 +108,8 @@ import { ResidentPaymentsService } from '@features/admin/resident-payments/resid
 import { PaymentStatus, ResidentPayment } from '@features/admin/resident-payments/resident-payments.model';
 import { ExpenseRequestsService } from '@features/expense-requests/expense-requests.service';
 import { ExpenseRequest } from '@features/expense-requests/expense-requests.model';
+import { ResidentsService } from '@features/admin/residents/residents.service';
+import { Resident } from '@features/admin/residents/residents.model';
 
 interface MenuItem {
   title: string;
@@ -138,6 +153,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private iplPaymentsService = inject(IplPaymentsService);
   private residentPaymentsService = inject(ResidentPaymentsService);
   private expenseRequestsService = inject(ExpenseRequestsService);
+  private residentsService = inject(ResidentsService);
   private destroy$ = new Subject<void>();
 
   // Authentication state
@@ -153,6 +169,20 @@ export class AppComponent implements OnInit, OnDestroy {
   currentPageTitle = 'Dashboard';
   currentPageIcon = 'grid';
   currentUrl = '/dashboard';
+
+  // Global header search (resident/unit quick-find). Visible only to roles
+  // that can open the resident detail page — see canUseGlobalSearch().
+  searchTerm = '';
+  searchResults: Resident[] = [];
+  searchLoading = false;
+  searchOpen = false;
+  private searchSubject = new Subject<string>();
+
+  // Dropdown is position:fixed (viewport-relative) so it escapes the ion-toolbar
+  // overflow:hidden that would otherwise clip it inside the header.
+  @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('searchDropdown') searchDropdownRef?: ElementRef<HTMLElement>;
+  dropdownPos = { top: '0px', left: '0px' };
 
   // Main Menu Items
   mainMenuItems: MenuItem[] = [
@@ -173,6 +203,7 @@ export class AppComponent implements OnInit, OnDestroy {
     { title: 'Karyawan', url: '/admin/employees', icon: 'people', description: 'Manajemen Staf' },
     { title: 'Penggajian', url: '/admin/employee-salary-headers', icon: 'cash-outline', description: 'Gaji Karyawan → Kas IPL' },
     { title: 'Pengguna', url: '/admin/users', icon: 'people', description: 'Pengguna' },
+    { title: 'Periode IPL', url: '/admin/ipl-periods', icon: 'calendar', description: 'Kelola Periode IPL' },
   ];
 
   // Keuangan Menu Items
@@ -185,11 +216,10 @@ export class AppComponent implements OnInit, OnDestroy {
   // IPL Menu Items
   iplMenuItems: MenuItem[] = [
     { title: 'IPL Warga', url: '/admin/ipl-payment-matrix', icon: 'wallet-outline', description: 'Daftar Pembayaran IPL' },
+    { title: 'Iuran Warga', url: '/admin/resident-payment-matrix', icon: 'grid', description: 'Status bayar warga per bulan' },
     // { title: 'Matrix IPL', url: '/admin/ipl-payment-matrix', icon: 'grid', description: 'Status bayar unit per bulan' },
-    { title: 'Blast WhatsApp', url: '/admin/whatsapp-blast', icon: 'logo-whatsapp', description: 'Kirim reminder WA tunggakan IPL' },
-    { title: 'Iuran Warga', url: '/admin/resident-payments', icon: 'card-outline', description: 'Riwayat Pembayaran' },
-    { title: 'Matrix Iuran Warga', url: '/admin/resident-payment-matrix', icon: 'grid', description: 'Status bayar warga per bulan' },
-    { title: 'Periode IPL', url: '/admin/ipl-periods', icon: 'calendar', description: 'Kelola Periode IPL' },
+    // { title: 'Blast WhatsApp', url: '/admin/whatsapp-blast', icon: 'logo-whatsapp', description: 'Kirim reminder WA tunggakan IPL' },
+    // { title: 'Iuran Warga', url: '/admin/resident-payments', icon: 'card-outline', description: 'Riwayat Pembayaran' },
   ];
 
   // Reports Menu Items
@@ -197,13 +227,14 @@ export class AppComponent implements OnInit, OnDestroy {
     // { title: 'Laporan Keuangan', url: '/admin/reports/financial', icon: 'trending-up', description: 'Pemasukan & Pengeluaran' },
     // { title: 'Laporan Bulanan', url: '/admin/reports/monthly', icon: 'calendar', description: 'Ringkasan Bulanan' },
     { title: 'Laporan IPL', url: '/admin/cash-transactions/reports/ipl', icon: 'document-text-outline', description: 'Laporan Pembayaran IPL' },
-    { title: 'Laporan Kegiatan', url: '/admin/cash-transactions/reports/kegiatan', icon: 'calendar-outline', description: 'Laporan Transaksi Kegiatan' },
+    { title: 'Laporan Iuran Warga', url: '/admin/cash-transactions/reports/kegiatan', icon: 'calendar-outline', description: 'Laporan Iuran Warga' },
     // { title: 'Log Aktivitas', url: '/admin/reports/activity', icon: 'receipt', description: 'Aktivitas Sistem' },
   ];
 
   // Settings Menu Items
   settingsMenuItems: MenuItem[] = [
     { title: 'Pengaturan Whatsapp', url: '/admin/setting-whatsapp', icon: 'logo-whatsapp', description: 'Koneksi & tes kirim WA' },
+    { title: 'Bot Tester WA', url: '/admin/whatsapp-bot-tester', icon: 'logo-whatsapp', description: 'Uji percakapan bot WA' },
     // { title: 'Keamanan', url: '/admin/settings/security', icon: 'shield', description: 'Keamanan & Akses' },
     // { title: 'Role & Izin', url: '/admin/settings/roles', icon: 'key', description: 'Role Pengguna' },
     { title: 'Backup & Restore', url: '/admin/settings/backup', icon: 'cloud-upload', description: 'Manajemen Data' },
@@ -237,7 +268,9 @@ export class AppComponent implements OnInit, OnDestroy {
       chevronDownOutline, chevronUpOutline, filterOutline, informationCircleOutline, cloudOutline, cloudUploadOutline,
       timeOutline, checkmarkDoneOutline, lockClosedOutline, lockOpenOutline, peopleCircle, briefcaseOutline, barcodeOutline,
       location, peopleOutline, sendOutline, linkOutline, swapVerticalOutline, shieldCheckmarkOutline, listOutline, hourglass, personRemove,
-      removeCircleOutline, logoWhatsapp, megaphoneOutline, pauseCircleOutline, playCircleOutline, person
+      removeCircleOutline, logoWhatsapp, megaphoneOutline, pauseCircleOutline, playCircleOutline, person,
+      hardwareChipOutline, flash, flashOff, serverOutline, downloadOutline, bulbOutline,
+      checkmarkDoneCircle, warning, arrowUpCircle, arrowDownCircle, speedometer, eyeOff, eye
     });
   }
 
@@ -263,6 +296,29 @@ export class AppComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe((event: NavigationEnd) => {
       this.updatePageInfo(event.url);
+    });
+
+    // Global header search pipeline — debounce the typed term, then query the
+    // residents endpoint across name/unit/phone fields. switchMap cancels the
+    // previous in-flight request when a newer term arrives. Each branch heals
+    // to an empty list on error so a failed call won't freeze the dropdown.
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(term =>
+        this.residentsService.getAll({
+          search: term,
+          searchFields: 'firstName,lastName,unitNumber,phoneNumber',
+          limit: 10,
+        }).pipe(
+          map(res => res.data),
+          catchError(() => of([])),
+        ),
+      ),
+      takeUntil(this.destroy$),
+    ).subscribe(results => {
+      this.searchResults = results;
+      this.searchLoading = false;
     });
   }
 
@@ -330,8 +386,9 @@ export class AppComponent implements OnInit, OnDestroy {
       '/admin/ipl-payment-matrix': { title: 'Matrix Pembayaran IPL', icon: 'grid' },
       '/admin/whatsapp-blast': { title: 'Blast WhatsApp', icon: 'logo-whatsapp' },
       '/admin/setting-whatsapp': { title: 'Pengaturan WhatsApp', icon: 'logo-whatsapp' },
+      '/admin/whatsapp-bot-tester': { title: 'WhatsApp Bot Tester', icon: 'logo-whatsapp' },
       '/admin/cash-transactions/reports/ipl': { title: 'Laporan IPL', icon: 'document-text-outline' },
-      '/admin/cash-transactions/reports/kegiatan': { title: 'Laporan Kegiatan', icon: 'calendar-outline' },
+      '/admin/cash-transactions/reports/kegiatan': { title: 'Laporan Iuran Warga', icon: 'calendar-outline' },
     };
 
     // Find matching page
@@ -523,6 +580,99 @@ export class AppComponent implements OnInit, OnDestroy {
    */
   navigateToApproval(route: string[]) {
     this.navController.navigateRoot(route);
+  }
+
+  /**
+   * Whether the header search box should render. Only roles that can actually
+   * open the resident detail page get it, so a search result never leads to a
+   * route the guard would block (ADMIN/MANAGER; SUPERADMIN bypasses). WARGA and
+   * other roles never see the box — searching other residents would be both
+   * useless to them and a privacy concern.
+   */
+  canUseGlobalSearch(): boolean {
+    const role = this.currentUser?.role?.name || '';
+    if (!role) return false;
+    if (role === 'SUPERADMIN') return true;
+    const required = getRequiredRoles('/admin/residents');
+    return !!required && required.includes(role);
+  }
+
+  /** Input handler — gate short queries, otherwise push to the debounced pipe. */
+  onSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchTerm = value;
+    const q = value.trim();
+    if (q.length < 2) {
+      this.searchResults = [];
+      this.searchLoading = false;
+      this.searchOpen = false;
+      return;
+    }
+    this.searchOpen = true;
+    this.searchLoading = true;
+    this.updateDropdownPosition();
+    this.searchSubject.next(q);
+  }
+
+  /** Reopen the dropdown on focus when there are results to show. */
+  onSearchFocus(): void {
+    if (this.searchTerm.trim().length >= 2 && (this.searchResults.length > 0 || this.searchLoading)) {
+      this.searchOpen = true;
+      this.updateDropdownPosition();
+    }
+  }
+
+  /**
+   * Position the dropdown just below the search box. The dropdown is
+   * position:fixed (viewport-relative) so it escapes the ion-toolbar's
+   * overflow:hidden, which would otherwise clip it inside the header.
+   */
+  private updateDropdownPosition(): void {
+    const input = this.searchInputRef?.nativeElement;
+    const host = input?.closest('.header-search') as HTMLElement | null;
+    if (!host) return;
+    const r = host.getBoundingClientRect();
+    this.dropdownPos = {
+      top: `${Math.round(r.bottom + 8)}px`,
+      left: `${Math.round(r.left)}px`,
+    };
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (this.searchOpen) this.updateDropdownPosition();
+  }
+
+  /**
+   * Dismiss the dropdown on any click outside the search box AND the dropdown.
+   * The dropdown lives at the ion-app root (not inside .header-search), so both
+   * must be checked — otherwise clicking a result would read as "outside".
+   */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.searchOpen) return;
+    const target = event.target as Node;
+    const searchHost = this.searchInputRef?.nativeElement?.closest('.header-search');
+    if (searchHost?.contains(target)) return;
+    if (this.searchDropdownRef?.nativeElement?.contains(target)) return;
+    this.closeSearch();
+  }
+
+  /** Pick a result → clear the box and open the resident detail page. */
+  selectSearchResult(resident: Resident): void {
+    this.searchOpen = false;
+    this.searchTerm = '';
+    this.searchResults = [];
+    this.navController.navigateRoot(['/admin/residents', resident.id]);
+  }
+
+  closeSearch(): void {
+    this.searchOpen = false;
+  }
+
+  /** Full display name for a resident (handles empty lastName). */
+  residentDisplayName(r: Resident): string {
+    return `${r.firstName} ${r.lastName ?? ''}`.trim();
   }
 
   /**

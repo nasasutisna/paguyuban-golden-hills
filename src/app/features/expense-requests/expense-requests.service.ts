@@ -123,6 +123,7 @@ export class ExpenseRequestsService {
     if (params.sortOrder) qp.append('sortOrder', params.sortOrder);
     if (params.search) qp.append('search', params.search);
     if (params.status) qp.append('status', params.status);
+    if (params.fundType) qp.append('fundType', params.fundType);
     if (params.categoryId) qp.append('categoryId', params.categoryId);
     if (params.requestedById) qp.append('requestedById', params.requestedById);
     if (params.residentId) qp.append('residentId', params.residentId);

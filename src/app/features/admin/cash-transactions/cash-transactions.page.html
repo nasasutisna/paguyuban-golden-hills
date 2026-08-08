@@ -1,131 +1,122 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Kas Paguyuban</ion-title>
+  </ion-toolbar>
+</ion-header>
+
 <ion-content class="ion-padding">
-  <!-- Statistics Cards -->
-  @if (hasStats() || statsLoading) {
-  <div class="stats-container">
-    <!-- Loading skeleton -->
+  <div class="ct-wrapper">
+
+    <!-- Ringkasan Keuangan -->
+    <div class="section-heading">
+      <h4>Ringkasan Keuangan</h4>
+      <span class="section-hint">Saldo, pemasukan, dan pengeluaran</span>
+    </div>
+
     @if (statsLoading) {
-    <div class="stats-skeleton">
-      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
-      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
-      <ion-skeleton-text animated style="width: 100%; height: 80px; margin-bottom: 12px;"></ion-skeleton-text>
+    <div class="summary-skeleton">
+      <ion-skeleton-text animated style="width: 100%; height: 96px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 96px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 96px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 96px;"></ion-skeleton-text>
     </div>
     }
 
-    <!-- Stats Cards -->
     @if (!statsLoading && summary) {
+    <div class="summary-grid">
+      <!-- Saldo (net) -->
+      <div class="stat-card">
+        <div class="stat-icon icon-primary"><ion-icon name="wallet"></ion-icon></div>
+        <div class="stat-body">
+          <p class="stat-label">Saldo</p>
+          <h3 class="stat-value">{{ formatCurrency(summary.netAmount) }}</h3>
+        </div>
+      </div>
 
-    <div class="stats-grid">
+      <!-- Total Pemasukan -->
+      <div class="stat-card">
+        <div class="stat-icon icon-success"><ion-icon name="trending-up"></ion-icon></div>
+        <div class="stat-body">
+          <p class="stat-label">Total Pemasukan</p>
+          <h3 class="stat-value text-success">{{ formatCurrency(summary.totalIncome) }}</h3>
+        </div>
+      </div>
 
-      <!-- Balance -->
-      <ion-card class="stat-card primary">
-        <ion-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <ion-icon name="wallet"></ion-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ formatCurrency(summary.netAmount) }}</div>
-              <div class="stat-label">Saldo</div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+      <!-- Total Pengeluaran -->
+      <div class="stat-card">
+        <div class="stat-icon icon-danger"><ion-icon name="trending-down"></ion-icon></div>
+        <div class="stat-body">
+          <p class="stat-label">Total Pengeluaran</p>
+          <h3 class="stat-value text-danger">{{ formatCurrency(summary.totalExpense) }}</h3>
+        </div>
+      </div>
 
-      <!-- Total Income -->
-      <ion-card class="stat-card success">
-        <ion-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <ion-icon name="trending-up"></ion-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ formatCurrency(summary.totalIncome) }}</div>
-              <div class="stat-label">Total Pemasukan</div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Total Expense -->
-      <ion-card class="stat-card danger">
-        <ion-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <ion-icon name="trending-down"></ion-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ formatCurrency(summary.totalExpense) }}</div>
-              <div class="stat-label">Total Pengeluaran</div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Pending Approval -->
+      <!-- Pending Approval (only when there are pending items) -->
       @if (summary.pendingApproval > 0) {
-      <ion-card class="stat-card warning">
-        <ion-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <ion-icon name="time"></ion-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ summary.pendingApproval }}</div>
-              <div class="stat-label">Menunggu Persetujuan</div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+      <div class="stat-card">
+        <div class="stat-icon icon-warning"><ion-icon name="time"></ion-icon></div>
+        <div class="stat-body">
+          <p class="stat-label">Menunggu Persetujuan</p>
+          <h3 class="stat-value text-warning">{{ summary.pendingApproval }}</h3>
+        </div>
+      </div>
       }
     </div>
     }
-  </div>
-  }
 
-  <!-- Per-Kas saldo (Kas IPL / Kas Warga) -->
-  @if (accountBalances.length > 0) {
-  <div class="stats-container ion-margin-top">
-    <div class="stats-grid">
-      <ion-card class="stat-card primary">
-        <ion-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <ion-icon name="cash-outline"></ion-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ formatCurrency(kasIplBalance?.balance ?? 0) }}</div>
-              <div class="stat-label">Saldo Kas IPL</div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card class="stat-card primary">
-        <ion-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <ion-icon name="people-outline"></ion-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ formatCurrency(kasWargaBalance?.balance ?? 0) }}</div>
-              <div class="stat-label">Saldo Kas Warga</div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+    <!-- Saldo & Pengeluaran per Kas -->
+    @if (accountBalances.length > 0) {
+    <div class="section-heading">
+      <h4>Saldo & Pengeluaran per Kas</h4>
+      <span class="section-hint">Kas IPL & Kas Iuran Warga (seluruh waktu)</span>
     </div>
-  </div>
-  }
+    <div class="saldo-grid">
+      <!-- Kas IPL -->
+      <div class="saldo-card saldo-ipl">
+        <div class="saldo-top">
+          <div class="saldo-icon"><ion-icon name="leaf"></ion-icon></div>
+          <span class="saldo-tag">Kas IPL</span>
+        </div>
+        <p class="saldo-label">Saldo Kas IPL</p>
+        <h3 class="saldo-value">{{ formatCurrency(kasIplBalance?.balance ?? 0) }}</h3>
+        <div class="saldo-footer">
+          <span class="saldo-footer-label">
+            <ion-icon name="arrow-down-circle"></ion-icon> Pengeluaran IPL
+          </span>
+          <span class="saldo-footer-value">{{ formatCurrency(kasIplBalance?.totalExpense ?? 0) }}</span>
+        </div>
+      </div>
 
-  <!-- Kas filter (Semua / Kas IPL / Kas Warga) -->
-  <ion-segment scrollable="true" class="ion-margin-bottom" [value]="kasFilter"
-    (ionChange)="onKasFilterChange($event.detail.value)">
-    @for (k of KAS_FILTERS; track k.value) {
-    <ion-segment-button [value]="k.value">
-      <ion-label>{{ k.label }}</ion-label>
-    </ion-segment-button>
+      <!-- Kas Warga -->
+      <div class="saldo-card saldo-warga">
+        <div class="saldo-top">
+          <div class="saldo-icon"><ion-icon name="people"></ion-icon></div>
+          <span class="saldo-tag">Kas Iuran Warga</span>
+        </div>
+        <p class="saldo-label">Saldo Kas Iuran Warga</p>
+        <h3 class="saldo-value">{{ formatCurrency(kasWargaBalance?.balance ?? 0) }}</h3>
+        <div class="saldo-footer">
+          <span class="saldo-footer-label">
+            <ion-icon name="arrow-down-circle"></ion-icon> Pengeluaran Iuran Warga
+          </span>
+          <span class="saldo-footer-value">{{ formatCurrency(kasWargaBalance?.totalExpense ?? 0) }}</span>
+        </div>
+      </div>
+    </div>
     }
-  </ion-segment>
+
+    <!-- Kas filter (Semua / Kas IPL / Kas Warga) -->
+    <ion-segment scrollable="true" class="ion-margin-bottom" [value]="kasFilter"
+      (ionChange)="onKasFilterChange($event.detail.value)">
+      @for (k of KAS_FILTERS; track k.value) {
+      <ion-segment-button [value]="k.value">
+        <ion-label>{{ k.label }}</ion-label>
+      </ion-segment-button>
+      }
+    </ion-segment>
 
   <!-- Date Range Filter (Collapsible, below summary) -->
   <ion-card class="filter-card ion-margin-top">
@@ -198,7 +189,7 @@
   <div>
     <app-table [config]="tableConfig" [dataSource]="dataSource" [statusBadges]="statusBadges"
       [currentPage]="currentPage" (actionClick)="onAction($event)" (pageChange)="onPageChange($event)"
-      (pageSizeChange)="onPageSizeChange($event)">
+      (pageSizeChange)="onPageSizeChange($event)" (sortChange)="onSortChange($event)">
       <div table-actions>
         <ion-button fill="solid" color="primary" (click)="navigateToCreate()">
           <ion-icon slot="start" name="add"></ion-icon>
@@ -210,5 +201,7 @@
         </ion-button>
       </div>
     </app-table>
+  </div>
+
   </div>
 </ion-content>
